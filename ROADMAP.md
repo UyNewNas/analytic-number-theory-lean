@@ -22,6 +22,8 @@ analytic-number-theory-lean
 - [x] Pin the Chen-compatible Lean/mathlib toolchain.
 - [x] Port and provenance-record the minimal PNTAnd import closure.
 - [x] Expose Chebyshev-psi and prime-counting PNT interfaces.
+- [x] Transfer the effective psi estimate to theta, with its explicit
+  square-root prime-power correction.
 - [x] Provide a natural-number facade used by Chen.
 - [x] Add elementary finite prime sums, products, positivity, monotonicity, and
   logarithmic-factor estimates.

@@ -7,6 +7,8 @@ Version 0.1 is focused on porting the minimal PNTAnd dependency closure needed
 for:
 
 - a medium-strength error estimate for Chebyshev's psi function;
+- a quantitative Chebyshev-theta bridge, retaining the standard square-root
+  prime-power correction;
 - the standard prime-counting asymptotic `pi(x) ~ x / log x`;
 - a natural-number prime-counting interface for downstream theorem projects.
 - elementary finite prime sums/products and logarithmic estimates that form

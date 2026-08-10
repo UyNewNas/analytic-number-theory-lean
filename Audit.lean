@@ -9,6 +9,7 @@ all other non-whitelisted axioms are rejected.
 -/
 
 #print axioms AnalyticNumberTheory.PrimeDistribution.chebyshevPsi_medium_error
+#print axioms AnalyticNumberTheory.PrimeDistribution.chebyshevTheta_medium_error
 #print axioms AnalyticNumberTheory.PrimeDistribution.primeCounting_asymptotic_real
 #print axioms AnalyticNumberTheory.PrimeDistribution.NatPrimeCountingPNT
 #print axioms AnalyticNumberTheory.PrimeDistribution.natPrimeCountingPNT
