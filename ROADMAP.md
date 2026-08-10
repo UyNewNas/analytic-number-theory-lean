@@ -23,7 +23,8 @@ analytic-number-theory-lean
 - [x] Port and provenance-record the minimal PNTAnd import closure.
 - [x] Expose Chebyshev-psi and prime-counting PNT interfaces.
 - [x] Transfer the effective psi estimate to theta, with its explicit
-  square-root prime-power correction.
+  square-root prime-power correction and an `O(x / log x)` partial-summation
+  facade.
 - [x] Provide a natural-number facade used by Chen.
 - [x] Add elementary finite prime sums, products, positivity, monotonicity, and
   logarithmic-factor estimates.
