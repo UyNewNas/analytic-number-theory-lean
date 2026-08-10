@@ -109,7 +109,37 @@ jobs:
         run: |
           set -o pipefail
           lake env lean Audit.lean 2>&1 | tee /tmp/axioms.txt
-          if grep -q 'sorryAx' /tmp/axioms.txt; then
-            echo 'Public API depends on sorryAx.' >&2
-            exit 1
-          fi
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          expected_reports = 6
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if len(reports) != expected_reports:
+              print(
+                  f'Expected {expected_reports} public API axiom reports, found {len(reports)}.',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Public API uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print('Public API axiom whitelist passed: ' + ', '.join(sorted(used)))
+          PY

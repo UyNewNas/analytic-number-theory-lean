@@ -3,9 +3,9 @@ import AnalyticNumberTheory
 /-!
 # Kernel trust audit
 
-These are all declarations in the stable public API. CI rejects the audit if
-any declaration depends on `sorryAx`. The foundational axioms normally used by
-mathlib (`propext`, `Classical.choice`, and `Quot.sound`) are permitted.
+CI checks every declaration listed below against an exact axiom whitelist:
+`propext`, `Classical.choice`, and `Quot.sound`. In particular, `sorryAx` and
+all other non-whitelisted axioms are rejected.
 -/
 
 #print axioms AnalyticNumberTheory.PrimeDistribution.chebyshevPsi_medium_error
