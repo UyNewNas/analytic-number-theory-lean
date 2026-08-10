@@ -17,3 +17,4 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.log_primeProduct
 #print axioms AnalyticNumberTheory.Mertens.abs_log_primeFactor_add_le
 #print axioms AnalyticNumberTheory.Mertens.primeReciprocalSum_eq_theta_abel
+#print axioms AnalyticNumberTheory.Mertens.primeReciprocalSum_eq_theta_div_mul_log_add_integral
