@@ -1,0 +1,55 @@
+# Formal Mathematics Atlas roadmap
+
+This repository is the reusable **Prime Distribution / Analytic Number Theory**
+foundation. It is upstream of theorem-focused repositories such as Chen and
+future Goldbach developments.
+
+```text
+analytic-number-theory-lean
+├── prime distribution (PNT and effective psi estimates)
+├── finite Mertens infrastructure
+└── future asymptotic Mertens theorems
+        │
+        ├──> chen-theorem-lean (sieve consumer)
+        ├──> goldbach-lean (future)
+        └──> other prime-distribution consumers
+```
+
+## Release lines
+
+### v0.1 — prime-distribution foundation
+
+- [x] Pin the Chen-compatible Lean/mathlib toolchain.
+- [x] Port and provenance-record the minimal PNTAnd import closure.
+- [x] Expose Chebyshev-psi and prime-counting PNT interfaces.
+- [x] Provide a natural-number facade used by Chen.
+- [x] Add elementary finite prime sums, products, positivity, monotonicity, and
+  logarithmic-factor estimates.
+- [x] Enforce zero executable `sorry`/`admit`, full builds, and an axiom audit
+  in CI.
+
+### v0.2 — reusable Mertens layer
+
+The two independent work lines below may proceed in parallel after agreeing on
+the common asymptotic/error-term API.
+
+- [ ] **Mertens II:** prove the reciprocal-prime sum estimate, preferably from
+  the PNT facade plus partial/Abel summation.
+- [ ] **Mertens product:** build the convergent quadratic correction and derive
+  the Euler-product estimate from Mertens II and `Mertens.Basic`.
+- [ ] Add namespace-level compatibility lemmas relating the generic finite
+  objects to downstream definitions.
+
+### v0.3 — downstream migration
+
+- [x] Replace Chen's local PNT placeholder with the public natural-number PNT.
+- [ ] Replace Chen's Mertens-II placeholder with the generic theorem.
+- [ ] Replace Chen's product-formula placeholder with the generic theorem.
+- [ ] Keep sieve notation and Chen-specific consequences in
+  `chen-theorem-lean`; move only mathematically reusable results here.
+
+## Boundary rule
+
+A declaration belongs here when its statement is useful without importing a
+particular sieve or target theorem. Definitions tied to Chen's singular series,
+sieve weights, or final theorem remain in the Chen repository.

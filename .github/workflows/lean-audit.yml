@@ -1,0 +1,115 @@
+name: Lean build and trust audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject executable sorry/admit in tracked Lean sources
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import subprocess
+          import sys
+
+          files = subprocess.check_output(
+              ["git", "ls-files", "-z", "--", "*.lean"]
+          ).decode().split("\0")
+          files = [pathlib.Path(path) for path in files if path]
+          if not files:
+              print("No tracked Lean sources found.", file=sys.stderr)
+              sys.exit(1)
+
+          token = re.compile(r"\b(?:sorry|admit)\b")
+          failures = []
+
+          # Preserve newlines while removing strings and nested comments.
+          # This catches `by sorry` without rejecting words in documentation.
+          def executable_text(source: str) -> str:
+              out = []
+              i = 0
+              block_depth = 0
+              in_string = False
+              while i < len(source):
+                  if block_depth:
+                      if source.startswith("/-", i):
+                          block_depth += 1
+                          out.extend("  ")
+                          i += 2
+                      elif source.startswith("-/", i):
+                          block_depth -= 1
+                          out.extend("  ")
+                          i += 2
+                      else:
+                          out.append("\n" if source[i] == "\n" else " ")
+                          i += 1
+                  elif in_string:
+                      if source[i] == "\\" and i + 1 < len(source):
+                          out.extend("  ")
+                          i += 2
+                      elif source[i] == '"':
+                          in_string = False
+                          out.append(" ")
+                          i += 1
+                      else:
+                          out.append("\n" if source[i] == "\n" else " ")
+                          i += 1
+                  elif source.startswith("--", i):
+                      end = source.find("\n", i)
+                      if end == -1:
+                          out.extend(" " * (len(source) - i))
+                          break
+                      out.extend(" " * (end - i))
+                      i = end
+                  elif source.startswith("/-", i):
+                      block_depth = 1
+                      out.extend("  ")
+                      i += 2
+                  elif source[i] == '"':
+                      in_string = True
+                      out.append(" ")
+                      i += 1
+                  else:
+                      out.append(source[i])
+                      i += 1
+              return "".join(out)
+
+          for path in files:
+              code = executable_text(path.read_text(encoding="utf-8"))
+              for match in token.finditer(code):
+                  line = code.count("\n", 0, match.start()) + 1
+                  failures.append(f"{path}:{line}: executable {match.group(0)}")
+
+          if failures:
+              print("\n".join(failures), file=sys.stderr)
+              sys.exit(1)
+          print(f"Checked {len(files)} tracked Lean source files.")
+          PY
+
+      - uses: leanprover/lean-action@v1
+        with:
+          build: true
+          build-args: PrimeNumberTheoremAnd AnalyticNumberTheory
+
+      - name: Audit public theorem axioms
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean Audit.lean 2>&1 | tee /tmp/axioms.txt
+          if grep -q 'sorryAx' /tmp/axioms.txt; then
+            echo 'Public API depends on sorryAx.' >&2
+            exit 1
+          fi
