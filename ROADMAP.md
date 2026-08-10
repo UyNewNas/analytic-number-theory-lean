@@ -36,6 +36,8 @@ analytic-number-theory-lean
 The two independent work lines below may proceed in parallel after agreeing on
 the common asymptotic/error-term API.
 
+- [x] Establish the finite Abel-summation bridge from reciprocal-prime sums
+  to Chebyshev theta.
 - [ ] **Mertens II:** prove the reciprocal-prime sum estimate, preferably from
   the PNT facade plus partial/Abel summation.
 - [ ] **Mertens product:** build the convergent quadratic correction and derive
