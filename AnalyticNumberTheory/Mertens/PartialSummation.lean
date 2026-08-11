@@ -150,6 +150,14 @@ theorem thetaErrorKernel_interval_sub_total_eq_neg_tail {x : ℝ} (hx : 2 ≤ x)
   have h := intervalIntegral.integral_Ioi_sub_Ioi integrableOn_thetaErrorKernel hx
   linarith
 
+/-- The theta-error kernel is integrable on every finite interval beginning at
+two. -/
+theorem intervalIntegrable_thetaErrorKernel {x : ℝ} (hx : 2 ≤ x) :
+    IntervalIntegrable thetaErrorKernel volume 2 x := by
+  rw [intervalIntegrable_iff_integrableOn_Icc_of_le hx]
+  exact locallyIntegrableOn_thetaErrorKernel.integrableOn_compact_subset
+    Set.Icc_subset_Ici_self isCompact_Icc
+
 private theorem deriv_inv_mul_log {x : ℝ} (hx : 2 ≤ x) :
     deriv (fun u : ℝ => (u * log u)⁻¹) x =
       -(log x + 1) / (x * log x) ^ 2 := by
