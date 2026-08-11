@@ -48,8 +48,8 @@ the common asymptotic/error-term API.
   integrals with their improper tails.
 - [x] Derive the exact Mertens-II error decomposition and the error-kernel
   tail rate.
-- [ ] **Mertens II:** prove the reciprocal-prime sum estimate, preferably from
-  the PNT facade plus partial/Abel summation.
+- [x] **Mertens II:** prove the reciprocal-prime sum estimate from the PNT
+  facade plus partial/Abel summation, including a natural-number API.
 - [ ] **Mertens product:** build the convergent quadratic correction and derive
   the Euler-product estimate from Mertens II and `Mertens.Basic`.
 - [ ] Add namespace-level compatibility lemmas relating the generic finite

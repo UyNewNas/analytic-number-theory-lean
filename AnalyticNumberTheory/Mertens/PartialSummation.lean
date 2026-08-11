@@ -356,4 +356,83 @@ theorem mertensSecond_error_decomposition {x : ℝ} (hx : 2 ≤ x) :
   unfold mertensSecondConstant
   linarith
 
+/-- Mertens' second theorem with an explicit `O(1 / log x)` error, on the
+real-variable bridge used by downstream arithmetic applications. -/
+theorem mertensSecond_eventually :
+    ∃ C > 0, ∀ᶠ x : ℝ in atTop,
+      |primeReciprocalSum ⌊x⌋₊ - (log (log x) + mertensSecondConstant)| ≤
+        C / log x := by
+  obtain ⟨C₁, hC₁, hendpoint⟩ := Asymptotics.isBigO_iff'.mp
+    AnalyticNumberTheory.PrimeDistribution.chebyshevTheta_endpoint_error
+  obtain ⟨C₂, hC₂, htail⟩ := thetaErrorKernel_tail_eventually
+  refine ⟨C₁ + C₂, add_pos hC₁ hC₂, ?_⟩
+  filter_upwards [htail, hendpoint,
+    eventually_ge_atTop (max 2 (exp 1) : ℝ)] with x htailx hendpointx hx
+  have hx2 : 2 ≤ x := le_trans (le_max_left 2 (exp 1)) hx
+  have hxexp : exp 1 ≤ x := le_trans (le_max_right 2 (exp 1)) hx
+  have hx0 : 0 < x := lt_of_lt_of_le (exp_pos 1) hxexp
+  have hlog1 : 1 ≤ log x := (Real.le_log_iff_exp_le hx0).mpr hxexp
+  have hlog0 : 0 < log x := lt_of_lt_of_le zero_lt_one hlog1
+  rw [mertensSecond_error_decomposition hx2]
+  calc
+    |(Chebyshev.theta x - x) / (x * log x) -
+        ∫ t in Set.Ioi x, thetaErrorKernel t| ≤
+          |(Chebyshev.theta x - x) / (x * log x)| +
+          |∫ t in Set.Ioi x, thetaErrorKernel t| := by
+            simpa [sub_eq_add_neg] using abs_add_le
+              ((Chebyshev.theta x - x) / (x * log x))
+              (-(∫ t in Set.Ioi x, thetaErrorKernel t))
+    _ ≤ C₁ / (log x) ^ 2 + C₂ / log x := by
+      have hsum := add_le_add hendpointx htailx
+      calc
+        |(Chebyshev.theta x - x) / (x * log x)| +
+            |∫ t in Set.Ioi x, thetaErrorKernel t| ≤
+            C₁ * (1 / (log x) ^ 2) + C₂ / log x := by
+              simpa only [Real.norm_eq_abs,
+                abs_of_pos (by positivity : 0 < 1 / (log x) ^ 2)] using hsum
+        _ = C₁ / (log x) ^ 2 + C₂ / log x := by ring
+    _ ≤ (C₁ + C₂) / log x := by
+      have hsq : log x ≤ (log x) ^ 2 := by nlinarith
+      have hfirst : C₁ / (log x) ^ 2 ≤ C₁ / log x := by
+        simpa [div_eq_mul_inv] using
+          mul_le_mul_of_nonneg_left
+            (one_div_le_one_div_of_le hlog0 hsq) hC₁.le
+      calc
+        C₁ / (log x) ^ 2 + C₂ / log x ≤ C₁ / log x + C₂ / log x :=
+          add_le_add hfirst le_rfl
+        _ = (C₁ + C₂) / log x := by ring
+
+/-- Natural-number form of Mertens' second theorem, with the finite initial
+range absorbed into the uniform constant. -/
+theorem mertensSecond_nat :
+    ∃ C > 0, ∀ n : ℕ, 2 ≤ n →
+      |primeReciprocalSum n - (log (log n) + mertensSecondConstant)| ≤
+        C / log n := by
+  obtain ⟨D, hD, hD_bound⟩ := mertensSecond_eventually
+  have hreal :
+      (fun x : ℝ => primeReciprocalSum ⌊x⌋₊ -
+        (log (log x) + mertensSecondConstant)) =O[atTop]
+        fun x : ℝ => 1 / log x := by
+    apply Asymptotics.IsBigO.of_bound D
+    filter_upwards [hD_bound, eventually_gt_atTop (1 : ℝ)] with x hx hx1
+    have hlog : 0 < log x := Real.log_pos hx1
+    simpa [Real.norm_eq_abs, abs_of_pos (one_div_pos.mpr hlog),
+      div_eq_mul_inv, abs_of_pos hlog] using hx
+  have hnat :
+      (fun n : ℕ => primeReciprocalSum ⌊(n : ℝ)⌋₊ -
+        (log (log (n : ℝ)) + mertensSecondConstant)) =O[atTop]
+        fun n : ℕ => 1 / log (n : ℝ) :=
+    hreal.natCast_atTop
+  obtain ⟨C, hC, hbound⟩ :=
+    Asymptotics.bound_of_isBigO_nat_atTop hnat
+  refine ⟨C, hC, fun n hn => ?_⟩
+  have hn1 : (1 : ℝ) < n := by
+    exact_mod_cast (show 1 < n by omega)
+  have hlog : 0 < log (n : ℝ) := Real.log_pos hn1
+  have hne : 1 / log (n : ℝ) ≠ 0 :=
+    one_div_ne_zero (ne_of_gt hlog)
+  simpa [Nat.floor_natCast, Real.norm_eq_abs,
+    abs_of_pos (one_div_pos.mpr hlog), abs_of_pos hlog, div_eq_mul_inv]
+    using hbound hne
+
 end AnalyticNumberTheory.Mertens

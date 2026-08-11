@@ -30,3 +30,5 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.theta_weighted_integral_decomposition
 #print axioms AnalyticNumberTheory.Mertens.thetaErrorKernel_tail_eventually
 #print axioms AnalyticNumberTheory.Mertens.mertensSecond_error_decomposition
+#print axioms AnalyticNumberTheory.Mertens.mertensSecond_eventually
+#print axioms AnalyticNumberTheory.Mertens.mertensSecond_nat
