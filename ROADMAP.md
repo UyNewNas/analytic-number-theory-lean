@@ -66,6 +66,10 @@ the common asymptotic/error-term API.
 - [x] Prove the scaled logarithmic Gamma kernel giving `-γ`.
 - [x] Prove the Abel/Mellin representation of the prime Dirichlet sum for
   every positive displacement `ε > 0`.
+- [x] Perform the logarithmic change of variables to the exponential Abel
+  kernel and prove a generic `O(1/u)` remainder-vanishing theorem.
+- [x] Prove that the prime finite-part limit implies the required constant
+  identity via the normalized zeta limit.
 - [ ] Prove the Abelian finite-part limit and conclude
   `mertensSecondConstant + logarithmicCorrectionLimit = γ`.
 - [ ] Add namespace-level compatibility lemmas relating the generic finite

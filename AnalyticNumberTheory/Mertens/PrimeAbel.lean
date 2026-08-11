@@ -182,6 +182,30 @@ theorem primeDirichletSum_eq_mul_integral_of_pos
     (primeDirichletSum_eq_mul_integral hr hrs
       (primeReciprocalSum_isBigO_rpow (by linarith : 0 < ε / 2)))
 
+/-- Real prime-indexed form of the positive-displacement Abel formula. -/
+theorem realPrimeDirichletSum_eq_mul_integral_of_pos
+    (ε : ℝ) (hε : 0 < ε) :
+    (↑(∑' p : Nat.Primes, (p : ℝ) ^ (-(1 + ε))) : ℂ) =
+      (ε : ℂ) * ∫ t in Set.Ioi (1 : ℝ),
+        (primeReciprocalSum ⌊t⌋₊ : ℂ) *
+          (t : ℂ) ^ (-((ε : ℂ) + 1)) := by
+  rw [Complex.ofReal_tsum]
+  calc
+    (∑' p : Nat.Primes, (↑((p : ℝ) ^ (-(1 + ε))) : ℂ)) =
+        ∑' n : ℕ, if n.Prime then (n : ℂ) ^ (-(1 + (ε : ℂ))) else 0 := by
+      change (∑' p : ↑({n : ℕ | n.Prime} : Set ℕ),
+        (↑((p : ℝ) ^ (-(1 + ε))) : ℂ)) = _
+      rw [_root_.tsum_subtype {n : ℕ | n.Prime}
+        (fun n : ℕ => (↑((n : ℝ) ^ (-(1 + ε))) : ℂ))]
+      apply tsum_congr
+      intro n
+      simp only [Set.indicator, Set.mem_ofPred_eq]
+      split_ifs
+      · rw [Complex.ofReal_cpow (Nat.cast_nonneg n)]
+        simp
+      · rfl
+    _ = _ := primeDirichletSum_eq_mul_integral_of_pos ε hε
+
 /--
 An unconditional specialization of the Abel/Mellin bridge.  Its coarse growth
 proof only gives `1 < re s`; sharper Mertens bounds can instead be supplied to
