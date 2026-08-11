@@ -237,4 +237,32 @@ theorem exp_log_primeProduct_error_isBigO :
       (Real.exp_sub_sum_range_isBigO_pow 1).comp_tendsto hE0
   simpa [E] using hexp.trans hE
 
+/-- Algebraic factorization converting the exponentiated logarithmic error
+into the product-scale error, once `n > 1`. -/
+theorem primeProduct_error_eq_canonical_factor (n : ℕ) (hn : 1 < n) :
+    primeProduct n - exp (-(mertensSecondConstant + logarithmicCorrectionLimit)) /
+        log (n : ℝ) =
+      (exp (-(mertensSecondConstant + logarithmicCorrectionLimit)) /
+        log (n : ℝ)) *
+        (exp (log (primeProduct n) + log (log (n : ℝ)) +
+          (mertensSecondConstant + logarithmicCorrectionLimit)) - 1) := by
+  have hp : 0 < primeProduct n := primeProduct_pos n
+  have hnR : 1 < (n : ℝ) := by exact_mod_cast hn
+  have hlog : 0 < log (n : ℝ) := log_pos hnR
+  rw [exp_add, exp_add, exp_log hp, exp_log hlog]
+  have hcancel : exp (-(mertensSecondConstant + logarithmicCorrectionLimit)) *
+      exp (mertensSecondConstant + logarithmicCorrectionLimit) = 1 := by
+    rw [← exp_add, neg_add_cancel, exp_zero]
+  field_simp [hlog.ne']
+  calc
+    primeProduct n * log (n : ℝ) -
+        exp (-(mertensSecondConstant + logarithmicCorrectionLimit)) =
+      (exp (-(mertensSecondConstant + logarithmicCorrectionLimit)) *
+        exp (mertensSecondConstant + logarithmicCorrectionLimit)) *
+          (primeProduct n * log (n : ℝ)) -
+        exp (-(mertensSecondConstant + logarithmicCorrectionLimit)) := by rw [hcancel]; ring
+    _ = exp (-(mertensSecondConstant + logarithmicCorrectionLimit)) *
+          (primeProduct n * log (n : ℝ) *
+            exp (mertensSecondConstant + logarithmicCorrectionLimit) - 1) := by ring
+
 end AnalyticNumberTheory.Mertens
