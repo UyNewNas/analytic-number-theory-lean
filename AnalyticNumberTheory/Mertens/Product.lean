@@ -82,6 +82,37 @@ theorem logarithmicCorrectionLimit_sub_eq_tail (x : ℕ) :
   unfold logarithmicCorrectionLimit
   linarith
 
+/-- The correction tail is dominated by the corresponding shifted reciprocal
+square series. -/
+theorem logarithmicCorrection_tail_norm_le (x : ℕ) :
+    ‖logarithmicCorrectionLimit - logarithmicCorrection x‖ ≤
+      ∑' n : ℕ, 2 / ((n + (x + 1) : ℕ) : ℝ) ^ 2 := by
+  rw [logarithmicCorrectionLimit_sub_eq_tail]
+  apply tsum_of_norm_bounded
+  · exact
+      ((summable_nat_add_iff
+        (f := fun p : ℕ => 2 / (p : ℝ) ^ 2) (x + 1)).2
+        (by
+          simpa [div_eq_mul_inv] using
+            ((Real.summable_one_div_nat_pow (p := 2)).2
+              (by norm_num : (1 : ℕ) < 2)).mul_left 2)).hasSum
+  · intro n
+    unfold logarithmicCorrectionTerm
+    split_ifs with hp
+    · rw [Real.norm_eq_abs]
+      calc
+        |-log (1 - 1 / ((n + (x + 1) : ℕ) : ℝ)) -
+            1 / ((n + (x + 1) : ℕ) : ℝ)| =
+            |-(log (1 - 1 / ((n + (x + 1) : ℕ) : ℝ)) +
+              1 / ((n + (x + 1) : ℕ) : ℝ))| := by
+                congr 1 <;> ring
+        _ = |log (1 - 1 / ((n + (x + 1) : ℕ) : ℝ)) +
+              1 / ((n + (x + 1) : ℕ) : ℝ)| := abs_neg _
+        _ ≤ 2 / ((n + (x + 1) : ℕ) : ℝ) ^ 2 :=
+          abs_log_primeFactor_add_le hp
+    · simp only [norm_zero]
+      positivity
+
 /-- Taking the logarithm of the finite Euler product separates the reciprocal
 prime sum from its convergent higher-order correction. -/
 theorem neg_log_primeProduct_eq_reciprocal_add_correction (x : ℕ) :
