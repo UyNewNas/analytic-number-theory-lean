@@ -46,6 +46,8 @@ the common asymptotic/error-term API.
   Chebyshev-theta error kernel.
 - [x] Define the generic Mertens-II constant and identify finite error
   integrals with their improper tails.
+- [x] Derive the exact Mertens-II error decomposition and the error-kernel
+  tail rate.
 - [ ] **Mertens II:** prove the reciprocal-prime sum estimate, preferably from
   the PNT facade plus partial/Abel summation.
 - [ ] **Mertens product:** build the convergent quadratic correction and derive

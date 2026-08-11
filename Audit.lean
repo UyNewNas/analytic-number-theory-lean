@@ -27,3 +27,6 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.integrableOn_thetaErrorKernel
 #print axioms AnalyticNumberTheory.Mertens.thetaErrorKernel_interval_sub_total_eq_neg_tail
 #print axioms AnalyticNumberTheory.Mertens.intervalIntegrable_thetaErrorKernel
+#print axioms AnalyticNumberTheory.Mertens.theta_weighted_integral_decomposition
+#print axioms AnalyticNumberTheory.Mertens.thetaErrorKernel_tail_eventually
+#print axioms AnalyticNumberTheory.Mertens.mertensSecond_error_decomposition

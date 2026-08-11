@@ -158,6 +158,80 @@ theorem intervalIntegrable_thetaErrorKernel {x : ℝ} (hx : 2 ≤ x) :
   exact locallyIntegrableOn_thetaErrorKernel.integrableOn_compact_subset
     Set.Icc_subset_Ici_self isCompact_Icc
 
+/-- Splitting the theta term in the Abel integral into its identity main term
+and its theta-error term. -/
+theorem theta_weighted_integral_decomposition {x : ℝ} (hx : 2 ≤ x) :
+    (∫ t in 2..x, Chebyshev.theta t * (log t + 1) / (t * log t) ^ 2) =
+      (∫ t in 2..x, t * (log t + 1) / (t * log t) ^ 2) +
+        ∫ t in 2..x, thetaErrorKernel t := by
+  let q : ℝ → ℝ := fun t => (log t + 1) / (t * log t) ^ 2
+  have hq : ContinuousOn q (Set.Ici 2) := by
+    have hlog : ContinuousOn log (Set.Ici 2) := fun t ht => by
+      change 2 ≤ t at ht
+      exact (Real.continuousAt_log (by linarith)).continuousWithinAt
+    refine (hlog.add continuousOn_const).div
+      (((continuousOn_id' _).mul hlog).pow 2) fun t ht => ?_
+    change 2 ≤ t at ht
+    exact pow_ne_zero 2 <| mul_ne_zero (by linarith)
+      (Real.log_ne_zero_of_pos_of_ne_one (by linarith) (by linarith))
+  have htheta_local : LocallyIntegrableOn (fun t : ℝ => q t * Chebyshev.theta t)
+      (Set.Ici 2) volume :=
+    locallyIntegrableOn_theta.continuousOn_mul hq isLocallyClosed_Ici
+  have hmain_local : LocallyIntegrableOn (fun t : ℝ => t * q t) (Set.Ici 2) volume :=
+    ((continuousOn_id' _).mul hq).locallyIntegrableOn measurableSet_Ici
+  have htheta_int : IntervalIntegrable (fun t : ℝ => q t * Chebyshev.theta t) volume 2 x := by
+    rw [intervalIntegrable_iff_integrableOn_Icc_of_le hx]
+    exact htheta_local.integrableOn_compact_subset Set.Icc_subset_Ici_self isCompact_Icc
+  have hmain_int : IntervalIntegrable (fun t : ℝ => t * q t) volume 2 x := by
+    rw [intervalIntegrable_iff_integrableOn_Icc_of_le hx]
+    exact hmain_local.integrableOn_compact_subset Set.Icc_subset_Ici_self isCompact_Icc
+  calc
+    (∫ t in 2..x, Chebyshev.theta t * (log t + 1) / (t * log t) ^ 2) =
+        ∫ t in 2..x, q t * Chebyshev.theta t := by
+      apply intervalIntegral.integral_congr
+      intro t _
+      dsimp [q]
+      ring
+    _ = (∫ t in 2..x, t * q t) + ∫ t in 2..x, (q t * Chebyshev.theta t - t * q t) := by
+      rw [intervalIntegral.integral_sub htheta_int hmain_int]
+      ring
+    _ = (∫ t in 2..x, t * (log t + 1) / (t * log t) ^ 2) +
+        ∫ t in 2..x, thetaErrorKernel t := by
+      congr 1
+      · apply intervalIntegral.integral_congr
+        intro t _
+        dsimp [q]
+        ring
+      · apply intervalIntegral.integral_congr
+        intro t _
+        dsimp [q]
+        rw [mul_comm ((log t + 1) / (t * log t) ^ 2) (Chebyshev.theta t)]
+        calc
+          Chebyshev.theta t * ((log t + 1) / (t * log t) ^ 2) -
+              t * ((log t + 1) / (t * log t) ^ 2) =
+            Chebyshev.theta t * (log t + 1) / (t * log t) ^ 2 -
+              t * (log t + 1) / (t * log t) ^ 2 := by ring
+          _ = thetaErrorKernel t := (thetaErrorKernel_eq t).symm
+
+/-- The improper theta-error tail has the Mertens `O(1 / log x)` rate. -/
+theorem thetaErrorKernel_tail_eventually :
+    ∃ C > 0, ∀ᶠ x : ℝ in atTop,
+      ‖∫ t in Set.Ioi x, thetaErrorKernel t‖ ≤ C / log x := by
+  obtain ⟨C, hC, hO⟩ := Asymptotics.isBigO_iff'.mp thetaErrorKernel_isBigO
+  obtain ⟨A, hA⟩ := eventually_atTop.mp hO
+  refine ⟨C, hC, eventually_atTop.mpr ⟨max 2 A, fun x hx => ?_⟩⟩
+  have hx1 : 1 < x := by linarith [le_max_left 2 A]
+  apply norm_integral_Ioi_le_div_log hx1
+  intro t ht
+  have hAt : A ≤ t := le_trans (le_max_right 2 A |>.trans hx) ht.le
+  have ht1 : 1 < t := lt_of_lt_of_le hx1 ht.le
+  have ht0 : 0 < t := by linarith
+  have hlog : 0 < log t := Real.log_pos ht1
+  have hgt : 0 < t⁻¹ / (log t) ^ 2 :=
+    div_pos (inv_pos.mpr ht0) (sq_pos_of_pos hlog)
+  simpa only [Real.norm_eq_abs, abs_of_pos hgt] using hA t hAt
+
+
 private theorem deriv_inv_mul_log {x : ℝ} (hx : 2 ≤ x) :
     deriv (fun u : ℝ => (u * log u)⁻¹) x =
       -(log x + 1) / (x * log x) ^ 2 := by
@@ -267,5 +341,19 @@ theorem theta_abel_main_term {x : ℝ} (hx : 2 ≤ x) :
     integral_inv_div_log (by norm_num) hx1, integral_inv_div_log_sq (by norm_num) hx1]
   field_simp
   ring
+
+/-- Exact real-variable decomposition underlying Mertens' second theorem. -/
+theorem mertensSecond_error_decomposition {x : ℝ} (hx : 2 ≤ x) :
+    primeReciprocalSum ⌊x⌋₊ - (log (log x) + mertensSecondConstant) =
+      (Chebyshev.theta x - x) / (x * log x) -
+        ∫ t in Set.Ioi x, thetaErrorKernel t := by
+  have habel := primeReciprocalSum_eq_theta_div_mul_log_add_integral hx
+  have hmain := theta_abel_main_term hx
+  have hsplit := theta_weighted_integral_decomposition hx
+  have htail := thetaErrorKernel_interval_sub_total_eq_neg_tail hx
+  have hend : Chebyshev.theta x / (x * log x) - x / (x * log x) =
+      (Chebyshev.theta x - x) / (x * log x) := by ring
+  unfold mertensSecondConstant
+  linarith
 
 end AnalyticNumberTheory.Mertens
