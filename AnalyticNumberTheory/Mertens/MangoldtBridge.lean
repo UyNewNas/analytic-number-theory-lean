@@ -55,6 +55,15 @@ theorem summable_zeta_primeDirichlet {s : ℂ} (hs : 1 < s.re) :
   rw [Complex.norm_natCast_cpow_of_pos p.prop.pos]
   simp
 
+/-- The quadratic-and-higher analytic correction is summable above `Re(s)=1`. -/
+theorem summable_zeta_primeEulerCorrection {s : ℂ} (hs : 1 < s.re) :
+    Summable fun p : Nat.Primes =>
+      -Complex.log (1 - (p : ℂ) ^ (-s)) - (p : ℂ) ^ (-s) := by
+  refine ((summable_zeta_primeEulerLog hs).sub (summable_zeta_primeDirichlet hs)).congr ?_
+  intro p
+  rw [MulChar.one_apply (isUnit_of_subsingleton _)]
+  ring
+
 /-- Algebraic decomposition of the Euler-log summand into its prime Dirichlet
 term and its quadratic-and-higher correction.  Summability is kept explicit:
 establishing it uniformly as `s → 1⁺` is part of the Abelian workline. -/
@@ -70,5 +79,16 @@ theorem primeEulerLog_tsum_decomposition {s : ℂ}
   apply tsum_congr
   intro p
   ring
+
+/-- Unconditional Euler-log decomposition in the half-plane of absolute
+convergence. -/
+theorem zeta_primeEulerLog_decomposition {s : ℂ} (hs : 1 < s.re) :
+    ∑' p : Nat.Primes, -Complex.log (1 - (p : ℂ) ^ (-s)) =
+      (∑' p : Nat.Primes, (p : ℂ) ^ (-s)) +
+        ∑' p : Nat.Primes,
+          (-Complex.log (1 - (p : ℂ) ^ (-s)) - (p : ℂ) ^ (-s)) :=
+  primeEulerLog_tsum_decomposition
+    (summable_zeta_primeDirichlet hs)
+    (summable_zeta_primeEulerCorrection hs)
 
 end AnalyticNumberTheory.Mertens

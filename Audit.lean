@@ -48,3 +48,5 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.primeEulerLog_tsum_decomposition
 #print axioms AnalyticNumberTheory.Mertens.summable_zeta_primeEulerLog
 #print axioms AnalyticNumberTheory.Mertens.summable_zeta_primeDirichlet
+#print axioms AnalyticNumberTheory.Mertens.summable_zeta_primeEulerCorrection
+#print axioms AnalyticNumberTheory.Mertens.zeta_primeEulerLog_decomposition
