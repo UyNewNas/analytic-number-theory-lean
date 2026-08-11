@@ -54,6 +54,8 @@ the common asymptotic/error-term API.
   the Euler-product estimate from Mertens II and `Mertens.Basic`.
 - [x] Add the finite logarithmic product bridge; the limiting correction and
   its Euler--Mascheroni constant identification remain separate milestones.
+- [x] Define the zero-extended logarithmic correction and prove its absolute
+  convergence to the canonical correction constant.
 - [ ] Add namespace-level compatibility lemmas relating the generic finite
   objects to downstream definitions.
 

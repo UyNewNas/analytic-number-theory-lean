@@ -12,11 +12,65 @@ the prime-number theorem.
 namespace AnalyticNumberTheory.Mertens
 
 open Finset Real
+open Filter Topology
 
 /-- The finite quadratic-and-higher correction in the logarithm of the prime
 Euler product. -/
 noncomputable def logarithmicCorrection (x : ℕ) : ℝ :=
   (primesUpTo x).sum fun p => -log (1 - 1 / (p : ℝ)) - 1 / (p : ℝ)
+
+/-- The correction term, extended by zero away from the primes so that it can
+be treated as an ordinary series on `ℕ`. -/
+noncomputable def logarithmicCorrectionTerm (p : ℕ) : ℝ :=
+  if p.Prime then -log (1 - 1 / (p : ℝ)) - 1 / (p : ℝ) else 0
+
+/-- The candidate limiting correction constant. -/
+noncomputable def logarithmicCorrectionLimit : ℝ :=
+  ∑' p : ℕ, logarithmicCorrectionTerm p
+
+/-- The filtered finite correction is the initial segment of its zero-extended
+series. -/
+theorem logarithmicCorrection_eq_sum_range (x : ℕ) :
+    logarithmicCorrection x =
+      ∑ p ∈ Finset.range (x + 1), logarithmicCorrectionTerm p := by
+  unfold logarithmicCorrection primesUpTo logarithmicCorrectionTerm
+  rw [Finset.sum_filter]
+
+/-- The zero-extended logarithmic correction is absolutely summable. -/
+theorem summable_logarithmicCorrectionTerm : Summable logarithmicCorrectionTerm := by
+  have hsq : Summable (fun p : ℕ => 2 / (p : ℝ) ^ 2) := by
+    simpa [div_eq_mul_inv] using
+      ((Real.summable_one_div_nat_pow (p := 2)).2 (by norm_num : (1 : ℕ) < 2)).mul_left 2
+  refine hsq.of_norm_bounded ?_
+  intro p
+  unfold logarithmicCorrectionTerm
+  split_ifs with hp
+  · rw [Real.norm_eq_abs]
+    calc
+      |-log (1 - 1 / (p : ℝ)) - 1 / (p : ℝ)| =
+          |-(log (1 - 1 / (p : ℝ)) + 1 / (p : ℝ))| := by congr 1 <;> ring
+      _ = |log (1 - 1 / (p : ℝ)) + 1 / (p : ℝ)| := abs_neg _
+      _ ≤ 2 / (p : ℝ) ^ 2 := abs_log_primeFactor_add_le hp
+  · simp only [norm_zero]
+    positivity
+
+/-- The finite correction converges to its absolutely convergent series. -/
+theorem tendsto_logarithmicCorrection :
+    Tendsto logarithmicCorrection atTop (𝓝 logarithmicCorrectionLimit) := by
+  have hpartial : Tendsto (fun x : ℕ =>
+      ∑ p ∈ Finset.range (x + 1), logarithmicCorrectionTerm p)
+      atTop (𝓝 logarithmicCorrectionLimit) := by
+    change Tendsto ((fun n : ℕ =>
+      ∑ p ∈ Finset.range n, logarithmicCorrectionTerm p) ∘ fun x : ℕ => x + 1)
+      atTop (𝓝 (∑' p : ℕ, logarithmicCorrectionTerm p))
+    exact summable_logarithmicCorrectionTerm.tendsto_sum_tsum_nat.comp
+      (tendsto_add_atTop_nat 1)
+  have hfun : logarithmicCorrection = fun x : ℕ =>
+      ∑ p ∈ Finset.range (x + 1), logarithmicCorrectionTerm p := by
+    funext x
+    exact logarithmicCorrection_eq_sum_range x
+  rw [hfun]
+  exact hpartial
 
 /-- Taking the logarithm of the finite Euler product separates the reciprocal
 prime sum from its convergent higher-order correction. -/
