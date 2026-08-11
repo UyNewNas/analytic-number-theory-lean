@@ -45,6 +45,16 @@ theorem summable_zeta_primeEulerLog {s : ℂ} (hs : 1 < s.re) :
   exact DirichletCharacter.summable_neg_log_one_sub_mul_prime_cpow
     (χ := (1 : DirichletCharacter ℂ 1)) hs
 
+/-- The prime Dirichlet series is summable in the half-plane `Re(s) > 1`. -/
+theorem summable_zeta_primeDirichlet {s : ℂ} (hs : 1 < s.re) :
+    Summable fun p : Nat.Primes => (p : ℂ) ^ (-s) := by
+  refine Summable.of_norm_bounded (g := fun p : Nat.Primes => (p : ℝ) ^ (-s.re))
+    (Nat.Primes.summable_rpow.mpr (by linarith)) ?_
+  intro p
+  change ‖((p : ℕ) : ℂ) ^ (-s)‖ ≤ ((p : ℕ) : ℝ) ^ (-s.re)
+  rw [Complex.norm_natCast_cpow_of_pos p.prop.pos]
+  simp
+
 /-- Algebraic decomposition of the Euler-log summand into its prime Dirichlet
 term and its quadratic-and-higher correction.  Summability is kept explicit:
 establishing it uniformly as `s → 1⁺` is part of the Abelian workline. -/
