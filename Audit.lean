@@ -35,3 +35,4 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.neg_log_primeProduct_eq_reciprocal_add_correction
 #print axioms AnalyticNumberTheory.Mertens.summable_logarithmicCorrectionTerm
 #print axioms AnalyticNumberTheory.Mertens.tendsto_logarithmicCorrection
+#print axioms AnalyticNumberTheory.Mertens.logarithmicCorrectionLimit_sub_eq_tail

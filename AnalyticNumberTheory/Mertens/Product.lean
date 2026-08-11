@@ -72,6 +72,16 @@ theorem tendsto_logarithmicCorrection :
   rw [hfun]
   exact hpartial
 
+/-- The difference between the limiting correction and its finite version is
+the shifted tail of the absolutely convergent series. -/
+theorem logarithmicCorrectionLimit_sub_eq_tail (x : ℕ) :
+    logarithmicCorrectionLimit - logarithmicCorrection x =
+      ∑' n : ℕ, logarithmicCorrectionTerm (n + (x + 1)) := by
+  have htail := summable_logarithmicCorrectionTerm.sum_add_tsum_nat_add (x + 1)
+  rw [← logarithmicCorrection_eq_sum_range] at htail
+  unfold logarithmicCorrectionLimit
+  linarith
+
 /-- Taking the logarithm of the finite Euler product separates the reciprocal
 prime sum from its convergent higher-order correction. -/
 theorem neg_log_primeProduct_eq_reciprocal_add_correction (x : ℕ) :
