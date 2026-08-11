@@ -57,6 +57,9 @@ the common asymptotic/error-term API.
 - [x] Define the zero-extended logarithmic correction and prove its absolute
   convergence to the canonical correction constant.
 - [x] Bound the correction tail by `2 / x` using the integral test.
+- [x] Derive the Mertens product logarithm with its canonical constant and
+  `O(1 / log x)` error; identifying that constant with Euler's constant is
+  still a separate Abelian bridge.
 - [ ] Add namespace-level compatibility lemmas relating the generic finite
   objects to downstream definitions.
 

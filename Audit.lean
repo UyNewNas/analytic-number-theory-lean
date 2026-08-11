@@ -40,3 +40,6 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.logarithmicCorrection_tail_norm_le
 #print axioms AnalyticNumberTheory.Mertens.shifted_reciprocal_square_tail_le
 #print axioms AnalyticNumberTheory.Mertens.logarithmicCorrection_tail_norm_le_div
+#print axioms AnalyticNumberTheory.Mertens.logarithmicCorrection_tail_isBigO
+#print axioms AnalyticNumberTheory.Mertens.log_primeProduct_error_eq
+#print axioms AnalyticNumberTheory.Mertens.log_primeProduct_mertens_isBigO

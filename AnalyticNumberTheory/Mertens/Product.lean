@@ -163,6 +163,27 @@ theorem logarithmicCorrection_tail_norm_le_div (x : ℕ) (hx : 1 ≤ x) :
   (logarithmicCorrection_tail_norm_le x).trans
     (shifted_reciprocal_square_tail_le x hx)
 
+/-- On the Mertens scale, the logarithmic correction tail is negligible. -/
+theorem logarithmicCorrection_tail_isBigO :
+    (fun n : ℕ => logarithmicCorrectionLimit - logarithmicCorrection n) =O[atTop]
+      fun n => 1 / log (n : ℝ) := by
+  apply Asymptotics.IsBigO.of_bound 2
+  filter_upwards [eventually_ge_atTop 2] with n hn
+  have hn1 : (1 : ℝ) < n := by exact_mod_cast (show 1 < n by omega)
+  have hn0 : 0 < (n : ℝ) := by positivity
+  have hlog0 : 0 < log (n : ℝ) := Real.log_pos hn1
+  have hlog_le : log (n : ℝ) ≤ n := by
+    have h := Real.log_le_sub_one_of_pos hn0
+    linarith
+  have hinv : 1 / (n : ℝ) ≤ 1 / log (n : ℝ) :=
+    one_div_le_one_div_of_le hlog0 hlog_le
+  calc
+    ‖logarithmicCorrectionLimit - logarithmicCorrection n‖ ≤ 2 / (n : ℝ) :=
+      logarithmicCorrection_tail_norm_le_div n (by omega)
+    _ ≤ 2 * ‖1 / log (n : ℝ)‖ := by
+      rw [Real.norm_eq_abs, abs_of_pos (one_div_pos.mpr hlog0)]
+      simpa [div_eq_mul_inv] using mul_le_mul_of_nonneg_left hinv (by norm_num : (0 : ℝ) ≤ 2)
+
 /-- Taking the logarithm of the finite Euler product separates the reciprocal
 prime sum from its convergent higher-order correction. -/
 theorem neg_log_primeProduct_eq_reciprocal_add_correction (x : ℕ) :
@@ -174,5 +195,26 @@ theorem neg_log_primeProduct_eq_reciprocal_add_correction (x : ℕ) :
   apply Finset.sum_congr rfl
   intro p hp
   ring
+
+/-- The logarithmic product error is the sum of the Mertens-II error and the
+convergent higher-order correction tail. -/
+theorem log_primeProduct_error_eq (n : ℕ) :
+    log (primeProduct n) + log (log (n : ℝ)) +
+        (mertensSecondConstant + logarithmicCorrectionLimit) =
+      -(primeReciprocalSum n -
+          (log (log (n : ℝ)) + mertensSecondConstant)) +
+        (logarithmicCorrectionLimit - logarithmicCorrection n) := by
+  have h := neg_log_primeProduct_eq_reciprocal_add_correction n
+  linarith
+
+/-- Mertens' product logarithm with its canonical (not yet identified as
+Euler--Mascheroni) constant. -/
+theorem log_primeProduct_mertens_isBigO :
+    (fun n : ℕ => log (primeProduct n) + log (log (n : ℝ)) +
+      (mertensSecondConstant + logarithmicCorrectionLimit)) =O[atTop]
+      fun n => 1 / log (n : ℝ) := by
+  refine (mertensSecond_isBigO.neg_left.add logarithmicCorrection_tail_isBigO).congr_left ?_
+  intro n
+  exact (log_primeProduct_error_eq n).symm
 
 end AnalyticNumberTheory.Mertens
