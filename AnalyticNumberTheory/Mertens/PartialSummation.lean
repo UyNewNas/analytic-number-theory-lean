@@ -2,6 +2,7 @@ import AnalyticNumberTheory.Mertens.Basic
 import AnalyticNumberTheory.PrimeDistribution.ChebyshevTheta
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
+import Mathlib.MeasureTheory.Integral.Asymptotics
 import Mathlib.NumberTheory.AbelSummation
 import Mathlib.NumberTheory.Chebyshev
 
@@ -120,6 +121,34 @@ theorem thetaErrorKernel_isBigO :
       have htne : t ≠ 0 := ne_of_gt ht0
       have hlogne : log t ≠ 0 := ne_of_gt hlog0
       field_simp [htne, hlogne]
+
+/-- The theta-error kernel is integrable on the improper tail. -/
+theorem integrableOn_thetaErrorKernel :
+    IntegrableOn thetaErrorKernel (Set.Ioi 2) volume := by
+  let g : ℝ → ℝ := fun t => t⁻¹ / (log t) ^ 2
+  have hgIoi : IntegrableOn g (Set.Ioi 2) volume := by
+    have htwo : (1 : ℝ) < 2 := by norm_num
+    simpa only [g] using integrableOn_inv_div_log_sq_Ioi htwo
+  have hgTop : IntegrableAtFilter g atTop volume :=
+    ⟨Set.Ioi 2, Ioi_mem_atTop 2, hgIoi⟩
+  have hO : thetaErrorKernel =O[atTop] g := by
+    simpa [g] using thetaErrorKernel_isBigO
+  exact (locallyIntegrableOn_thetaErrorKernel.integrableOn_of_isBigO_atTop hO hgTop).mono_set
+    Set.Ioi_subset_Ici_self
+
+/-- The constant in the Mertens reciprocal-prime asymptotic, expressed through
+the theta-error kernel. -/
+noncomputable def mertensSecondConstant : ℝ :=
+  -log (log 2) + 1 / log 2 + ∫ t in Set.Ioi (2 : ℝ), thetaErrorKernel t
+
+/-- The finite error integral differs from its limiting value by the negative
+improper tail. -/
+theorem thetaErrorKernel_interval_sub_total_eq_neg_tail {x : ℝ} (hx : 2 ≤ x) :
+    (∫ t in 2..x, thetaErrorKernel t) -
+        ∫ t in Set.Ioi (2 : ℝ), thetaErrorKernel t =
+      -∫ t in Set.Ioi x, thetaErrorKernel t := by
+  have h := intervalIntegral.integral_Ioi_sub_Ioi integrableOn_thetaErrorKernel hx
+  linarith
 
 private theorem deriv_inv_mul_log {x : ℝ} (hx : 2 ≤ x) :
     deriv (fun u : ℝ => (u * log u)⁻¹) x =

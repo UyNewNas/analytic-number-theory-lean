@@ -24,3 +24,5 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.locallyIntegrableOn_theta
 #print axioms AnalyticNumberTheory.Mertens.locallyIntegrableOn_thetaErrorKernel
 #print axioms AnalyticNumberTheory.Mertens.thetaErrorKernel_isBigO
+#print axioms AnalyticNumberTheory.Mertens.integrableOn_thetaErrorKernel
+#print axioms AnalyticNumberTheory.Mertens.thetaErrorKernel_interval_sub_total_eq_neg_tail

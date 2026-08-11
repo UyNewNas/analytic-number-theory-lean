@@ -44,6 +44,8 @@ the common asymptotic/error-term API.
   `1 / (x log² x)` kernel.
 - [x] Prove local integrability and integrable asymptotic domination of the
   Chebyshev-theta error kernel.
+- [x] Define the generic Mertens-II constant and identify finite error
+  integrals with their improper tails.
 - [ ] **Mertens II:** prove the reciprocal-prime sum estimate, preferably from
   the PNT facade plus partial/Abel summation.
 - [ ] **Mertens product:** build the convergent quadratic correction and derive
