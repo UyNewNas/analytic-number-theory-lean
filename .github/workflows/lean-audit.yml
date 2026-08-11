@@ -116,7 +116,7 @@ jobs:
 
           output = pathlib.Path('/tmp/axioms.txt').read_text(encoding='utf-8')
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
-          expected_reports = 50
+          expected_reports = 51
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           if len(reports) != expected_reports:

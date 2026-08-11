@@ -286,4 +286,15 @@ theorem primeProduct_canonical_mertens_isBigO :
   · filter_upwards with n
     simp [pow_two]
 
+/-- Once the Abelian finite-part bridge identifies the canonical constant with
+Euler--Mascheroni, the canonical product estimate becomes the usual Mertens
+product formula. -/
+theorem primeProduct_mertens_isBigO_of_constant_eq
+    (hconstant : mertensSecondConstant + logarithmicCorrectionLimit =
+      Real.eulerMascheroniConstant) :
+    (fun n : ℕ => primeProduct n -
+      exp (-Real.eulerMascheroniConstant) / log (n : ℝ)) =O[atTop]
+      fun n => 1 / (log (n : ℝ)) ^ 2 := by
+  simpa [hconstant] using primeProduct_canonical_mertens_isBigO
+
 end AnalyticNumberTheory.Mertens
