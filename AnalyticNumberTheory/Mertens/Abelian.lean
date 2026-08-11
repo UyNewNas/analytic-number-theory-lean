@@ -150,4 +150,13 @@ theorem complex_integral_log_mul_exp_eq_neg_eulerMascheroni :
   have hval := congrArg (fun D : ℝ →L[ℝ] ℂ => D 1) hD
   simpa [D₁, D₂, I] using hval
 
+/-- Simplified Gamma kernel form used by the Mellin finite-part calculation. -/
+theorem complex_integral_log_exp_eq_neg_eulerMascheroni :
+    (∫ t : ℝ in Set.Ioi 0, (Real.log t : ℂ) * (Real.exp (-t) : ℂ)) =
+      (-Real.eulerMascheroniConstant : ℂ) := by
+  convert complex_integral_log_mul_exp_eq_neg_eulerMascheroni using 1
+  apply MeasureTheory.setIntegral_congr_fun measurableSet_Ioi
+  intro t ht
+  simp
+
 end AnalyticNumberTheory.Mertens

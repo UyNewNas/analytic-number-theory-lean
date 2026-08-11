@@ -60,3 +60,4 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.tsum_primeEulerCorrection_one
 #print axioms AnalyticNumberTheory.Mertens.tendsto_tsum_primeEulerCorrection_limit
 #print axioms AnalyticNumberTheory.Mertens.complex_integral_log_mul_exp_eq_neg_eulerMascheroni
+#print axioms AnalyticNumberTheory.Mertens.complex_integral_log_exp_eq_neg_eulerMascheroni
