@@ -1,5 +1,6 @@
 import Mathlib.NumberTheory.EulerProduct.DirichletLSeries
 import Mathlib.NumberTheory.Harmonic.ZetaAsymp
+import Mathlib.NumberTheory.LSeries.Nonvanishing
 
 /-!
 # Zeta--von Mangoldt bridge for Mertens constants
@@ -34,6 +35,14 @@ theorem zeta_euler_log_eq_LSeries {s : ℂ} (hs : 1 < s.re) :
         (fun n : ℕ => (1 : DirichletCharacter ℂ 1) n *
           ArithmeticFunction.vonMangoldt n / Real.log n) s :=
   DirichletCharacter.eulerProduct_log_eq_LSeries
+    (χ := (1 : DirichletCharacter ℂ 1)) hs
+
+/-- Above the line of absolute convergence, the prime Euler-log series is
+summable. -/
+theorem summable_zeta_primeEulerLog {s : ℂ} (hs : 1 < s.re) :
+    Summable fun p : Nat.Primes =>
+      -Complex.log (1 - (1 : DirichletCharacter ℂ 1) p * (p : ℂ) ^ (-s)) := by
+  exact DirichletCharacter.summable_neg_log_one_sub_mul_prime_cpow
     (χ := (1 : DirichletCharacter ℂ 1)) hs
 
 /-- Algebraic decomposition of the Euler-log summand into its prime Dirichlet
