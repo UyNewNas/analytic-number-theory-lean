@@ -402,6 +402,23 @@ theorem mertensSecond_eventually :
           add_le_add hfirst le_rfl
         _ = (C₁ + C₂) / log x := by ring
 
+/-- Natural-number Big-O interface for Mertens' second theorem. -/
+theorem mertensSecond_isBigO :
+    (fun n : ℕ => primeReciprocalSum n -
+      (log (log (n : ℝ)) + mertensSecondConstant)) =O[atTop]
+      fun n => 1 / log (n : ℝ) := by
+  obtain ⟨D, _hD, hD_bound⟩ := mertensSecond_eventually
+  have hreal :
+      (fun x : ℝ => primeReciprocalSum ⌊x⌋₊ -
+        (log (log x) + mertensSecondConstant)) =O[atTop]
+        fun x : ℝ => 1 / log x := by
+    apply Asymptotics.IsBigO.of_bound D
+    filter_upwards [hD_bound, eventually_gt_atTop (1 : ℝ)] with x hx hx1
+    have hlog : 0 < log x := Real.log_pos hx1
+    simpa [Real.norm_eq_abs, abs_of_pos (one_div_pos.mpr hlog),
+      div_eq_mul_inv, abs_of_pos hlog] using hx
+  simpa [Nat.floor_natCast] using hreal.natCast_atTop
+
 /-- Natural-number form of Mertens' second theorem, with the finite initial
 range absorbed into the uniform constant. -/
 theorem mertensSecond_nat :

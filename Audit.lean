@@ -32,6 +32,7 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.mertensSecond_error_decomposition
 #print axioms AnalyticNumberTheory.Mertens.mertensSecond_eventually
 #print axioms AnalyticNumberTheory.Mertens.mertensSecond_nat
+#print axioms AnalyticNumberTheory.Mertens.mertensSecond_isBigO
 #print axioms AnalyticNumberTheory.Mertens.neg_log_primeProduct_eq_reciprocal_add_correction
 #print axioms AnalyticNumberTheory.Mertens.summable_logarithmicCorrectionTerm
 #print axioms AnalyticNumberTheory.Mertens.tendsto_logarithmicCorrection
