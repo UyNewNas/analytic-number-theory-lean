@@ -1,5 +1,7 @@
 import AnalyticNumberTheory.Mertens.Product
 import Mathlib.Analysis.Normed.Group.Tannery
+import Mathlib.Analysis.SpecialFunctions.Gamma.Deriv
+import Mathlib.NumberTheory.Harmonic.GammaDeriv
 
 /-!
 # Abelian ingredients for Mertens' product theorem
@@ -118,5 +120,34 @@ theorem tendsto_tsum_primeEulerCorrection_limit :
       (𝓝 logarithmicCorrectionLimit) := by
   convert tendsto_tsum_primeEulerCorrection using 1
   rw [tsum_primeEulerCorrection_one]
+
+/-- The Gamma kernel responsible for the Euler--Mascheroni constant in the
+Abelian finite-part calculation. -/
+theorem complex_integral_log_mul_exp_eq_neg_eulerMascheroni :
+    (∫ t : ℝ in Set.Ioi 0,
+      (t : ℂ) ^ ((1 : ℂ) - 1) * ((Real.log t : ℂ) * (Real.exp (-t) : ℂ))) =
+      (-Real.eulerMascheroniConstant : ℂ) := by
+  let I : ℂ := ∫ t : ℝ in Set.Ioi 0,
+    (t : ℂ) ^ ((1 : ℂ) - 1) * ((Real.log t : ℂ) * (Real.exp (-t) : ℂ))
+  let D₁ : ℝ →L[ℝ] ℂ :=
+    (ContinuousLinearMap.toSpanSingleton ℂ I).restrictScalars ℝ |>.comp Complex.ofRealCLM
+  let D₂ : ℝ →L[ℝ] ℂ := Complex.ofRealCLM.comp
+    (ContinuousLinearMap.toSpanSingleton ℝ (-Real.eulerMascheroniConstant))
+  have h₁ : HasFDerivAt (fun x : ℝ => Complex.GammaIntegral (x : ℂ)) D₁ 1 := by
+    simpa [D₁, I, Function.comp_def] using
+      ((((Complex.hasDerivAt_GammaIntegral (s := (1 : ℂ)) (by norm_num)).hasFDerivAt).restrictScalars ℝ).comp 1
+        Complex.ofRealCLM.hasFDerivAt)
+  have heq : (fun x : ℝ => Complex.GammaIntegral (x : ℂ)) =ᶠ[𝓝 1]
+      fun x => (Real.Gamma x : ℂ) := by
+    filter_upwards [eventually_gt_nhds (show (0 : ℝ) < 1 by norm_num)] with x hx
+    rw [← Complex.Gamma_eq_integral (by simpa using hx), Complex.Gamma_ofReal]
+  have h₂raw : HasFDerivAt (fun x : ℝ => (Real.Gamma x : ℂ)) D₂ 1 := by
+    simpa [D₂, Function.comp_def] using
+      (Complex.ofRealCLM.hasFDerivAt.comp 1 Real.hasDerivAt_Gamma_one.hasFDerivAt)
+  have h₂ : HasFDerivAt (fun x : ℝ => Complex.GammaIntegral (x : ℂ)) D₂ 1 :=
+    (heq.hasFDerivAt_iff).mpr h₂raw
+  have hD : D₁ = D₂ := h₁.unique h₂
+  have hval := congrArg (fun D : ℝ →L[ℝ] ℂ => D 1) hD
+  simpa [D₁, D₂, I] using hval
 
 end AnalyticNumberTheory.Mertens
