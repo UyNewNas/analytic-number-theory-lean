@@ -97,4 +97,19 @@ theorem chebyshevTheta_error :
       ring
     _ =O[atTop] fun x : ℝ => x / log x := hpsi'.sub hdelta
 
+/-- The endpoint error in the Abel formula for reciprocal-prime sums. -/
+theorem chebyshevTheta_endpoint_error :
+    (fun x : ℝ => (Chebyshev.theta x - x) / (x * log x)) =O[atTop]
+      fun x : ℝ => 1 / (log x) ^ 2 := by
+  have hkernel : (fun x : ℝ => (x * log x)⁻¹) =O[atTop]
+      fun x : ℝ => (x * log x)⁻¹ :=
+    isBigO_refl _ _
+  have h := chebyshevTheta_error.mul hkernel
+  refine h.congr' ?_ ?_
+  · exact Eventually.of_forall fun x => by simp [div_eq_mul_inv]
+  · filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
+    have hx0 : x ≠ 0 := by linarith
+    have hlog : log x ≠ 0 := (Real.log_pos hx).ne'
+    field_simp
+
 end AnalyticNumberTheory.PrimeDistribution

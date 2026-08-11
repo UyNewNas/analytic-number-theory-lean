@@ -1,4 +1,5 @@
 import AnalyticNumberTheory.Mertens.Basic
+import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.NumberTheory.AbelSummation
 import Mathlib.NumberTheory.Chebyshev
 
@@ -82,6 +83,46 @@ theorem primeReciprocalSum_eq_theta_div_mul_log_add_integral {x : ℝ} (hx : 2 �
     · linarith [h.2]
   change -(deriv (fun u : ℝ => (u * log u)⁻¹) t * Chebyshev.theta t) = _
   rw [deriv_inv_mul_log ht2]
+  ring
+
+/-- The contribution of replacing `theta` by the identity in the positive-kernel
+Abel formula. -/
+theorem theta_abel_main_term {x : ℝ} (hx : 2 ≤ x) :
+    x / (x * log x) +
+        ∫ t in 2..x, t * (log t + 1) / (t * log t) ^ 2 =
+      log (log x) + (-log (log 2) + 1 / log 2) := by
+  have hx1 : 1 < x := by linarith
+  have hkernel :
+      (∫ t in 2..x, t * (log t + 1) / (t * log t) ^ 2) =
+        ∫ t in 2..x, (t⁻¹ / log t + t⁻¹ / log t ^ 2) := by
+    apply intervalIntegral.integral_congr
+    intro t ht
+    have ht2 : 2 ≤ t := by
+      rcases Set.mem_uIcc.mp ht with h | h
+      · exact h.1
+      · linarith [h.2]
+    have ht0 : t ≠ 0 := by linarith
+    have htlog : log t ≠ 0 := Real.log_ne_zero_of_pos_of_ne_one
+      (by linarith) (by linarith)
+    field_simp
+  have hfirst : IntervalIntegrable (fun t : ℝ => t⁻¹ / log t) volume 2 x := by
+    apply ContinuousOn.intervalIntegrable
+    fun_prop (disch := grind [Real.log_pos, Set.uIcc])
+  have hsecond : IntervalIntegrable (fun t : ℝ => t⁻¹ / log t ^ 2) volume 2 x := by
+    have hlog : ContinuousOn log (Set.uIcc (2 : ℝ) x) := fun t ht ↦
+      (Real.continuousAt_log (by
+        rcases Set.mem_uIcc.mp ht with h | h <;> linarith [h.1, h.2])).continuousWithinAt
+    have hinv : ContinuousOn (fun t : ℝ => t⁻¹) (Set.uIcc 2 x) :=
+      (continuousOn_id' _).inv₀ fun t ht ↦ by
+        rcases Set.mem_uIcc.mp ht with h | h <;> linarith [h.1, h.2]
+    apply ContinuousOn.intervalIntegrable
+    exact hinv.div (hlog.pow 2) fun t ht ↦ pow_ne_zero 2 <|
+      Real.log_ne_zero_of_pos_of_ne_one
+        (by rcases Set.mem_uIcc.mp ht with h | h <;> linarith [h.1, h.2])
+        (by rcases Set.mem_uIcc.mp ht with h | h <;> linarith [h.1, h.2])
+  rw [hkernel, intervalIntegral.integral_add hfirst hsecond,
+    integral_inv_div_log (by norm_num) hx1, integral_inv_div_log_sq (by norm_num) hx1]
+  field_simp
   ring
 
 end AnalyticNumberTheory.Mertens

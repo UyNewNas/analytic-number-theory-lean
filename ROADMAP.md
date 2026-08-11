@@ -38,6 +38,8 @@ the common asymptotic/error-term API.
 
 - [x] Establish the finite Abel-summation bridge from reciprocal-prime sums
   to Chebyshev theta.
+- [x] Separate the exact `log log x` main term and the endpoint error of that
+  bridge.
 - [ ] **Mertens II:** prove the reciprocal-prime sum estimate, preferably from
   the PNT facade plus partial/Abel summation.
 - [ ] **Mertens product:** build the convergent quadratic correction and derive

@@ -9,13 +9,14 @@ for:
 - a medium-strength error estimate for Chebyshev's psi function;
 - quantitative Chebyshev-theta interfaces, retaining the standard square-root
   prime-power correction and exposing an `O(x / log x)` form for partial
-  summation;
+  summation, plus its Abel-endpoint error;
 - the standard prime-counting asymptotic `pi(x) ~ x / log x`;
 - a natural-number prime-counting interface for downstream theorem projects.
 - elementary finite prime sums/products and logarithmic estimates that form
   the neutral starting point for reusable Mertens theorems.
 - an Abel-summation identity expressing reciprocal-prime sums through
-  Chebyshev's theta function, including its positive-kernel form.
+  Chebyshev's theta function, including its positive-kernel form and exact
+  identity main term.
 
 The asymptotic Mertens second theorem and product formula are planned for
 version 0.2. Chen-specific sieve consequences remain in `chen-theorem-lean`.
