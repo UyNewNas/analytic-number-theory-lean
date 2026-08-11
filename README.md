@@ -3,8 +3,7 @@
 A reusable Lean foundation for prime distribution and its analytic
 consequences.
 
-Version 0.1 is focused on porting the minimal PNTAnd dependency closure needed
-for:
+The foundation currently provides:
 
 - a medium-strength error estimate for Chebyshev's psi function;
 - quantitative Chebyshev-theta interfaces, retaining the standard square-root
@@ -18,8 +17,17 @@ for:
   Chebyshev's theta function, including its positive-kernel form, exact
   identity main term, and a natural-number Mertens-II estimate with
   `O(1 / log x)` error.
+- a canonical Mertens product estimate with `O(1 / log^2 x)` error, whose
+  constant is the sum of the Mertens-II and convergent Euler-log correction
+  constants;
+- the zeta/Euler-log, positive-displacement Abel/Mellin, and scaled Gamma
+  kernel bridges needed to identify that canonical constant with the
+  Euler--Mascheroni constant.
 
-The exact Mertens product formula remains planned for version 0.2.
+The remaining Mertens-product task is the Abelian finite-part limit that joins
+those bridges and proves the constant identity.  Once that identity is
+available, the exact `exp (-gamma) / log x` theorem follows from the existing
+conditional public theorem.
 Chen-specific sieve consequences remain in `chen-theorem-lean`.
 
 ## Status and trust

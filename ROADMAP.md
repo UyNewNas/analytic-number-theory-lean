@@ -7,8 +7,8 @@ future Goldbach developments.
 ```text
 analytic-number-theory-lean
 ├── prime distribution (PNT and effective psi estimates)
-├── finite Mertens infrastructure
-└── future asymptotic Mertens theorems
+├── Mertens II and canonical product asymptotics
+└── Abelian constant-identification bridge
         │
         ├──> chen-theorem-lean (sieve consumer)
         ├──> goldbach-lean (future)
@@ -50,8 +50,8 @@ the common asymptotic/error-term API.
   tail rate.
 - [x] **Mertens II:** prove the reciprocal-prime sum estimate from the PNT
   facade plus partial/Abel summation, including a natural-number API.
-- [ ] **Mertens product:** build the convergent quadratic correction and derive
-  the Euler-product estimate from Mertens II and `Mertens.Basic`.
+- [x] **Canonical Mertens product:** build the convergent quadratic correction
+  and derive the `O(1 / log² x)` Euler-product estimate from Mertens II.
 - [x] Add the finite logarithmic product bridge; the limiting correction and
   its Euler--Mascheroni constant identification remain separate milestones.
 - [x] Define the zero-extended logarithmic correction and prove its absolute
@@ -61,13 +61,20 @@ the common asymptotic/error-term API.
   `O(1 / log x)` error; identifying that constant with Euler's constant is
   still a separate Abelian bridge.
 - [x] Establish the normalized zeta--von Mangoldt bridge at `s = 1`.
+- [x] Specialize the Euler-log expansion to real parameters and split it into
+  the prime Dirichlet term plus the convergent correction.
+- [x] Prove the scaled logarithmic Gamma kernel giving `-γ`.
+- [x] Prove the Abel/Mellin representation of the prime Dirichlet sum for
+  every positive displacement `ε > 0`.
+- [ ] Prove the Abelian finite-part limit and conclude
+  `mertensSecondConstant + logarithmicCorrectionLimit = γ`.
 - [ ] Add namespace-level compatibility lemmas relating the generic finite
   objects to downstream definitions.
 
 ### v0.3 — downstream migration
 
 - [x] Replace Chen's local PNT placeholder with the public natural-number PNT.
-- [ ] Replace Chen's Mertens-II placeholder with the generic theorem.
+- [x] Replace Chen's Mertens-II placeholder with the generic theorem.
 - [ ] Replace Chen's product-formula placeholder with the generic theorem.
 - [ ] Keep sieve notation and Chen-specific consequences in
   `chen-theorem-lean`; move only mathematically reusable results here.

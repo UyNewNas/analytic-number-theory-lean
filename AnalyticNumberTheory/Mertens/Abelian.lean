@@ -121,6 +121,25 @@ theorem tendsto_tsum_primeEulerCorrection_limit :
   convert tendsto_tsum_primeEulerCorrection using 1
   rw [tsum_primeEulerCorrection_one]
 
+/-- For a real exponent above one, the Euler logarithm splits into its prime
+Dirichlet term and the uniformly convergent higher-order correction. -/
+theorem real_primeEulerLog_decomposition {s : ℝ} (hs : 1 < s) :
+    (∑' p : Nat.Primes, -log (1 - (p : ℝ) ^ (-s))) =
+      (∑' p : Nat.Primes, (p : ℝ) ^ (-s)) +
+        ∑' p : Nat.Primes, primeEulerCorrection s p := by
+  have hprime : Summable fun p : Nat.Primes => (p : ℝ) ^ (-s) :=
+    Nat.Primes.summable_rpow.mpr (by linarith)
+  have hcorrection : Summable fun p : Nat.Primes => primeEulerCorrection s p := by
+    refine ((Nat.Primes.summable_rpow.mpr
+      (by norm_num : (-2 : ℝ) < -1)).mul_left 2).of_norm_bounded ?_
+    intro p
+    exact norm_primeEulerCorrection_le p hs
+  rw [← hprime.tsum_add hcorrection]
+  apply tsum_congr
+  intro p
+  simp only [primeEulerCorrection]
+  ring
+
 /-- The Gamma kernel responsible for the Euler--Mascheroni constant in the
 Abelian finite-part calculation. -/
 theorem complex_integral_log_mul_exp_eq_neg_eulerMascheroni :

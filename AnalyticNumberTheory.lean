@@ -5,6 +5,8 @@ import AnalyticNumberTheory.Mertens.PartialSummation
 import AnalyticNumberTheory.Mertens.Product
 import AnalyticNumberTheory.Mertens.MangoldtBridge
 import AnalyticNumberTheory.Mertens.Abelian
+import AnalyticNumberTheory.Mertens.GammaKernel
+import AnalyticNumberTheory.Mertens.PrimeAbel
 
 /-!
 # Analytic Number Theory
