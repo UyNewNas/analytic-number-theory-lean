@@ -52,6 +52,8 @@ the common asymptotic/error-term API.
   facade plus partial/Abel summation, including a natural-number API.
 - [ ] **Mertens product:** build the convergent quadratic correction and derive
   the Euler-product estimate from Mertens II and `Mertens.Basic`.
+- [x] Add the finite logarithmic product bridge; the limiting correction and
+  its Euler--Mascheroni constant identification remain separate milestones.
 - [ ] Add namespace-level compatibility lemmas relating the generic finite
   objects to downstream definitions.
 
