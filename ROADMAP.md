@@ -70,7 +70,7 @@ the common asymptotic/error-term API.
   kernel and prove a generic `O(1/u)` remainder-vanishing theorem.
 - [x] Prove that the prime finite-part limit implies the required constant
   identity via the normalized zeta limit.
-- [ ] Prove the Abelian finite-part limit and conclude
+- [x] Prove the Abelian finite-part limit and conclude
   `mertensSecondConstant + logarithmicCorrectionLimit = γ`.
 - [ ] Add namespace-level compatibility lemmas relating the generic finite
   objects to downstream definitions.
@@ -79,7 +79,7 @@ the common asymptotic/error-term API.
 
 - [x] Replace Chen's local PNT placeholder with the public natural-number PNT.
 - [x] Replace Chen's Mertens-II placeholder with the generic theorem.
-- [ ] Replace Chen's product-formula placeholder with the generic theorem.
+- [x] Replace Chen's product-formula placeholder with the generic theorem.
 - [ ] Keep sieve notation and Chen-specific consequences in
   `chen-theorem-lean`; move only mathematically reusable results here.
 

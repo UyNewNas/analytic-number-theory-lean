@@ -17,17 +17,11 @@ The foundation currently provides:
   Chebyshev's theta function, including its positive-kernel form, exact
   identity main term, and a natural-number Mertens-II estimate with
   `O(1 / log x)` error.
-- a canonical Mertens product estimate with `O(1 / log^2 x)` error, whose
-  constant is the sum of the Mertens-II and convergent Euler-log correction
-  constants;
-- the zeta/Euler-log, positive-displacement Abel/Mellin, and scaled Gamma
-  kernel bridges needed to identify that canonical constant with the
-  Euler--Mascheroni constant.
+- Mertens' product formula with exact constant `exp (-gamma) / log x` and
+  `O(1 / log^2 x)` error, including a uniform natural-number interface;
+- the audited zeta/Euler-log, Abel/Mellin, scaled Gamma-kernel, and finite-part
+  chain identifying the canonical product constant with Euler's constant.
 
-The remaining Mertens-product task is the Abelian finite-part limit that joins
-those bridges and proves the constant identity.  Once that identity is
-available, the exact `exp (-gamma) / log x` theorem follows from the existing
-conditional public theorem.
 Chen-specific sieve consequences remain in `chen-theorem-lean`.
 
 ## Status and trust

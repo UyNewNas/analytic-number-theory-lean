@@ -14,7 +14,7 @@ namespace AnalyticNumberTheory.Mertens
 open Filter Topology Real Set MeasureTheory
 
 /-- The elementary uniform estimate behind the Abelian remainder argument. -/
-private theorem mul_exp_neg_mul_le_inv {ε u : ℝ} (hε : 0 < ε) (hu : 0 < u) :
+theorem mul_exp_neg_mul_le_inv {ε u : ℝ} (hε : 0 < ε) (hu : 0 < u) :
     ε * Real.exp (-(ε * u)) ≤ u⁻¹ := by
   have hmain : (ε * u) * Real.exp (-(ε * u)) ≤ 1 :=
     (Real.mul_exp_neg_le_exp_neg_one (ε * u)).trans
