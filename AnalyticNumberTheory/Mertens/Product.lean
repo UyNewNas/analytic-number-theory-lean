@@ -217,4 +217,24 @@ theorem log_primeProduct_mertens_isBigO :
   intro n
   exact (log_primeProduct_error_eq n).symm
 
+/-- Exponentiating the canonical logarithmic Mertens error preserves its
+`O(1 / log x)` scale.  This is the analytic input for the final product-scale
+`O(1 / log² x)` estimate. -/
+theorem exp_log_primeProduct_error_isBigO :
+    (fun n : ℕ => exp (log (primeProduct n) + log (log (n : ℝ)) +
+      (mertensSecondConstant + logarithmicCorrectionLimit)) - 1) =O[atTop]
+      fun n => 1 / log (n : ℝ) := by
+  let E : ℕ → ℝ := fun n => log (primeProduct n) + log (log (n : ℝ)) +
+    (mertensSecondConstant + logarithmicCorrectionLimit)
+  have hE : E =O[atTop] fun n => 1 / log (n : ℝ) := by
+    simpa [E] using log_primeProduct_mertens_isBigO
+  have hE0 : Tendsto E atTop (𝓝 0) := by
+    exact hE.trans_tendsto (by
+      simpa [Function.comp_def, one_div] using
+        Real.inv_log_isLittleO_one.comp_tendsto tendsto_natCast_atTop_atTop)
+  have hexp : (fun n : ℕ => exp (E n) - 1) =O[atTop] E := by
+    simpa [Function.comp_def, Finset.sum_range_succ] using
+      (Real.exp_sub_sum_range_isBigO_pow 1).comp_tendsto hE0
+  simpa [E] using hexp.trans hE
+
 end AnalyticNumberTheory.Mertens
