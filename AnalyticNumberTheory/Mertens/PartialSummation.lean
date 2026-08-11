@@ -1,4 +1,5 @@
 import AnalyticNumberTheory.Mertens.Basic
+import AnalyticNumberTheory.PrimeDistribution.ChebyshevTheta
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
 import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 import Mathlib.NumberTheory.AbelSummation
@@ -13,7 +14,7 @@ Mertens' second theorem.  It deliberately contains no asymptotic claim.
 
 namespace AnalyticNumberTheory.Mertens
 
-open Finset MeasureTheory Real
+open Asymptotics Filter Finset MeasureTheory Real
 open scoped Chebyshev
 
 /-- The theta-error contribution to the positive-kernel Abel formula. -/
@@ -43,6 +44,82 @@ theorem norm_integral_Ioi_le_div_log {f : ℝ → ℝ} {x C : ℝ} (hx : 1 < x)
       exact hbound t ht
     _ = C * ∫ t in Set.Ioi x, t⁻¹ / (log t) ^ 2 := by rw [integral_const_mul]
     _ = C / log x := by rw [integral_inv_div_log_sq_Ioi hx]; ring
+
+/-- The Chebyshev theta function is locally integrable away from zero. -/
+theorem locallyIntegrableOn_theta :
+    LocallyIntegrableOn Chebyshev.theta (Set.Ici (2 : ℝ)) volume := by
+  let c : ℕ → ℝ := fun p => if p.Prime then log p else 0
+  have h : LocallyIntegrableOn
+      (fun t : ℝ => (1 : ℝ) * ∑ p ∈ Icc 0 ⌊t⌋₊, c p) (Set.Ici 2) volume := by
+    exact locallyIntegrableOn_mul_sum_Icc c (by norm_num) (locallyIntegrableOn_const 1)
+  have htheta : Chebyshev.theta = fun t : ℝ => ∑ p ∈ Icc 0 ⌊t⌋₊, c p := by
+    ext t
+    rw [Chebyshev.theta_eq_sum_Icc, Finset.sum_filter]
+  rw [htheta]
+  simpa using h
+
+/-- The theta-error kernel is locally integrable away from the logarithmic
+singularity. -/
+theorem locallyIntegrableOn_thetaErrorKernel :
+    LocallyIntegrableOn thetaErrorKernel (Set.Ici 2) volume := by
+  have herror : LocallyIntegrableOn (fun t : ℝ => Chebyshev.theta t - t)
+      (Set.Ici 2) volume :=
+    locallyIntegrableOn_theta.sub
+      (ContinuousOn.locallyIntegrableOn (by fun_prop) measurableSet_Ici)
+  have hcont : ContinuousOn (fun t : ℝ => (log t + 1) / (t * log t) ^ 2) (Set.Ici 2) := by
+    have hlog : ContinuousOn log (Set.Ici 2) := fun t ht => by
+      change 2 ≤ t at ht
+      exact (Real.continuousAt_log (by linarith)).continuousWithinAt
+    refine (hlog.add continuousOn_const).div
+      (((continuousOn_id' _).mul hlog).pow 2) fun t ht => ?_
+    change 2 ≤ t at ht
+    exact pow_ne_zero 2 <| mul_ne_zero (by linarith)
+      (Real.log_ne_zero_of_pos_of_ne_one (by linarith) (by linarith))
+  unfold thetaErrorKernel
+  simpa [mul_div_assoc, mul_comm, mul_left_comm] using
+    herror.continuousOn_mul hcont isLocallyClosed_Ici
+
+/-- The theta-error kernel has the integrable decay required for the Mertens
+tail estimate. -/
+theorem thetaErrorKernel_isBigO :
+    thetaErrorKernel =O[atTop] fun t : ℝ => t⁻¹ / (log t) ^ 2 := by
+  obtain ⟨K, hK, htheta⟩ := Asymptotics.isBigO_iff'.mp
+    AnalyticNumberTheory.PrimeDistribution.chebyshevTheta_error
+  refine Asymptotics.isBigO_iff'.mpr ⟨2 * K, mul_pos (by norm_num) hK, ?_⟩
+  filter_upwards [htheta, eventually_ge_atTop (exp 1)] with t hE ht
+  have ht0 : 0 < t := lt_of_lt_of_le (exp_pos 1) ht
+  have hlog1 : 1 ≤ log t := (Real.le_log_iff_exp_le ht0).mpr ht
+  have hlog0 : 0 < log t := lt_of_lt_of_le zero_lt_one hlog1
+  have hplus : log t + 1 ≤ 2 * log t := by linarith
+  have hEabs : |Chebyshev.theta t - t| ≤ K * (t / log t) := by
+    simpa only [Pi.sub_apply, id_eq, Real.norm_eq_abs,
+      abs_of_pos (div_pos ht0 hlog0)] using hE
+  have hfactor : (log t + 1) / (t * log t) ^ 2 ≤ 2 / (t ^ 2 * log t) := by
+    field_simp [ne_of_gt ht0, ne_of_gt hlog0]
+    linarith [hplus]
+  have hfactor0 : 0 ≤ (log t + 1) / (t * log t) ^ 2 := by positivity
+  rw [show ‖thetaErrorKernel t‖ = |Chebyshev.theta t - t| *
+      ((log t + 1) / (t * log t) ^ 2) by
+        unfold thetaErrorKernel
+        calc
+          |(Chebyshev.theta t - t) * (log t + 1) / (t * log t) ^ 2| =
+              |Chebyshev.theta t - t| * |log t + 1| / |(t * log t) ^ 2| := by
+                rw [abs_div, abs_mul]
+          _ = |Chebyshev.theta t - t| * ((log t + 1) / (t * log t) ^ 2) := by
+                rw [abs_of_nonneg (by linarith : 0 ≤ log t + 1),
+                  abs_of_nonneg (sq_nonneg (t * log t))]
+                ring]
+  calc
+    |Chebyshev.theta t - t| * ((log t + 1) / (t * log t) ^ 2) ≤
+        (K * (t / log t)) * ((log t + 1) / (t * log t) ^ 2) :=
+      mul_le_mul_of_nonneg_right hEabs hfactor0
+    _ ≤ (K * (t / log t)) * (2 / (t ^ 2 * log t)) :=
+      mul_le_mul_of_nonneg_left hfactor (by positivity)
+    _ = (2 * K) * ‖t⁻¹ / (log t) ^ 2‖ := by
+      rw [Real.norm_eq_abs, abs_of_pos (by positivity : 0 < t⁻¹ / (log t) ^ 2)]
+      have htne : t ≠ 0 := ne_of_gt ht0
+      have hlogne : log t ≠ 0 := ne_of_gt hlog0
+      field_simp [htne, hlogne]
 
 private theorem deriv_inv_mul_log {x : ℝ} (hx : 2 ≤ x) :
     deriv (fun u : ℝ => (u * log u)⁻¹) x =

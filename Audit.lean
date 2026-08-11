@@ -21,3 +21,6 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.primeReciprocalSum_eq_theta_div_mul_log_add_integral
 #print axioms AnalyticNumberTheory.Mertens.theta_abel_main_term
 #print axioms AnalyticNumberTheory.Mertens.norm_integral_Ioi_le_div_log
+#print axioms AnalyticNumberTheory.Mertens.locallyIntegrableOn_theta
+#print axioms AnalyticNumberTheory.Mertens.locallyIntegrableOn_thetaErrorKernel
+#print axioms AnalyticNumberTheory.Mertens.thetaErrorKernel_isBigO

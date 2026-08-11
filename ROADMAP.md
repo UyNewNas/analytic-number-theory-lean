@@ -42,6 +42,8 @@ the common asymptotic/error-term API.
   bridge.
 - [x] Add the generic improper-integral tail estimate for the
   `1 / (x log² x)` kernel.
+- [x] Prove local integrability and integrable asymptotic domination of the
+  Chebyshev-theta error kernel.
 - [ ] **Mertens II:** prove the reciprocal-prime sum estimate, preferably from
   the PNT facade plus partial/Abel summation.
 - [ ] **Mertens product:** build the convergent quadratic correction and derive
