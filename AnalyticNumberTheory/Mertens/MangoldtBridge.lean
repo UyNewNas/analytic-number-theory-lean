@@ -36,4 +36,20 @@ theorem zeta_euler_log_eq_LSeries {s : ℂ} (hs : 1 < s.re) :
   DirichletCharacter.eulerProduct_log_eq_LSeries
     (χ := (1 : DirichletCharacter ℂ 1)) hs
 
+/-- Algebraic decomposition of the Euler-log summand into its prime Dirichlet
+term and its quadratic-and-higher correction.  Summability is kept explicit:
+establishing it uniformly as `s → 1⁺` is part of the Abelian workline. -/
+theorem primeEulerLog_tsum_decomposition {s : ℂ}
+    (hprime : Summable fun p : Nat.Primes => (p : ℂ) ^ (-s))
+    (hcorrection : Summable fun p : Nat.Primes =>
+      -Complex.log (1 - (p : ℂ) ^ (-s)) - (p : ℂ) ^ (-s)) :
+    ∑' p : Nat.Primes, -Complex.log (1 - (p : ℂ) ^ (-s)) =
+      (∑' p : Nat.Primes, (p : ℂ) ^ (-s)) +
+        ∑' p : Nat.Primes,
+          (-Complex.log (1 - (p : ℂ) ^ (-s)) - (p : ℂ) ^ (-s)) := by
+  rw [← hprime.tsum_add hcorrection]
+  apply tsum_congr
+  intro p
+  ring
+
 end AnalyticNumberTheory.Mertens

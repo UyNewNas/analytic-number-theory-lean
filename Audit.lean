@@ -45,3 +45,4 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.log_primeProduct_mertens_isBigO
 #print axioms AnalyticNumberTheory.Mertens.zeta_log_vonMangoldt_isBigO
 #print axioms AnalyticNumberTheory.Mertens.zeta_euler_log_eq_LSeries
+#print axioms AnalyticNumberTheory.Mertens.primeEulerLog_tsum_decomposition
