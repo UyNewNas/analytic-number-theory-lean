@@ -99,4 +99,24 @@ theorem tendsto_tsum_primeEulerCorrection :
     intro p
     exact norm_primeEulerCorrection_le p hs
 
+/-- At `s = 1`, the prime-indexed Euler correction is the existing zero-extended
+logarithmic correction constant. -/
+theorem tsum_primeEulerCorrection_one :
+    (∑' p : Nat.Primes, primeEulerCorrection 1 p) = logarithmicCorrectionLimit := by
+  classical
+  let f : ℕ → ℝ := fun n =>
+    -log (1 - (n : ℝ) ^ (-(1 : ℝ))) - (n : ℝ) ^ (-(1 : ℝ))
+  change (∑' (p : ↑({n : ℕ | n.Prime} : Set ℕ)), f p) = logarithmicCorrectionLimit
+  rw [tsum_subtype {n : ℕ | n.Prime} f]
+  simp [Set.indicator, f, logarithmicCorrectionLimit, logarithmicCorrectionTerm,
+    Real.rpow_neg_one, one_div]
+
+/-- The real Euler-log correction tends to the canonical product correction
+constant as `s → 1⁺`. -/
+theorem tendsto_tsum_primeEulerCorrection_limit :
+    Tendsto (fun s : ℝ => ∑' p : Nat.Primes, primeEulerCorrection s p) (𝓝[>] 1)
+      (𝓝 logarithmicCorrectionLimit) := by
+  convert tendsto_tsum_primeEulerCorrection using 1
+  rw [tsum_primeEulerCorrection_one]
+
 end AnalyticNumberTheory.Mertens

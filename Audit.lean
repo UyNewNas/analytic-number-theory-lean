@@ -53,3 +53,5 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.norm_primeEulerCorrection_le
 #print axioms AnalyticNumberTheory.Mertens.tendsto_primeEulerCorrection
 #print axioms AnalyticNumberTheory.Mertens.tendsto_tsum_primeEulerCorrection
+#print axioms AnalyticNumberTheory.Mertens.tsum_primeEulerCorrection_one
+#print axioms AnalyticNumberTheory.Mertens.tendsto_tsum_primeEulerCorrection_limit
