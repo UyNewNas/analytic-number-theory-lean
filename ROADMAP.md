@@ -40,6 +40,8 @@ the common asymptotic/error-term API.
   to Chebyshev theta.
 - [x] Separate the exact `log log x` main term and the endpoint error of that
   bridge.
+- [x] Add the generic improper-integral tail estimate for the
+  `1 / (x log² x)` kernel.
 - [ ] **Mertens II:** prove the reciprocal-prime sum estimate, preferably from
   the PNT facade plus partial/Abel summation.
 - [ ] **Mertens product:** build the convergent quadratic correction and derive

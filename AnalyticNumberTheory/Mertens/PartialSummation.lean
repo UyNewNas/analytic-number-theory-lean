@@ -1,5 +1,6 @@
 import AnalyticNumberTheory.Mertens.Basic
 import Mathlib.Analysis.SpecialFunctions.Integrals.Basic
+import Mathlib.Analysis.SpecialFunctions.ImproperIntegrals
 import Mathlib.NumberTheory.AbelSummation
 import Mathlib.NumberTheory.Chebyshev
 
@@ -14,6 +15,34 @@ namespace AnalyticNumberTheory.Mertens
 
 open Finset MeasureTheory Real
 open scoped Chebyshev
+
+/-- The theta-error contribution to the positive-kernel Abel formula. -/
+noncomputable def thetaErrorKernel (t : ℝ) : ℝ :=
+  (Chebyshev.theta t - t) * (log t + 1) / (t * log t) ^ 2
+
+theorem thetaErrorKernel_eq (t : ℝ) :
+    thetaErrorKernel t =
+      Chebyshev.theta t * (log t + 1) / (t * log t) ^ 2 -
+        t * (log t + 1) / (t * log t) ^ 2 := by
+  unfold thetaErrorKernel
+  ring
+
+/-- A reusable improper-integral tail estimate for the kernel that occurs in
+the Mertens error term. -/
+theorem norm_integral_Ioi_le_div_log {f : ℝ → ℝ} {x C : ℝ} (hx : 1 < x)
+    (hbound : ∀ t ∈ Set.Ioi x, ‖f t‖ ≤ C * (t⁻¹ / (log t) ^ 2)) :
+    ‖∫ t in Set.Ioi x, f t‖ ≤ C / log x := by
+  have hk : IntegrableOn (fun t : ℝ => t⁻¹ / (log t) ^ 2) (Set.Ioi x) volume :=
+    integrableOn_inv_div_log_sq_Ioi hx
+  have hCk : IntegrableOn (fun t : ℝ => C * (t⁻¹ / (log t) ^ 2)) (Set.Ioi x) volume :=
+    hk.const_mul C
+  calc
+    ‖∫ t in Set.Ioi x, f t‖ ≤ ∫ t in Set.Ioi x, C * (t⁻¹ / (log t) ^ 2) := by
+      apply MeasureTheory.norm_integral_le_of_norm_le hCk
+      filter_upwards [ae_restrict_mem measurableSet_Ioi] with t ht
+      exact hbound t ht
+    _ = C * ∫ t in Set.Ioi x, t⁻¹ / (log t) ^ 2 := by rw [integral_const_mul]
+    _ = C / log x := by rw [integral_inv_div_log_sq_Ioi hx]; ring
 
 private theorem deriv_inv_mul_log {x : ℝ} (hx : 2 ≤ x) :
     deriv (fun u : ℝ => (u * log u)⁻¹) x =
