@@ -3,6 +3,7 @@ import AnalyticNumberTheory.PrimeDistribution.ChebyshevTheta
 import AnalyticNumberTheory.Mertens.Basic
 import AnalyticNumberTheory.Mertens.PartialSummation
 import AnalyticNumberTheory.Mertens.Product
+import AnalyticNumberTheory.Mertens.MangoldtBridge
 
 /-!
 # Analytic Number Theory

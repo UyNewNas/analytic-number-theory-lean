@@ -60,6 +60,7 @@ the common asymptotic/error-term API.
 - [x] Derive the Mertens product logarithm with its canonical constant and
   `O(1 / log x)` error; identifying that constant with Euler's constant is
   still a separate Abelian bridge.
+- [x] Establish the normalized zeta--von Mangoldt bridge at `s = 1`.
 - [ ] Add namespace-level compatibility lemmas relating the generic finite
   objects to downstream definitions.
 

@@ -43,3 +43,4 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.logarithmicCorrection_tail_isBigO
 #print axioms AnalyticNumberTheory.Mertens.log_primeProduct_error_eq
 #print axioms AnalyticNumberTheory.Mertens.log_primeProduct_mertens_isBigO
+#print axioms AnalyticNumberTheory.Mertens.zeta_log_vonMangoldt_isBigO
