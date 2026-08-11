@@ -50,3 +50,6 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.summable_zeta_primeDirichlet
 #print axioms AnalyticNumberTheory.Mertens.summable_zeta_primeEulerCorrection
 #print axioms AnalyticNumberTheory.Mertens.zeta_primeEulerLog_decomposition
+#print axioms AnalyticNumberTheory.Mertens.norm_primeEulerCorrection_le
+#print axioms AnalyticNumberTheory.Mertens.tendsto_primeEulerCorrection
+#print axioms AnalyticNumberTheory.Mertens.tendsto_tsum_primeEulerCorrection
