@@ -265,4 +265,25 @@ theorem primeProduct_error_eq_canonical_factor (n : ℕ) (hn : 1 < n) :
           (primeProduct n * log (n : ℝ) *
             exp (mertensSecondConstant + logarithmicCorrectionLimit) - 1) := by ring
 
+/-- Mertens' product formula with the canonical constant supplied by the
+hard-cutoff proof.  Identifying this constant with Euler--Mascheroni is a
+separate Abelian finite-part theorem. -/
+theorem primeProduct_canonical_mertens_isBigO :
+    (fun n : ℕ => primeProduct n -
+      exp (-(mertensSecondConstant + logarithmicCorrectionLimit)) / log (n : ℝ)) =O[atTop]
+      fun n => 1 / (log (n : ℝ)) ^ 2 := by
+  let A : ℝ := mertensSecondConstant + logarithmicCorrectionLimit
+  have hfactor : (fun n : ℕ => exp (-A) / log (n : ℝ)) =O[atTop]
+      fun n => 1 / log (n : ℝ) := by
+    simpa [div_eq_mul_inv] using
+      (Asymptotics.isBigO_refl (fun n : ℕ => 1 / log (n : ℝ)) atTop).const_mul_left (exp (-A))
+  have herr : (fun n : ℕ => exp (log (primeProduct n) + log (log (n : ℝ)) + A) - 1) =O[atTop]
+      fun n => 1 / log (n : ℝ) := by
+    simpa [A] using exp_log_primeProduct_error_isBigO
+  refine (hfactor.mul herr).congr' ?_ ?_
+  · filter_upwards [eventually_gt_atTop 1] with n hn
+    simpa [A] using (primeProduct_error_eq_canonical_factor n hn).symm
+  · filter_upwards with n
+    simp [pow_two]
+
 end AnalyticNumberTheory.Mertens
