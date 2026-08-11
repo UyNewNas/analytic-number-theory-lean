@@ -1,4 +1,5 @@
 import AnalyticNumberTheory.Mertens.PartialSummation
+import Mathlib.Analysis.SumIntegralComparisons
 
 /-!
 # Finite logarithmic bridge for Mertens' product theorem
@@ -11,7 +12,7 @@ the prime-number theorem.
 
 namespace AnalyticNumberTheory.Mertens
 
-open Finset Real
+open Finset Real Set MeasureTheory
 open Filter Topology
 
 /-- The finite quadratic-and-higher correction in the logarithm of the prime
@@ -112,6 +113,55 @@ theorem logarithmicCorrection_tail_norm_le (x : ℕ) :
           abs_log_primeFactor_add_le hp
     · simp only [norm_zero]
       positivity
+
+/-- Integral comparison for the shifted reciprocal-square tail. -/
+theorem shifted_reciprocal_square_tail_le (x : ℕ) (hx : 1 ≤ x) :
+    ∑' n : ℕ, 2 / ((n + (x + 1) : ℕ) : ℝ) ^ 2 ≤ 2 / (x : ℝ) := by
+  have hxR : 0 < (x : ℝ) := by
+    exact_mod_cast (show 0 < x by omega)
+  let f : ℝ → ℝ := fun t => 2 * t ^ (-2 : ℝ)
+  have hanti0 : AntitoneOn (fun t : ℝ => t ^ (-2 : ℝ)) (Ioi 0) :=
+    antitoneOn_rpow_Ioi_of_exponent_nonpos (by norm_num)
+  have hanti : AntitoneOn f (Ici (x : ℝ)) := by
+    intro a ha b hb hab
+    have ha0 : 0 < a := lt_of_lt_of_le hxR ha
+    have hb0 : 0 < b := lt_of_lt_of_le hxR hb
+    exact mul_le_mul_of_nonneg_left (hanti0 ha0 hb0 hab) (by norm_num)
+  have hint : IntegrableOn f (Ioi (x : ℝ)) volume := by
+    exact (integrableOn_Ioi_rpow_of_lt (a := -2) (by norm_num) hxR).const_mul 2
+  have hnonneg : ∀ t ∈ Ioi (x : ℝ), 0 ≤ f t := by
+    intro t ht
+    exact mul_nonneg (by norm_num)
+      (Real.rpow_nonneg (le_of_lt (lt_trans hxR ht)) _)
+  have hsum : ∑' n : ℕ, f (n + x + 1 : ℕ) ≤ ∫ t in Ioi (x : ℝ), f t :=
+    hanti.tsum_comp_add_le_integral x hint hnonneg
+  calc
+    ∑' n : ℕ, 2 / ((n + (x + 1) : ℕ) : ℝ) ^ 2 =
+        ∑' n : ℕ, f (n + x + 1 : ℕ) := by
+          apply tsum_congr
+          intro n
+          dsimp [f]
+          have hp : 0 < ((n + x + 1 : ℕ) : ℝ) := by positivity
+          have hcast : ((n + (x + 1) : ℕ) : ℝ) = (n + x + 1 : ℕ) := by
+            push_cast
+            ring
+          rw [hcast, Real.rpow_neg (le_of_lt hp)]
+          norm_num
+          ring
+    _ ≤ ∫ t in Ioi (x : ℝ), f t := hsum
+    _ = 2 / (x : ℝ) := by
+      dsimp [f]
+      rw [integral_const_mul, integral_Ioi_rpow_of_lt (by norm_num) hxR]
+      rw [show (-2 : ℝ) + 1 = -1 by norm_num,
+        Real.rpow_neg (le_of_lt hxR)]
+      field_simp
+      simp
+
+/-- Explicit `O(1/x)` bound for the logarithmic correction tail. -/
+theorem logarithmicCorrection_tail_norm_le_div (x : ℕ) (hx : 1 ≤ x) :
+    ‖logarithmicCorrectionLimit - logarithmicCorrection x‖ ≤ 2 / (x : ℝ) :=
+  (logarithmicCorrection_tail_norm_le x).trans
+    (shifted_reciprocal_square_tail_le x hx)
 
 /-- Taking the logarithm of the finite Euler product separates the reciprocal
 prime sum from its convergent higher-order correction. -/

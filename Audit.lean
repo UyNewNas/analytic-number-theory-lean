@@ -37,3 +37,5 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.tendsto_logarithmicCorrection
 #print axioms AnalyticNumberTheory.Mertens.logarithmicCorrectionLimit_sub_eq_tail
 #print axioms AnalyticNumberTheory.Mertens.logarithmicCorrection_tail_norm_le
+#print axioms AnalyticNumberTheory.Mertens.shifted_reciprocal_square_tail_le
+#print axioms AnalyticNumberTheory.Mertens.logarithmicCorrection_tail_norm_le_div
