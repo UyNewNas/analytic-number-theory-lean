@@ -110,6 +110,10 @@ the common asymptotic/error-term API.
   distribution input `WeightedPanCondition`, the `3^{ω(d)}` lcm-pair weight
   origin (`lcmPairCount` / `lcmPairWeightedSum`), the generic `errSum` seam,
   and the precise classical target `PanMeanValueUniform`.
+- [x] **Truncated singular series uniform lower bound (chen #3):**
+  `singularSeriesTruncated_ge_half` — `𝔖(N,z) ≥ 1/2` for every `N` and
+  `z ≥ 2`, the twin-prime-constant-level input for the Chen main-term lower
+  bound (finite-product/telescope argument, no Mertens needed).
 - [ ] Prove `PanMeanValueUniform` (large sieve / Vaughan identity), the
   analytic core of issue #7, and close the bridge from it to
   `WeightedPanCondition` with PNT-level main-term estimates.

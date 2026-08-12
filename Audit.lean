@@ -37,6 +37,7 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.localFactor_not_dvd_lt_one
 #print axioms AnalyticNumberTheory.Sieve.singularSeries_bounded_below
 #print axioms AnalyticNumberTheory.Sieve.singularSeries_bounded_above
+#print axioms AnalyticNumberTheory.Sieve.singularSeriesTruncated_ge_half
 #print axioms AnalyticNumberTheory.Sieve.sum_of_lowerMoebius_le_siftedSum
 #print axioms AnalyticNumberTheory.Sieve.mainSum_sub_errSum_le_siftedSum_of_lowerMoebius
 #print axioms AnalyticNumberTheory.Sieve.sieveF_pos_on_2_4

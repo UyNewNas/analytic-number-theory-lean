@@ -564,6 +564,115 @@ theorem singularSeries_bounded_above :
         have hN0 : (0 : ℝ) ≤ N := by exact_mod_cast (by omega : 0 ≤ N)
         nlinarith
 
+/-! ## 7.5 截断奇异级数的一致下界 -/
+
+/-- **截断奇异级数的一致下界**: 对任意 `N` 与 `z ≥ 2`,
+`𝔖(N,z) ≥ 1/2`.
+
+证明: `𝔖(N,z) = localFactor(2,N)·∏_{2<p≤z} localFactor(p,N)`, 而
+`localFactor(2,N) ≥ 1`; 对奇素数 `p`, `localFactor(p,N) ≥ 1 − 1/(p−1)²`
+(整除情形 `p/(p−1) ≥ 1`, 非整除情形等式), 故
+
+  `𝔖(N,z) ≥ ∏_{2<p≤z}(1 − 1/(p−1)²) ≥ ∏_{n=2}^{z−1}(1 − 1/n²)
+   = z/(2(z−1)) ≥ 1/2`.
+
+这是陈氏主项下界 `CorrectedChenMainTermLower` 所需的孪生素数常数级输入
+(chen sub-issue #3): 对截断奇异级数给出一致常数 `c_S = 1/2`. -/
+theorem singularSeriesTruncated_ge_half (N z : ℕ) (hz : 2 ≤ z) :
+    (1 : ℝ) / 2 ≤ singularSeriesTruncated N z := by
+  unfold singularSeriesTruncated
+  set A := (range (z + 1)).filter Nat.Prime with hA_def
+  have h2mem : 2 ∈ A := by
+    rw [hA_def]
+    simp [mem_filter, hz, Nat.prime_two]
+  have hfilter_eq : A \ {2} = (range (z + 1)).filter (fun p => Nat.Prime p ∧ 2 < p) := by
+    rw [hA_def]
+    ext p
+    constructor
+    · intro hp
+      rw [mem_sdiff, mem_filter] at hp
+      rcases hp with ⟨hp_mem, hp_ne⟩
+      rcases hp_mem with ⟨hp_range, hp_prime⟩
+      rw [mem_filter]
+      refine ⟨hp_range, hp_prime, ?_⟩
+      have hp_ne' : p ≠ 2 := by
+        intro h
+        exact hp_ne (by simp [h])
+      rcases hp_prime.eq_two_or_odd' with h2 | hodd
+      · exact absurd h2 hp_ne'
+      · have : 2 ≤ p := hp_prime.two_le
+        omega
+    · intro hp
+      rw [mem_filter] at hp
+      rcases hp with ⟨hp_range, hp_props⟩
+      rcases hp_props with ⟨hp_prime, hp2⟩
+      rw [mem_sdiff, mem_filter]
+      constructor
+      · exact ⟨hp_range, hp_prime⟩
+      · intro hp_mem2
+        have hp_eq2 : p = 2 := by simpa using hp_mem2
+        omega
+  -- 奇素数因子的乘积下界: ∏(1 − 1/(p−1)²) ≤ ∏ localFactor(p,N)
+  have hfac : ((range (z + 1)).filter (fun p => Nat.Prime p ∧ 2 < p)).prod
+        (fun p => 1 - 1 / ((p : ℝ) - 1) ^ 2) ≤
+      ((range (z + 1)).filter (fun p => Nat.Prime p ∧ 2 < p)).prod
+        (fun p => localFactor p N) := by
+    apply Finset.prod_le_prod
+    · intro p hp
+      rw [mem_filter] at hp
+      have hp3 : 3 ≤ p := by omega
+      have hp1_ge : (1 : ℝ) ≤ ((p : ℝ) - 1) ^ 2 := by
+        have : (2 : ℝ) ≤ (p : ℝ) - 1 := by
+          have : (3 : ℝ) ≤ p := by exact_mod_cast hp3
+          linarith
+        nlinarith
+      have hdiv : 1 / ((p : ℝ) - 1) ^ 2 ≤ 1 := by
+        exact div_le_one_of_le₀ hp1_ge (sq_nonneg ((p : ℝ) - 1))
+      linarith
+    · intro p hp
+      rw [mem_filter] at hp
+      exact localFactor_ge_square hp.2.1 hp.2.2
+  -- 望远镜下界: ∏_{n=2}^{z−1}(1 − 1/n²) = z/(2(z−1))
+  have htel : (z : ℝ) / (2 * ((z : ℝ) - 1)) ≤
+      ((range (z + 1)).filter (fun p => Nat.Prime p ∧ 2 < p)).prod
+        (fun p => 1 - 1 / ((p : ℝ) - 1) ^ 2) := by
+    rw [← int_square_product z hz]
+    exact prime_square_product_ge_int z
+  -- localFactor(2,N) ≥ 1
+  have h2ge1 : (1 : ℝ) ≤ localFactor 2 N := by
+    unfold localFactor
+    simp
+    split_ifs <;> norm_num
+  -- 组装
+  calc
+    (1 : ℝ) / 2 ≤ (z : ℝ) / (2 * ((z : ℝ) - 1)) := by
+      have hz1 : (0 : ℝ) < (z : ℝ) - 1 := by
+        have : (2 : ℝ) ≤ z := by exact_mod_cast hz
+        linarith
+      have hz2 : (z : ℝ) - 1 ≠ 0 := ne_of_gt hz1
+      field_simp [hz2]
+      linarith
+    _ ≤ ((range (z + 1)).filter (fun p => Nat.Prime p ∧ 2 < p)).prod
+        (fun p => 1 - 1 / ((p : ℝ) - 1) ^ 2) := htel
+    _ ≤ ((range (z + 1)).filter (fun p => Nat.Prime p ∧ 2 < p)).prod
+        (fun p => localFactor p N) := hfac
+    _ ≤ localFactor 2 N *
+          ((range (z + 1)).filter (fun p => Nat.Prime p ∧ 2 < p)).prod
+            (fun p => localFactor p N) := by
+      have hprod_pos : (0 : ℝ) ≤
+          ((range (z + 1)).filter (fun p => Nat.Prime p ∧ 2 < p)).prod
+            (fun p => localFactor p N) := by
+        apply Finset.prod_nonneg
+        intro p hp
+        rw [mem_filter] at hp
+        exact le_of_lt (localFactor_pos hp.2.1)
+      exact le_mul_of_one_le_left hprod_pos h2ge1
+    _ = singularSeriesTruncated N z := by
+      unfold singularSeriesTruncated
+      rw [Finset.prod_eq_mul_prod_sdiff_singleton_of_mem h2mem]
+      congr 1
+      rw [hfilter_eq]
+
 /-! ## 8. 总结 -/
 
 /-
@@ -585,6 +694,8 @@ theorem singularSeries_bounded_above :
      已修正为可证的真界, 证明用局部因子 ≤ 2/≤1 的分拆)
    - `singularSeries_bounded_below`: 正下界 𝔖(N) ≥ 1 (偶数 N)
      (证明: 素数乘积 ≥ 全体整数乘积, 望远镜和 ∏(1-1/n²) = N/(2(N-1)) ≥ 1/2)
+   - `singularSeriesTruncated_ge_half`: 截断奇异级数一致下界 𝔖(N,z) ≥ 1/2
+     (对任意 N, z ≥ 2; 陈氏主项下界的孪生素数常数级输入, chen sub-issue #3)
    - 两者均无需 Mertens 定理或 PNT
 
 4. **陈氏定理中的作用**:
