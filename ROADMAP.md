@@ -83,6 +83,21 @@ the common asymptotic/error-term API.
 - [ ] Keep sieve notation and Chen-specific consequences in
   `chen-theorem-lean`; move only mathematically reusable results here.
 
+### v0.4 — reusable sieve layer
+
+- [x] Migrate the generic sieve layer (Goldbach density, Selberg identities,
+  distribution, singular series, linear sieve, Bombieri--Vinogradov
+  interfaces) from Chen into `AnalyticNumberTheory/Sieve/`.
+- [x] Correct the lower sieve function on `(3, 5]` to the standard Buchstab
+  value `f(s) = 2e^γ·log((s-1)/2)/s`.
+- [x] **Uniform Jurkat--Richert lower bound (#5):** formalize the uniform
+  target `UniformJurkatRichertLowerBound` (constants precede `∀ N`) and the
+  finite seam `siftedSum_lower_bound_of_mainTerm` from the main-term estimate
+  to the explicit-error sifted lower bound.
+- [ ] Prove the uniform main-term estimate
+  `UniformJurkatRichertMainTerm` (`mainSum(μ⁻) ≥ V(z)·(f(s) - η)`), the
+  analytic core of issue #5.
+
 ## Boundary rule
 
 A declaration belongs here when its statement is useful without importing a
