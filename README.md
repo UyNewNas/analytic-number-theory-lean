@@ -21,6 +21,12 @@ The foundation currently provides:
   `O(1 / log^2 x)` error, including a uniform natural-number interface;
 - the audited zeta/Euler-log, Abel/Mellin, scaled Gamma-kernel, and finite-part
   chain identifying the canonical product constant with Euler's constant.
+- the reusable sieve layer, including the Goldbach local density
+  `ν(d) = 1/φ(d)` on squarefree moduli, generic Selberg main-term identities,
+  and the **weighted Pan--Bombieri--Vinogradov input**: the uniform
+  `3^{ω(d)}`-weighted distribution condition consumed by additive sieve
+  proofs, its lcm-pair weight origin, the `errSum` seam, and the precise
+  classical Pan mean-value statement as an explicitly-marked open target.
 
 Chen-specific sieve consequences remain in `chen-theorem-lean`.
 
