@@ -155,5 +155,8 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.optimalSelbergX_eq_sum_nu_mul_weight
 #print axioms AnalyticNumberTheory.Sieve.optimalSelbergMainSum_eq
 #print axioms AnalyticNumberTheory.Sieve.selberg_upper_bound_optimal
+#print axioms AnalyticNumberTheory.Sieve.selbergMainTerm_eq_prod_one_sub_nu
+#print axioms AnalyticNumberTheory.Sieve.selbergMainTerm_eq_sieveProduct
+#print axioms AnalyticNumberTheory.Sieve.selberg_upper_bound_sieveProduct
 #print axioms AnalyticNumberTheory.Sieve.uniformSelbergUpperBound
 #print axioms AnalyticNumberTheory.Sieve.coefficient_product

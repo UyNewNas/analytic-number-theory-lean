@@ -52,6 +52,9 @@ import Mathlib.Tactic.FieldSimp
 import Mathlib.Tactic.Linarith
 import Mathlib.Tactic.Ring
 
+import AnalyticNumberTheory.Sieve.LinearSieve
+import AnalyticNumberTheory.Sieve.SelbergIdentities
+
 namespace AnalyticNumberTheory.Sieve
 
 open Finset Real
@@ -654,6 +657,50 @@ theorem selberg_upper_bound_optimal (S : BoundingSieve) :
   have h := omega_upper_bound_via_mathlib S (optimalSelbergWeight S) (optimalSelbergWeight_one S)
   rw [optimalSelbergMainSum_eq S] at h
   simpa [selbergMainTerm] using h
+
+/-- **Selberg 主项的筛积形式**: 对任意 `BoundingSieve`,
+
+  `(Σ_{d | P} selbergTerms d)⁻¹ = ∏_{p | P} (1 − ν(p))`.
+
+由 `selbergSum_eq_prod_inv` (`Σg = ∏(1−ν(p))⁻¹`) 取逆得到. 对经典
+`SieveProblem`, 右端即 `sieveProduct` (见 `selbergMainTerm_eq_sieveProduct`). -/
+theorem selbergMainTerm_eq_prod_one_sub_nu (S : BoundingSieve) :
+    (∑ l ∈ S.prodPrimes.divisors, S.selbergTerms l)⁻¹ =
+      ∏ p ∈ S.prodPrimes.primeFactors, (1 - S.nu p) := by
+  calc
+    (∑ l ∈ S.prodPrimes.divisors, S.selbergTerms l)⁻¹
+        = (∏ p ∈ S.prodPrimes.primeFactors, (1 - S.nu p)⁻¹)⁻¹ := by
+            rw [selbergSum_eq_prod_inv]
+    _ = ∏ p ∈ S.prodPrimes.primeFactors, ((1 - S.nu p)⁻¹)⁻¹ := by
+            rw [← Finset.prod_inv_distrib]
+    _ = ∏ p ∈ S.prodPrimes.primeFactors, (1 - S.nu p) := by
+            apply Finset.prod_congr rfl
+            intro p hp
+            have hp_p : p.Prime := Nat.prime_of_mem_primeFactors hp
+            have hp_dvd : p ∣ S.prodPrimes := Nat.dvd_of_mem_primeFactors hp
+            have hne : (1 - S.nu p) ≠ 0 := by
+              linarith [S.nu_lt_one_of_prime p hp_p hp_dvd]
+            exact inv_inv (1 - S.nu p)
+
+/-- **经典 `SieveProblem` 下的主项筛积形式**:
+`(Σ_{d | P} selbergTerms d)⁻¹ = sieveProduct`. -/
+theorem selbergMainTerm_eq_sieveProduct (SP : SieveProblem) :
+    (∑ l ∈ SP.prodPrimes.divisors, SP.selbergTerms l)⁻¹ = sieveProduct SP := by
+  rw [selbergMainTerm_eq_prod_one_sub_nu SP.toBoundingSieve, sieveProduct_eq_prod_one_sub_nu SP]
+
+/-- **Selberg 上界的筛积形式**: 经典 `SieveProblem` 下最优 Λ²-权重给出
+
+  `siftedSum ≤ totalMass · V(z) + errSum(Λ²w*)`,  V(z) = sieveProduct.
+
+这是陈氏 Ω 上界消费 (chen sub-issue #7) 需要的精确主项形状:
+`(Σg)⁻¹ = V(z)`, 而 `V(z)` 由 Mertens/奇异级数接缝控制. -/
+theorem selberg_upper_bound_sieveProduct (SP : SieveProblem) :
+    ∃ w : ℕ → ℝ, w 1 = 1 ∧
+      SP.siftedSum ≤ SP.totalMass * sieveProduct SP +
+        SP.errSum (BoundingSieve.lambdaSquared w) := by
+  obtain ⟨w, hw1, hbound⟩ := selberg_upper_bound_optimal SP.toBoundingSieve
+  refine ⟨w, hw1, ?_⟩
+  rwa [selbergMainTerm_eq_sieveProduct SP] at hbound
 
 /-! ## 4. issue #6 目标陈述 -/
 
