@@ -134,3 +134,14 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.mertensConstant_eq_eulerMascheroni
 #print axioms AnalyticNumberTheory.Mertens.primeProduct_mertens_isBigO
 #print axioms AnalyticNumberTheory.Mertens.primeProduct_mertens_nat
+#print axioms AnalyticNumberTheory.Sieve.selberg_sieve_weights_exist
+#print axioms AnalyticNumberTheory.Sieve.selberg_lambda_is_upper_moebius
+#print axioms AnalyticNumberTheory.Sieve.omega_upper_bound_via_mathlib
+#print axioms AnalyticNumberTheory.Sieve.mainSum_diag_via_mathlib
+#print axioms AnalyticNumberTheory.Sieve.mainSum_cauchy_schwarz_lower_bound
+#print axioms AnalyticNumberTheory.Sieve.optimalSelbergWeight_one
+#print axioms AnalyticNumberTheory.Sieve.optimalSelbergX_eq_sum_nu_mul_weight
+#print axioms AnalyticNumberTheory.Sieve.optimalSelbergMainSum_eq
+#print axioms AnalyticNumberTheory.Sieve.selberg_upper_bound_optimal
+#print axioms AnalyticNumberTheory.Sieve.uniformSelbergUpperBound
+#print axioms AnalyticNumberTheory.Sieve.coefficient_product

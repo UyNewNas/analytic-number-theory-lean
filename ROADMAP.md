@@ -94,9 +94,18 @@ the common asymptotic/error-term API.
   target `UniformJurkatRichertLowerBound` (constants precede `∀ N`) and the
   finite seam `siftedSum_lower_bound_of_mainTerm` from the main-term estimate
   to the explicit-error sifted lower bound.
+- [x] **Selberg upper-bound sieve (#6):** add
+  `AnalyticNumberTheory/Sieve/SelbergUpperBound.lean` with the generic
+  Selberg weights, the Mathlib Λ²-sieve bridges, and the optimal-weight
+  theorem `selberg_upper_bound_optimal`
+  (`siftedSum ≤ totalMass · (Σ selbergTerms)⁻¹ + errSum(Λ²w*)`), plus the
+  uniform target `UniformSelbergUpperBound`.
 - [ ] Prove the uniform main-term estimate
   `UniformJurkatRichertMainTerm` (`mainSum(μ⁻) ≥ V(z)·(f(s) - η)`), the
   analytic core of issue #5.
+- [ ] Plug the Mertens/singular-series main-term estimate and the weighted
+  Pan error into the Selberg upper bound for the Chen constant
+  `3.9404·𝔖(N)·N/log²N` (issue #6 acceptance).
 
 ## Boundary rule
 
