@@ -106,6 +106,13 @@ the common asymptotic/error-term API.
 - [ ] Plug the Mertens/singular-series main-term estimate and the weighted
   Pan error into the Selberg upper bound for the Chen constant
   `3.9404·𝔖(N)·N/log²N` (issue #6 acceptance).
+- [x] **Weighted Pan--BV input (#7):** formalize the uniform weighted
+  distribution input `WeightedPanCondition`, the `3^{ω(d)}` lcm-pair weight
+  origin (`lcmPairCount` / `lcmPairWeightedSum`), the generic `errSum` seam,
+  and the precise classical target `PanMeanValueUniform`.
+- [ ] Prove `PanMeanValueUniform` (large sieve / Vaughan identity), the
+  analytic core of issue #7, and close the bridge from it to
+  `WeightedPanCondition` with PNT-level main-term estimates.
 
 ## Boundary rule
 

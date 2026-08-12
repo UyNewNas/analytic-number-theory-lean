@@ -59,6 +59,17 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.bombieri_vinogradov_simple
 #print axioms AnalyticNumberTheory.Sieve.chen_distribution_condition
 #print axioms AnalyticNumberTheory.Sieve.pan_mean_value_theorem
+#print axioms AnalyticNumberTheory.Sieve.lcmPairCount
+#print axioms AnalyticNumberTheory.Sieve.lcmPairWeightedSum
+#print axioms AnalyticNumberTheory.Sieve.weightedPanRemainder_eq_lcmDoubleSum
+#print axioms AnalyticNumberTheory.Sieve.errSum_le_threeOmegaWeightedPanRemainder
+#print axioms AnalyticNumberTheory.Sieve.WeightedPanCondition
+#print axioms AnalyticNumberTheory.Sieve.ThreeOmegaWeightedPanCondition
+#print axioms AnalyticNumberTheory.Sieve.primesUpToDiv
+#print axioms AnalyticNumberTheory.Sieve.weightedDistributionError
+#print axioms AnalyticNumberTheory.Sieve.panWeightedError
+#print axioms AnalyticNumberTheory.Sieve.panWeightedErrorMax
+#print axioms AnalyticNumberTheory.Sieve.PanMeanValueUniform
 #print axioms AnalyticNumberTheory.Sieve.chenSieveRatio_approx
 #print axioms AnalyticNumberTheory.Mertens.log_primeProduct
 #print axioms AnalyticNumberTheory.Mertens.abs_log_primeFactor_add_le

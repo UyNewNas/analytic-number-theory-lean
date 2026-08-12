@@ -18,6 +18,7 @@ import AnalyticNumberTheory.Sieve.SelbergUpperBound
 import AnalyticNumberTheory.Sieve.SingularSeries
 import AnalyticNumberTheory.Sieve.LinearSieve
 import AnalyticNumberTheory.Sieve.BombieriVinogradov
+import AnalyticNumberTheory.Sieve.WeightedPan
 
 /-!
 # Analytic Number Theory
