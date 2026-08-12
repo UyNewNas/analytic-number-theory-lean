@@ -49,6 +49,12 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.distribution_condition
 #print axioms AnalyticNumberTheory.Sieve.jurkat_richert_upper_bound
 #print axioms AnalyticNumberTheory.Sieve.jurkat_richert_lower_bound
+#print axioms AnalyticNumberTheory.Sieve.sieveProduct_eq_sieveProductPrimeFactors
+#print axioms AnalyticNumberTheory.Sieve.errSum_le_of_abs_le_one
+#print axioms AnalyticNumberTheory.Sieve.siftedSum_lower_bound_of_mainTerm
+#print axioms AnalyticNumberTheory.Sieve.UniformJurkatRichertLowerBound_of_uniformMainTerm
+#print axioms AnalyticNumberTheory.Sieve.UniformJurkatRichertMainTerm
+#print axioms AnalyticNumberTheory.Sieve.UniformJurkatRichertLowerBound
 #print axioms AnalyticNumberTheory.Sieve.bombieri_vinogradov
 #print axioms AnalyticNumberTheory.Sieve.bombieri_vinogradov_simple
 #print axioms AnalyticNumberTheory.Sieve.chen_distribution_condition

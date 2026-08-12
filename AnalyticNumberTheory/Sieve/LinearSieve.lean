@@ -120,24 +120,29 @@ noncomputable def sieveFunctionF (s : ℝ) : ℝ :=
     -- 严格定义需 Buchstab 型递推
     2 * exp eulerMascheroni / s * (1 + 1 / s)
 
-/-- A nonstandard working normalization for a lower sieve function.
+/-- Lower sieve function `f(s)` of the Jurkat--Richert linear sieve.
 
   - s ≤ 3:  f(s) = 0
-  - 3 ≤ s ≤ 5:  a local `log (s / 2)` surrogate
-  - s ≥ 5:  a further placeholder approximation
+  - 3 < s ≤ 5:  f(s) = 2e^γ · log((s - 1) / 2) / s
+  - s > 5:  placeholder (the Buchstab delay recursion is not yet formalized)
 
-This is **not** claimed to be the standard Jurkat--Richert/Buchstab lower
-sieve function (whose normalization and differential-delay recursion must be
-formalized separately).  It is used only in the fixed-parameter working
-interfaces below and must not be used to justify Chen's classical constants. -/
+The formula on `(3, 5]` is the standard Jurkat--Richert value: with
+`F(s) = 2e^γ / s` on `[2, 4]`, the delay equation `(s·f(s))' = F(s - 1)` and
+the boundary value `f(3) = 0` give
+`f(s) = (2e^γ / s) · log((s - 1) / 2)` for `3 ≤ s ≤ 5`.  This is the value
+used at the Chen sieve ratio `s = D/z ≈ 5`.
+
+For `s > 5` the recursion must continue through the Buchstab-type `F`; the
+expression below is only a placeholder and must not be used to justify
+Chen's classical constants. -/
 noncomputable def sieveFunctionf (s : ℝ) : ℝ :=
   if s ≤ 3 then
     0
   else if s ≤ 5 then
-    2 * exp eulerMascheroni / s * log (s / 2)
+    2 * exp eulerMascheroni / s * log ((s - 1) / 2)
   else
     -- s > 5: 递推定义, 此处用近似值占位
-    2 * exp eulerMascheroni / s * log (s / 2) * (1 + 1 / s)
+    2 * exp eulerMascheroni / s * log ((s - 1) / 2) * (1 + 1 / s)
 
 /-! ## 3. 筛函数的基本性质 -/
 
@@ -158,7 +163,7 @@ theorem sievef_pos_on_3_5 {s : ℝ} (hs : 3 < s) (hs' : s ≤ 5) :
   have h1 : ¬ s ≤ 3 := by linarith
   rw [if_neg h1, if_pos hs']
   have hs_pos : 0 < s := by linarith
-  have h_log : 0 < log (s / 2) := by
+  have h_log : 0 < log ((s - 1) / 2) := by
     apply log_pos
     field_simp
     linarith
@@ -168,8 +173,8 @@ theorem sievef_pos_on_3_5 {s : ℝ} (hs : 3 < s) (hs' : s ≤ 5) :
 对 s ∈ [2, 4] 可证:
 - s ≤ 2: F = 1, f = 0. 0 ≤ 1 ✓
 - 2 < s ≤ 3: F = 2e^γ/s > 0, f = 0 ✓
-- 3 < s ≤ 4: F = 2e^γ/s, f = 2e^γ/s·log(s/2).
-  由 log_le_sub_one: log(s/2) ≤ s/2-1 ≤ 1 (因 s ≤ 4), 故 f ≤ F ✓
+- 3 < s ≤ 4: F = 2e^γ/s, f = 2e^γ/s·log((s-1)/2).
+  由 log_le_sub_one: log((s-1)/2) ≤ (s-1)/2-1 ≤ 1 (因 s ≤ 4), 故 f ≤ F ✓
 
 注: s > 4 需完整递推分析 (Buchstab 型差分微分方程). -/
 theorem sievef_le_sieveF {s : ℝ} (hs : 2 ≤ s) (hs' : s ≤ 4) :
@@ -186,15 +191,15 @@ theorem sievef_le_sieveF {s : ℝ} (hs : 2 ≤ s) (hs' : s ≤ 4) :
     · -- 2 < s ≤ 3: F = 2e^γ/s, f = 0
       simp only [if_neg h2, if_pos hs', if_pos h3]
       positivity
-    · -- 3 < s ≤ 4: F = 2e^γ/s, f = 2e^γ/s · log(s/2)
+    · -- 3 < s ≤ 4: F = 2e^γ/s, f = 2e^γ/s · log((s-1)/2)
       have h5 : s ≤ (5 : ℝ) := by linarith
       simp only [if_neg h2, if_pos hs', if_neg h3, if_pos h5]
-      have hs2_pos : 0 < s / 2 := by positivity
-      -- log(s/2) ≤ s/2 - 1 ≤ 1 (因 s ≤ 4)
-      have h_log_le : log (s / 2) ≤ 1 := by
-        calc log (s / 2) ≤ s / 2 - 1 := Real.log_le_sub_one_of_pos hs2_pos
+      have hs2_pos : 0 < (s - 1) / 2 := by linarith
+      -- log((s-1)/2) ≤ (s-1)/2 - 1 ≤ 1 (因 s ≤ 4)
+      have h_log_le : log ((s - 1) / 2) ≤ 1 := by
+        calc log ((s - 1) / 2) ≤ (s - 1) / 2 - 1 := Real.log_le_sub_one_of_pos hs2_pos
           _ ≤ 1 := by linarith
-      -- 2e^γ/s · log(s/2) ≤ 2e^γ/s · 1 = 2e^γ/s
+      -- 2e^γ/s · log((s-1)/2) ≤ 2e^γ/s · 1 = 2e^γ/s
       have h_factor : 0 ≤ 2 * exp eulerMascheroni / s := by positivity
       exact mul_le_of_le_one_right h_factor h_log_le
 
@@ -459,6 +464,142 @@ theorem jurkat_richert_lower_bound (SP : SieveProblem)
     sieveFunctionf (SP.D / SP.z) - SP.siftedSum)
   linarith
 
+/-! ## 5.5 一致 Jurkat-Richert 下界 (issue #5 目标) -/
+
+/-- 筛积在 `prodPrimes` 素因子上的标准形式:
+
+  V_S = ∏_{p | prodPrimes} (1 - ν(p))
+
+对经典的 `SieveProblem` (prodPrimes = < z 的素数之积), 这与 `sieveProduct`
+一致 (见 `sieveProduct_eq_sieveProductPrimeFactors`); 对修正陈筛,
+`prodPrimes` 本身就是修正筛积 (排除 2 与整除 N 的素数), 因此该定义直接可用,
+无需依赖 `SieveProblem.z` 的表示. -/
+noncomputable def sieveProductPrimeFactors (S : BoundingSieve) : ℝ :=
+  ∏ p ∈ S.prodPrimes.primeFactors, (1 - S.nu p)
+
+/-- 经典 `SieveProblem` 下, 两种筛积定义一致. -/
+theorem sieveProduct_eq_sieveProductPrimeFactors (SP : SieveProblem) :
+    sieveProduct SP = sieveProductPrimeFactors SP.toBoundingSieve := by
+  simpa [sieveProduct, sieveProductPrimeFactors] using sieveProduct_eq_prod_one_sub_nu SP
+
+/-- 单位有界系数的误差和被 1 系数误差和控制: 若 |μ(d)| ≤ 1,
+则 errSum μ ≤ errSum 1.
+
+这是从一致主项估计转到一致筛下界时, 把 `errSum(μ⁻)` 换成显式
+`errSum(1) = Σ_{d | prodPrimes} |rem d|` 的一步 (经典陈述中写作
+`Σ_{d ≤ D} |R_d|`). -/
+theorem errSum_le_of_abs_le_one {S : BoundingSieve} {mu : ℕ → ℝ}
+    (h : ∀ d : ℕ, |mu d| ≤ 1) :
+    S.errSum mu ≤ S.errSum (fun _ => 1) := by
+  unfold BoundingSieve.errSum
+  apply Finset.sum_le_sum
+  intro d hd
+  have hmul : |mu d| * |S.rem d| ≤ (1 : ℝ) * |S.rem d| :=
+    mul_le_mul_of_nonneg_right (h d) (abs_nonneg (S.rem d))
+  simpa using hmul
+
+/-- **有限接缝**: 由主项估计得到显式误差形式的筛下界.
+
+给定
+  - 单位有界的下 Möbius 序列 `muMinus`;
+  - 主项估计 `V·(fs(t) - η) ≤ mainSum(μ⁻)`;
+  - 总质量非负;
+则
+
+  `X·V·(fs(t) - η) - errSum(1) ≤ siftedSum`.
+
+这是 `mainSum_sub_errSum_le_siftedSum_of_lowerMoebius` 与
+`errSum_le_of_abs_le_one` 的组合; 经典对应即
+`S(A,z) ≥ X·V(z)·(f(s) - O(η)) - Σ_{d ≤ D} |R_d|`. -/
+theorem siftedSum_lower_bound_of_mainTerm {S : BoundingSieve} {fs : ℝ → ℝ}
+    {t η : ℝ} {muMinus : ℕ → ℝ} (hmass : 0 ≤ S.totalMass)
+    (hmu : IsLowerMoebius muMinus)
+    (hbnd : ∀ d : ℕ, |muMinus d| ≤ 1)
+    (hmain : sieveProductPrimeFactors S * (fs t - η) ≤ S.mainSum muMinus) :
+    S.totalMass * sieveProductPrimeFactors S * (fs t - η) -
+        S.errSum (fun _ => 1) ≤ S.siftedSum := by
+  have herr : S.errSum muMinus ≤ S.errSum (fun _ => 1) :=
+    errSum_le_of_abs_le_one hbnd
+  have h1 : S.totalMass * S.mainSum muMinus - S.errSum muMinus ≤ S.siftedSum :=
+    mainSum_sub_errSum_le_siftedSum_of_lowerMoebius muMinus hmu
+  have hmain' : S.totalMass * (sieveProductPrimeFactors S * (fs t - η)) ≤
+      S.totalMass * S.mainSum muMinus :=
+    mul_le_mul_of_nonneg_left hmain hmass
+  have h2 : S.totalMass * sieveProductPrimeFactors S * (fs t - η) -
+      S.errSum (fun _ => 1) ≤ S.totalMass * S.mainSum muMinus - S.errSum muMinus := by
+    have h2a : S.totalMass * sieveProductPrimeFactors S * (fs t - η) ≤
+        S.totalMass * S.mainSum muMinus := by
+      simpa [mul_assoc] using hmain'
+    linarith
+  exact le_trans h2 h1
+
+/-- **一致 Jurkat-Richert 主项下界 (issue #5 的解析核心)**.
+
+存在阈值 `N₀` 与损失 `η₀ > 0`, 使得对所有 `N ≥ N₀` 的偶数 `N`, 都存在
+单位有界的下 Möbius 序列 `muMinus`, 满足
+
+  `mainSum(μ⁻) ≥ V_N · (fs (D_N / z_N) - η₀)`,
+
+其中 `V_N = ∏_{p | prodPrimes_N} (1 - ν_N(p))` 为筛积, `fs` 为
+Jurkat-Richert 下筛函数 (陈氏应用取标准 `sieveFunctionf`, 筛比
+`s = D_N / z_N ≈ 5`).
+
+关键点: `N₀` 与 `η₀` 位于对 `N` 的全称量化之前, 常数不得依赖 `N`.
+这是经典定理 `mainSum(μ⁻) ≥ V(z)·f(s)·(1 - O(η))` 的精确一致版本. -/
+def UniformJurkatRichertMainTerm (SP : ℕ → BoundingSieve)
+    (zN DN : ℕ → ℝ) (fs : ℝ → ℝ) : Prop :=
+  ∃ N₀ : ℕ, ∃ η₀ : ℝ, 0 < η₀ ∧
+    ∀ N : ℕ, N₀ ≤ N → Even N →
+      ∃ muMinus : ℕ → ℝ,
+        IsLowerMoebius muMinus ∧
+        (∀ d : ℕ, |muMinus d| ≤ 1) ∧
+        sieveProductPrimeFactors (SP N) * (fs (DN N / zN N) - η₀) ≤
+          (SP N).mainSum muMinus
+
+/-- **一致 Jurkat-Richert 下界 (issue #5 目标陈述)**.
+
+经典形式 (Halberstam--Richert 线性筛, 陈氏应用):
+
+  `S(A,z) ≥ X·V(z)·(f(s) - O(η)) - Σ_{d ≤ D} |R_d|`
+
+对所有充分大的偶数 `N` 一致成立. 本仓库的有限翻译: 存在 `N₀` 与
+`η₀ > 0`, 使得对每个偶数 `N ≥ N₀` 都存在单位有界的下 Möbius 序列
+`muMinus`, 满足
+
+  `siftedSum ≥ X_N · V_N · (fs (D_N / z_N) - η₀) - errSum(1)`,
+
+其中 `errSum(1) = Σ_{d | prodPrimes_N} |rem_N d|` 是显式除数误差和
+(经典 `Σ_{d ≤ D} |R_d|` 的有限对应).
+
+量词顺序是判定标准: `N₀`、`η₀` 先于 `∀ N`, 任何把常数放在 `N` 之后的版本
+都被拒绝 (见 CHEN_PROOF_ATLAS 的纪律). 由 `UniformJurkatRichertMainTerm`
+经 `siftedSum_lower_bound_of_mainTerm` 得到, 见
+`UniformJurkatRichertLowerBound_of_uniformMainTerm`. -/
+def UniformJurkatRichertLowerBound (SP : ℕ → BoundingSieve)
+    (zN DN : ℕ → ℝ) (fs : ℝ → ℝ) : Prop :=
+  ∃ N₀ : ℕ, ∃ η₀ : ℝ, 0 < η₀ ∧
+    ∀ N : ℕ, N₀ ≤ N → Even N →
+      ∃ muMinus : ℕ → ℝ,
+        IsLowerMoebius muMinus ∧
+        (∀ d : ℕ, |muMinus d| ≤ 1) ∧
+        (SP N).totalMass * sieveProductPrimeFactors (SP N) *
+            (fs (DN N / zN N) - η₀) -
+          (SP N).errSum (fun _ => 1) ≤ (SP N).siftedSum
+
+/-- 一致主项估计 (加上总质量非负) 推出一致筛下界. -/
+theorem UniformJurkatRichertLowerBound_of_uniformMainTerm
+    (SP : ℕ → BoundingSieve) (zN DN : ℕ → ℝ) (fs : ℝ → ℝ)
+    (hmass : ∀ N : ℕ, 0 ≤ (SP N).totalMass)
+    (hmain : UniformJurkatRichertMainTerm SP zN DN fs) :
+    UniformJurkatRichertLowerBound SP zN DN fs := by
+  rcases hmain with ⟨N₀, η₀, hη₀, hN⟩
+  refine ⟨N₀, η₀, hη₀, ?_⟩
+  intro N hN₀ hEven
+  rcases hN N hN₀ hEven with ⟨muMinus, hmu, hbnd, hmainN⟩
+  refine ⟨muMinus, hmu, hbnd, ?_⟩
+  exact siftedSum_lower_bound_of_mainTerm (S := SP N) (fs := fs) (t := DN N / zN N)
+    (η := η₀) (muMinus := muMinus) (hmass := hmass N) hmu hbnd hmainN
+
 /-! ## 6. 陈氏定理中的应用 -/
 
 /-
@@ -492,10 +633,15 @@ W(N)/Ω(N) 的精确定义与关键不等式均在 `SwitchingPrinciple.lean`
    - 局部因子, 截断乘积, 正性
    - 界估计待完成 (依赖 Mertens 定理 / PNT)
 
-2. **线性筛 / Jurkat-Richert 工作接口**:
-   - 筛函数 F(s), f(s) 定义
+2. **线性筛 / Jurkat-Richert 接口**:
+   - 筛函数 F(s), f(s) 定义 (f 在 (3,5] 上为标准 Buchstab 值
+     2e^γ·log((s-1)/2)/s, s > 5 仍为占位)
    - SieveProblem 结构 (扩展 Mathlib `BoundingSieve`)
    - 上下界为固定参数的余项接口；不是经典统一 Jurkat--Richert 定理
+   - **#5 一致 JR 下界**: 目标陈述 `UniformJurkatRichertLowerBound`
+     (常数先于 `∀ N`) + 有限接缝 `siftedSum_lower_bound_of_mainTerm`
+     已就位; 剩余解析核心是 `UniformJurkatRichertMainTerm`
+     (`mainSum(μ⁻) ≥ V·(f(s) - η)` 的一致估计)
    - 陈氏定理中的 W(N), Ω 定义 (工作定义)
 
 3. **Mathlib 对齐层** (已完成):
@@ -515,6 +661,7 @@ W(N)/Ω(N) 的精确定义与关键不等式均在 `SwitchingPrinciple.lean`
    └── 逐点余项接口与 Mathlib 筛法桥接  (已完成)
 
 5. **下一步优先级**:
+   - [高] 证明一致主项估计 `UniformJurkatRichertMainTerm` (issue #5 的解析核心)
    - [高] 补全 Selberg 筛最终上界 (Mathlib 已有 80%, 桥接已完成)
    - [高] 形式化 W(N), Ω 的精确定义
    - [中] 定义 Bombieri-Vinogradov 定理陈述
