@@ -129,9 +129,9 @@ means a proposed new bridge that still needs a falsifier.
 | Node | Statement or construction | Status | Consumer | Verification / falsifier |
 | --- | --- | --- | --- | --- |
 | V1 | Vaughan identity: `Λ(n) = Σ_{d\|n,d≤u} μ(d)log(n/d) + Σ_{d\|n,d>u} Σ_{e\|n/d,e≤v} μ(d)Λ(e) + Σ_{d\|n,d>u} Σ_{e\|n/d,e>v} μ(d)Λ(e)` | proven | type I/II split of ψ | `Sieve.VaughanIdentity.vaughanIdentity` |
-| V2 | Classical three-term form, valid for `n > v` | target of next cycle | BV/Pan type-II extraction | Counterexample at `n ≤ v` must be excluded in the hypothesis |
+| V2 | Classical three-term form, valid for `n > v` | proven | BV/Pan type-II extraction | `Sieve.VaughanIdentity.vaughanIdentity_threeTerm` (via `vaughanFullSecondSum`, `vaughanDoubleSum_swap`, `moebiusDivisorSum_eq_ite`) |
 | P1 | `Squarefree q → 3^{ω(q)} = Σ_{d\|q} 2^{ω(d)}` | proven | weight absorption in Pan mean value | `Sieve.WeightedPan.threeOmega_eq_sum_twoOmega_divisors` |
-| P2 | Double-sum packaging `Σ_q μ²(q)3^{ω(q)}F(q) = Σ_d μ²(d)2^{ω(d)} Σ_m μ²(m)F(dm)` | target of next cycle | outer-sum variable change | Exact finite algebra, same discipline as `lcmPairWeightedSum` |
+| P2 | Double-sum packaging `Σ_q μ²(q)3^{ω(q)}F(q) = Σ_d μ²(d)2^{ω(d)} Σ_m μ²(m)F(dm)` | proven | outer-sum variable change | `Sieve.WeightedPan.threeOmegaWeightedSum_packaging` |
 | LS1 | Additive large sieve (Montgomery): `Σ_r \|Σ_n a_n e(n x_r)\|² ≤ (N + δ⁻¹)Σ_n \|a_n\|²` for δ-well-spaced `{x_r}` | hypothesis (next major module) | LS2 | Needs mathlib exponential-sum / circle infrastructure; falsify at δ = 0 |
 | LS2 | Multiplicative large sieve: `Σ_{q≤Q} (q/φ(q)) Σ*_χ \|Σ_n a_n χ(n)\|² ≤ (Q²+N)Σ_n \|a_n\|²` | hypothesis | LS3 | Derived from LS1 via `DirichletCharacter` orthogonality + Gauss sums |
 | LS3 | Arithmetic form in residue classes | hypothesis | type I bounds | Standard dual reformulation; falsifiable on the `1/q` centering |
@@ -151,17 +151,20 @@ P1 --[target of this cycle]--> P2 --[hypothesis]--> PAN <--[conditional]-- BRG
 ```
 
 All edges from the analytic layer (LS/MV/T) are `hypothesis` until the
-corresponding module exists. The finite layer is partially kernel-checked:
-`V1` and `P1` are `proven`; `V2` and `P2` remain for the next cycle.
+corresponding module exists. The finite layer is kernel-checked: V1, V2, P1,
+P2 are all `proven`.
 
 ## Next cycle
 
-- **This cycle (done)**: V1 (`vaughanIdentity`, exact for all `n u v`) and P1
-  (`threeOmega_eq_sum_twoOmega_divisors`, plus its combinatorial base
-  `sum_powerset_pow_two`) are kernel-checked and the full library builds.
-- **Smallest next artifact**: V2 (classical three-term form via the truncated
-  Λ swap `μ ∗ λ_v = λ_v`), P2 (the divisor double-sum packaging), and the
-  corrected PAN statement with its two new definitions.
+- **This cycle (done)**: the full finite layer — V1 (`vaughanIdentity`, exact
+  for all `n u v`), V2 (`vaughanIdentity_threeTerm` for `n > v`), P1
+  (`threeOmega_eq_sum_twoOmega_divisors`), P2
+  (`threeOmegaWeightedSum_packaging`) — is kernel-checked, and the corrected
+  PAN statement (exact Liu Theorem 2 form) is in place. Full library builds.
+- **Smallest next artifact**: the additive large sieve LS1 — Montgomery's
+  inequality for δ-well-spaced points, the first module of the new
+  `AnalyticNumberTheory/LargeSieve/` layer (the finite layer above is its
+  direct consumer once type I/II are attached).
 - **Evidence required to retain the route**: V1/P1 must hold at the boundaries
   `n = 1`, `q = 1` and the cutoff extremes `u = 0`, `v = 0` (V1 is stated for
   all of them, so this is discharged); the corrected PAN statement must be
