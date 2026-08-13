@@ -157,8 +157,15 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.LargeSieve.conj_eq_inv_of_norm_eq_one
 #print axioms AnalyticNumberTheory.LargeSieve.char_conj_inv
 #print axioms AnalyticNumberTheory.LargeSieve.charReal_int_eq_one
+#print axioms AnalyticNumberTheory.LargeSieve.charReal_periodic_int
 #print axioms AnalyticNumberTheory.LargeSieve.geomSum_zmod_charReal
 #print axioms AnalyticNumberTheory.LargeSieve.zmodParseval
+#print axioms AnalyticNumberTheory.LargeSieve.zmod_sum_range
+#print axioms AnalyticNumberTheory.LargeSieve.zmod_dvd_add_iff
+#print axioms AnalyticNumberTheory.LargeSieve.zmod_dvd_sub_iff
+#print axioms AnalyticNumberTheory.LargeSieve.zmodCharKernel
+#print axioms AnalyticNumberTheory.LargeSieve.zmodParseval_inv
+#print axioms AnalyticNumberTheory.LargeSieve.zmodParseval_character
 #print axioms AnalyticNumberTheory.LargeSieve.charOrthSum
 #print axioms AnalyticNumberTheory.LargeSieve.unitClassSum
 #print axioms AnalyticNumberTheory.LargeSieve.charInnerReduce
@@ -166,6 +173,8 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.LargeSieve.rationalPoints
 #print axioms AnalyticNumberTheory.LargeSieve.rationals_distToInt_ge
 #print axioms AnalyticNumberTheory.LargeSieve.rationalPoints_wellSpaced
+#print axioms AnalyticNumberTheory.LargeSieve.largeSieveRationalPoints
+#print axioms AnalyticNumberTheory.LargeSieve.characterSieveModulus_le
 #print axioms AnalyticNumberTheory.Sieve.chenSieveRatio_approx
 #print axioms AnalyticNumberTheory.Mertens.log_primeProduct
 #print axioms AnalyticNumberTheory.Mertens.abs_log_primeFactor_add_le
