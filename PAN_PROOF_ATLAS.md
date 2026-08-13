@@ -132,7 +132,7 @@ means a proposed new bridge that still needs a falsifier.
 | V2 | Classical three-term form, valid for `n > v` | proven | BV/Pan type-II extraction | `Sieve.VaughanIdentity.vaughanIdentity_threeTerm` (via `vaughanFullSecondSum`, `vaughanDoubleSum_swap`, `moebiusDivisorSum_eq_ite`) |
 | P1 | `Squarefree q → 3^{ω(q)} = Σ_{d\|q} 2^{ω(d)}` | proven | weight absorption in Pan mean value | `Sieve.WeightedPan.threeOmega_eq_sum_twoOmega_divisors` |
 | P2 | Double-sum packaging `Σ_q μ²(q)3^{ω(q)}F(q) = Σ_d μ²(d)2^{ω(d)} Σ_m μ²(m)F(dm)` | proven | outer-sum variable change | `Sieve.WeightedPan.threeOmegaWeightedSum_packaging` |
-| LS1 | Additive large sieve (Montgomery): `Σ_r \|Σ_n a_n e(n x_r)\|² ≤ (N + δ⁻¹)Σ_n \|a_n\|²` for δ-well-spaced `{x_r}` | hypothesis (next major module) | LS2 | Needs mathlib exponential-sum / circle infrastructure; falsify at δ = 0 |
+| LS1 | Additive large sieve (Montgomery): `Σ_r \|Σ_n a_n e(n x_r)\|² ≤ (N + δ⁻¹)Σ_n \|a_n\|²` for δ-well-spaced `{x_r}` | target (module landed: `LargeSieve/Additive.lean` with defs, both target statements, and the kernel-checked primal/dual equivalence `largeSieveDuality` + `montgomeryDuality`; the inequality itself is still open) | LS2 | Needs the geometric-sum bound and the Schur/well-spaced step; the duality machinery and complex/real Cauchy-Schwarz are already checked |
 | LS2 | Multiplicative large sieve: `Σ_{q≤Q} (q/φ(q)) Σ*_χ \|Σ_n a_n χ(n)\|² ≤ (Q²+N)Σ_n \|a_n\|²` | hypothesis | LS3 | Derived from LS1 via `DirichletCharacter` orthogonality + Gauss sums |
 | LS3 | Arithmetic form in residue classes | hypothesis | type I bounds | Standard dual reformulation; falsifiable on the `1/q` centering |
 | MV | Montgomery mean-value: `∫₀^T \|Σ_{n≤N} a_n n^{-it}\|² dt = (T+O(N))Σ\|a_n\|²` (discrete form via Gallagher) | hypothesis | type I/II | Needs complex integration of Dirichlet polynomials |
@@ -161,10 +161,15 @@ P2 are all `proven`.
   (`threeOmega_eq_sum_twoOmega_divisors`), P2
   (`threeOmegaWeightedSum_packaging`) — is kernel-checked, and the corrected
   PAN statement (exact Liu Theorem 2 form) is in place. Full library builds.
-- **Smallest next artifact**: the additive large sieve LS1 — Montgomery's
-  inequality for δ-well-spaced points, the first module of the new
-  `AnalyticNumberTheory/LargeSieve/` layer (the finite layer above is its
-  direct consumer once type I/II are attached).
+- **This cycle (done)**: the `AnalyticNumberTheory/LargeSieve/Additive.lean`
+  module — exact target statements (primal/dual) for Montgomery's inequality
+  over `AddCircle 1`, plus kernel-checked machinery: real/complex
+  Cauchy–Schwarz and the generic finite-matrix duality
+  (`largeSieveDuality`), with the corollary `montgomeryDuality`.
+- **Smallest next artifact**: the geometric-sum bound
+  `|Σ_{M<n≤M+N} e(nx)| ≤ min(N, 1/(2·‖x‖))` (trigonometric step), then the
+  well-spaced/Schur step that closes LS1; afterwards the multiplicative large
+  sieve LS2 via `DirichletCharacter` orthogonality.
 - **Evidence required to retain the route**: V1/P1 must hold at the boundaries
   `n = 1`, `q = 1` and the cutoff extremes `u = 0`, `v = 0` (V1 is stated for
   all of them, so this is discharged); the corrected PAN statement must be

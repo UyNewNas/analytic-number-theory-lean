@@ -81,6 +81,13 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.panMaxL
 #print axioms AnalyticNumberTheory.Sieve.panMaxY
 #print axioms AnalyticNumberTheory.Sieve.PanMeanValueUniform
+#print axioms AnalyticNumberTheory.LargeSieve.MontgomeryLargeSievePrimal
+#print axioms AnalyticNumberTheory.LargeSieve.MontgomeryLargeSieveDual
+#print axioms AnalyticNumberTheory.LargeSieve.realCauchySchwarz
+#print axioms AnalyticNumberTheory.LargeSieve.complexCauchySchwarz
+#print axioms AnalyticNumberTheory.LargeSieve.largeSieveDuality_primalToDual
+#print axioms AnalyticNumberTheory.LargeSieve.largeSieveDuality
+#print axioms AnalyticNumberTheory.LargeSieve.montgomeryDuality
 #print axioms AnalyticNumberTheory.Sieve.chenSieveRatio_approx
 #print axioms AnalyticNumberTheory.Mertens.log_primeProduct
 #print axioms AnalyticNumberTheory.Mertens.abs_log_primeFactor_add_le
