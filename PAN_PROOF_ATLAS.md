@@ -76,10 +76,11 @@ name before building machinery around a statement. The current
    bounds `Σ f(a) |Δ(a)|`; the classical one bounds `|Σ f(a) Δ(a)|`. The
    former is stronger and is not what the proof yields at the type-I/II seam.
 
-**Decision (proposed, to be implemented in the next milestone):** restate
+**Decision (implemented):** restate
 `PanMeanValueUniform` to the exact Liu Theorem 2 form (restricted `a`,
 `max_y`, inner `|Σ|`), and add the two definitions it needs
-(`primesInAPBelow` with an explicit `y`, and the max-over-`y` wrapper). The
+(`primesInAPBelow` with an explicit `y` and product congruence, and the
+max-over-`y` wrapper `panMaxY`). The
 `(a,q) > 1` remainder (Liu's `R₁`) is Chen-specific — it depends on the shape
 of `f` and of the sifting product `Q` — so by the repository boundary rule it
 belongs in `chen-theorem-lean`, not in ant. The bridge to
