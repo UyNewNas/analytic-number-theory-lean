@@ -1032,3 +1032,33 @@ theorem rationals_distToInt_ge {q₁ r₁ q₂ r₂ : ℕ} (hq₁ : 0 < q₁) (h
   · -- 1 − fract z ≥ 1/(q₁q₂)
     rw [← hf2]
     exact hz2
+
+/-- 有理点集 `X_Q = {r/q : 1 ≤ q ≤ Q, 0 ≤ r < q}` 是 `1/Q²`-well-spaced. -/
+theorem rationalPoints_wellSpaced (Q : ℕ) (hQ : 0 < Q) :
+    wellSpacedReal (rationalPoints Q) (1 / (Q : ℝ) ^ 2) := by
+  intro x hx y hy hxy
+  rcases (Finset.mem_biUnion.mp hx) with ⟨q₁, hq₁, hx'⟩
+  rcases (Finset.mem_image.mp hx') with ⟨r₁, hr₁, rfl⟩
+  rcases (Finset.mem_biUnion.mp hy) with ⟨q₂, hq₂, hy'⟩
+  rcases (Finset.mem_image.mp hy') with ⟨r₂, hr₂, rfl⟩
+  have hq₁pos : 0 < q₁ := (Finset.mem_Icc.mp hq₁).1
+  have hq₂pos : 0 < q₂ := (Finset.mem_Icc.mp hq₂).1
+  have hq₁Q : q₁ ≤ Q := (Finset.mem_Icc.mp hq₁).2
+  have hq₂Q : q₂ ≤ Q := (Finset.mem_Icc.mp hq₂).2
+  have hr₁' : r₁ < q₁ := Finset.mem_range.mp hr₁
+  have hr₂' : r₂ < q₂ := Finset.mem_range.mp hr₂
+  have hd : 1 / ((q₁ : ℝ) * (q₂ : ℝ)) ≤
+      distToInt ((r₁ : ℝ) / (q₁ : ℝ) - (r₂ : ℝ) / (q₂ : ℝ)) :=
+    rationals_distToInt_ge hq₁pos hq₂pos hr₁' hr₂' hxy
+  have hq₁q₂ : (q₁ : ℝ) * (q₂ : ℝ) ≤ (Q : ℝ) * (Q : ℝ) := by
+    have h₁ : (q₁ : ℝ) ≤ (Q : ℝ) := by exact_mod_cast hq₁Q
+    have h₂ : (q₂ : ℝ) ≤ (Q : ℝ) := by exact_mod_cast hq₂Q
+    exact mul_le_mul h₁ h₂ (by positivity) (by positivity)
+  have hden₁ : 0 < (q₁ : ℝ) * (q₂ : ℝ) := mul_pos (by exact_mod_cast hq₁pos) (by exact_mod_cast hq₂pos)
+  have hQinv : 1 / ((Q : ℝ) * (Q : ℝ)) ≤ 1 / ((q₁ : ℝ) * (q₂ : ℝ)) :=
+    one_div_le_one_div_of_le hden₁ hq₁q₂
+  have hQ2 : (Q : ℝ) ^ 2 = (Q : ℝ) * (Q : ℝ) := by ring
+  calc
+    1 / (Q : ℝ) ^ 2 = 1 / ((Q : ℝ) * (Q : ℝ)) := by rw [hQ2]
+    _ ≤ 1 / ((q₁ : ℝ) * (q₂ : ℝ)) := hQinv
+    _ ≤ distToInt ((r₁ : ℝ) / (q₁ : ℝ) - (r₂ : ℝ) / (q₂ : ℝ)) := hd
