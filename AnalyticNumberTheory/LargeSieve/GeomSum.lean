@@ -21,6 +21,7 @@ import Mathlib.Analysis.SpecialFunctions.Complex.Arg
 import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 import Mathlib.Algebra.Order.Floor.Ring
 import Mathlib.Algebra.Field.GeomSum
+import Mathlib.Order.Interval.Finset.SuccPred
 import Mathlib.Tactic
 
 namespace AnalyticNumberTheory.LargeSieve
@@ -298,6 +299,115 @@ theorem geomSum_exp_bound (N : ℕ) (x : ℝ) :
   · exact geomSum_exp_bound_trivial N x
   · intro hx
     exact geomSum_exp_bound_far N hx
+
+/-! ## 5. 区间几何级数界 -/
+
+/-- 特征与负参数: `e(−x) = star(e(x))`, 由 `exp(conj z) = conj(exp z)` 得到. -/
+theorem charReal_neg (x : ℝ) : charReal (-x) = star (charReal x) := by
+  dsimp [charReal]
+  rw [show (2 * Real.pi * ((-x : ℝ) : ℂ)) * Complex.I =
+      -((2 * Real.pi * (x : ℂ)) * Complex.I) by
+        rw [Complex.ofReal_neg]
+        ring]
+  rw [← Complex.exp_conj]
+  congr 1
+  rw [map_mul (starRingEnd ℂ)]
+  rw [map_mul (starRingEnd ℂ)]
+  rw [map_mul (starRingEnd ℂ)]
+  rw [Complex.conj_ofNat]
+  rw [Complex.conj_ofReal, Complex.conj_ofReal, Complex.conj_I]
+  ring
+
+/-- 特征的性质: `e(a − b) = e(a)·star(e(b))` (群同态 + 共轭). -/
+theorem charReal_sub (a b : ℝ) : charReal (a - b) = charReal a * star (charReal b) := by
+  rw [sub_eq_add_neg, charReal_add, charReal_neg]
+
+/-- 区间 `(M, M+N]` 上的指数和 `Σ_{M<n≤M+N} e(nx)` (`n : ℤ`, 平移区间). -/
+noncomputable def charRealSubIcc (M : ℤ) (N : ℕ) (x : ℝ) : ℂ :=
+  ∑ n ∈ Finset.Icc (M + 1) (M + N), charReal ((n : ℝ) * x)
+
+lemma charRealSubIcc_succ (M : ℤ) (N : ℕ) (x : ℝ) :
+    charRealSubIcc M (N + 1) x =
+      charRealSubIcc M N x + charReal (((M + N + 1 : ℤ) : ℝ) * x) := by
+  dsimp [charRealSubIcc]
+  have hIcc : Finset.Icc (M + 1) (M + (N + 1) : ℤ) =
+      insert (M + N + 1) (Finset.Icc (M + 1) (M + N)) := by
+    ext n
+    simp [Finset.mem_Icc, Finset.mem_insert]
+    omega
+  have hmem : M + N + 1 ∉ Finset.Icc (M + 1) (M + N) := by
+    rw [Finset.mem_Icc]
+    omega
+  rw [hIcc, Finset.sum_insert hmem]
+  simp [add_comm]
+
+/-- **区间指数和因子化**: `Σ_{M<n≤M+N} e(nx) = e((M+1)x)·Σ_{k<N} e(kx)`. -/
+theorem charRealSubIcc_eq_shift (M : ℤ) (N : ℕ) (x : ℝ) :
+    charRealSubIcc M N x =
+      charReal (((M + 1 : ℤ) : ℝ) * x) * ∑ k ∈ Finset.range N, charReal ((k : ℝ) * x) := by
+  induction N with
+  | zero =>
+      dsimp [charRealSubIcc]
+      simp
+  | succ N ih =>
+      rw [charRealSubIcc_succ, ih]
+      rw [Finset.sum_range_succ]
+      have htop : charReal (((M + N + 1 : ℤ) : ℝ) * x) =
+          charReal (((M + 1 : ℤ) : ℝ) * x) * charReal ((N : ℝ) * x) := by
+        have hz : (((M + N + 1 : ℤ) : ℝ) * x) =
+            (((M + 1 : ℤ) : ℝ) * x) + ((N : ℝ) * x) := by
+          have hzℤ : (M + N + 1 : ℤ) = (M + 1) + (N : ℤ) := by omega
+          rw [hzℤ]
+          push_cast
+          ring
+        rw [hz, charReal_add]
+      rw [htop]
+      ring
+
+/-- **区间指数和 (平凡界)**: `|Σ_{M<n≤M+N} e(nx)| ≤ N`. -/
+theorem geomSum_exp_bound_Icc_trivial (M : ℤ) (N : ℕ) (x : ℝ) :
+    ‖charRealSubIcc M N x‖ ≤ N := by
+  rw [charRealSubIcc_eq_shift]
+  have hunit : ‖charReal (((M + 1 : ℤ) : ℝ) * x)‖ = 1 := by
+    dsimp [charReal]
+    simpa using Complex.norm_exp_ofReal_mul_I (2 * Real.pi * (((M + 1 : ℤ) : ℝ) * x))
+  calc
+    ‖charReal (((M + 1 : ℤ) : ℝ) * x) *
+        ∑ k ∈ Finset.range N, charReal ((k : ℝ) * x)‖
+        ≤ ‖charReal (((M + 1 : ℤ) : ℝ) * x)‖ *
+            ‖∑ k ∈ Finset.range N, charReal ((k : ℝ) * x)‖ := by
+          exact norm_mul_le _ _
+    _ = ‖∑ k ∈ Finset.range N, charReal ((k : ℝ) * x)‖ := by rw [hunit, one_mul]
+    _ ≤ N := by
+          simpa using geomSum_exp_bound_trivial N x
+
+/-- **区间指数和 (非平凡界)**: 对 `x ∉ ℤ`,
+  `|Σ_{M<n≤M+N} e(nx)| ≤ 1/(2‖x‖)`. -/
+theorem geomSum_exp_bound_Icc_far (M : ℤ) (N : ℕ) {x : ℝ}
+    (hx : ¬ ∃ k : ℤ, (k : ℝ) = x) :
+    ‖charRealSubIcc M N x‖ ≤ 1 / (2 * distToInt x) := by
+  rw [charRealSubIcc_eq_shift]
+  have hunit : ‖charReal (((M + 1 : ℤ) : ℝ) * x)‖ = 1 := by
+    dsimp [charReal]
+    simpa using Complex.norm_exp_ofReal_mul_I (2 * Real.pi * (((M + 1 : ℤ) : ℝ) * x))
+  calc
+    ‖charReal (((M + 1 : ℤ) : ℝ) * x) *
+        ∑ k ∈ Finset.range N, charReal ((k : ℝ) * x)‖
+        ≤ 1 * ‖∑ k ∈ Finset.range N, charReal ((k : ℝ) * x)‖ := by
+          rw [norm_mul, hunit]
+    _ ≤ 1 / (2 * distToInt x) := by
+          simpa using geomSum_exp_bound_far N hx
+
+/-- **区间几何级数界**: `|Σ_{M<n≤M+N} e(nx)| ≤ min(N, 1/(2‖x‖))`
+的两个组成部分. -/
+theorem geomSum_exp_bound_Icc (M : ℤ) (N : ℕ) (x : ℝ) :
+    ‖charRealSubIcc M N x‖ ≤ N ∧
+      ((¬ ∃ k : ℤ, (k : ℝ) = x) →
+        ‖charRealSubIcc M N x‖ ≤ 1 / (2 * distToInt x)) := by
+  constructor
+  · exact geomSum_exp_bound_Icc_trivial M N x
+  · intro hx
+    exact geomSum_exp_bound_Icc_far M N hx
 
 end
 

@@ -132,7 +132,7 @@ means a proposed new bridge that still needs a falsifier.
 | V2 | Classical three-term form, valid for `n > v` | proven | BV/Pan type-II extraction | `Sieve.VaughanIdentity.vaughanIdentity_threeTerm` (via `vaughanFullSecondSum`, `vaughanDoubleSum_swap`, `moebiusDivisorSum_eq_ite`) |
 | P1 | `Squarefree q → 3^{ω(q)} = Σ_{d\|q} 2^{ω(d)}` | proven | weight absorption in Pan mean value | `Sieve.WeightedPan.threeOmega_eq_sum_twoOmega_divisors` |
 | P2 | Double-sum packaging `Σ_q μ²(q)3^{ω(q)}F(q) = Σ_d μ²(d)2^{ω(d)} Σ_m μ²(m)F(dm)` | proven | outer-sum variable change | `Sieve.WeightedPan.threeOmegaWeightedSum_packaging` |
-| LS1 | Additive large sieve (Montgomery): `Σ_r \|Σ_n a_n e(n x_r)\|² ≤ (N + δ⁻¹)Σ_n \|a_n\|²` for δ-well-spaced `{x_r}` | target (module landed: defs, both target statements, primal/dual equivalence `largeSieveDuality` + `montgomeryDuality`, and the geometric-sum bound `geomSum_exp_bound` — the trivial bound `≤ N` and the nontrivial `≤ 1/(2‖x‖)` are kernel-checked in `LargeSieve/GeomSum.lean`; only the well-spaced/Schur assembly into the full inequality remains) | LS2 | Needs the well-spaced/Schur step (counting argument with `dist x 0`), then the full Montgomery inequality follows |
+| LS1 | Additive large sieve (Montgomery): `Σ_r \|Σ_n a_n e(n x_r)\|² ≤ (N + δ⁻¹)Σ_n \|a_n\|²` for δ-well-spaced `{x_r}` | target (module landed: defs, both target statements, primal/dual equivalence `largeSieveDuality` + `montgomeryDuality`, the geometric-sum bound `geomSum_exp_bound` with the interval version `geomSum_exp_bound_Icc`/`charRealSubIcc_eq_shift` in `LargeSieve/GeomSum.lean`, and the Parseval step `dualExpansion`/`dualQuadraticIdentity`(+`_Icc`/`_circle`) in `LargeSieve/Duality.lean` — all kernel-checked; only the well-spaced/Schur assembly into the full inequality remains) | LS2 | Needs the well-spaced/Schur step (counting argument with `dist x 0`), then the full Montgomery inequality follows |
 | LS2 | Multiplicative large sieve: `Σ_{q≤Q} (q/φ(q)) Σ*_χ \|Σ_n a_n χ(n)\|² ≤ (Q²+N)Σ_n \|a_n\|²` | hypothesis | LS3 | Derived from LS1 via `DirichletCharacter` orthogonality + Gauss sums |
 | LS3 | Arithmetic form in residue classes | hypothesis | type I bounds | Standard dual reformulation; falsifiable on the `1/q` centering |
 | MV | Montgomery mean-value: `∫₀^T \|Σ_{n≤N} a_n n^{-it}\|² dt = (T+O(N))Σ\|a_n\|²` (discrete form via Gallagher) | hypothesis | type I/II | Needs complex integration of Dirichlet polynomials |
@@ -168,10 +168,25 @@ P2 are all `proven`.
   `|e(x)−1| = 2|sin(πx)|`, and the sin lower bound
   `|sin(πt)| ≥ 2·min(t, 1−t)`; the distance-to-integer `‖x‖` uses
   `Int.fract`/`Int.floor`.
+- **This cycle (done)**: the interval geometric-sum bound
+  (`geomSum_exp_bound_Icc` via `charRealSubIcc_eq_shift`, `e((M+1)x)`-factor)
+  and the dual quadratic-form identity (`LargeSieve/Duality.lean`:
+  `dualExpansion` for finite matrices, then `dualQuadraticIdentity` /
+  `dualQuadraticIdentity_Icc` / `dualQuadraticIdentity_circle` via the
+  character-cross lemmas `charReal_cross` / `charPow_cross`) are
+  kernel-checked. The circle version matches the `MontgomeryLargeSieveDual`
+  statement exactly, so the Parseval seam of LS1 is now fully formal.
 - **Smallest next artifact**: the well-spaced/Schur step that closes LS1 —
   show `Σ_{y∈X} min(N, 1/(2·dist x y)) ≤ N + 1/δ` for δ-well-spaced `X`,
-  then feed the geometric-sum bound into the dual form; afterwards the
-  multiplicative large sieve LS2 via `DirichletCharacter` orthogonality.
+  then feed the geometric-sum bound into the dual form. Note on constants:
+  the strongest constant `N + 1/δ` needs Montgomery's positive-definite
+  kernel/Parseval device; a plain Schur test gives only a weak constant
+  `(N + 1/δ)·(π/2)²`-type (dyadic shells + a `log(1/δ)` factor), which is
+  provable with the current machinery but is not the classical optimum.
+  Decision gate: prove the weak-constant Schur step here and record the
+  strong constant as an open dependency (needs additional Fourier-kernel
+  infrastructure), or build the kernel device in a later cycle. Afterwards
+  the multiplicative large sieve LS2 via `DirichletCharacter` orthogonality.
 - **Evidence required to retain the route**: V1/P1 must hold at the boundaries
   `n = 1`, `q = 1` and the cutoff extremes `u = 0`, `v = 0` (V1 is stated for
   all of them, so this is discharged); the corrected PAN statement must be
