@@ -452,4 +452,108 @@ theorem mertensSecond_nat :
     abs_of_pos (one_div_pos.mpr hlog), abs_of_pos hlog, div_eq_mul_inv]
     using hbound hne
 
+/-- **素数倒数和的范围界 (ant #17, 里程碑 2)**: 对 `3 ≤ a ≤ b`,
+`Σ_{a ≤ p ≤ b} 1/p ≤ log(log b/log a) + E` — Mertens 第二定理的显式误差,
+两端的 `log log` 相减自动给出比值 `log b/log a`. -/
+theorem primeReciprocalSum_range_le :
+    ∃ E : ℝ, 0 < E ∧ ∀ a b : ℕ, 3 ≤ a → a ≤ b →
+      primeReciprocalSum b - primeReciprocalSum (a - 1) ≤
+        log (log (b : ℝ) / log (a : ℝ)) + E := by
+  obtain ⟨C, hC, hM⟩ := mertensSecond_nat
+  let E : ℝ := log 2 + 2 * C / log 2
+  refine ⟨E, ?_, ?_⟩
+  · dsimp [E]
+    positivity
+  · intro a b ha hb
+    have hb2 : 2 ≤ b := by omega
+    have ha2 : 2 ≤ a - 1 := by omega
+    have hMb : primeReciprocalSum b ≤
+        log (log (b : ℝ)) + mertensSecondConstant + C / log (b : ℝ) := by
+      have h := hM b hb2
+      have hle : primeReciprocalSum b - (log (log (b : ℝ)) + mertensSecondConstant) ≤
+          C / log (b : ℝ) := (abs_le.mp h).2
+      linarith
+    have hMa : log (log ((a - 1 : ℕ) : ℝ)) + mertensSecondConstant -
+          C / log ((a - 1 : ℕ) : ℝ) ≤ primeReciprocalSum (a - 1) := by
+      have h := hM (a - 1) ha2
+      have hge : -(C / log ((a - 1 : ℕ) : ℝ)) ≤
+          primeReciprocalSum (a - 1) - (log (log ((a - 1 : ℕ) : ℝ)) + mertensSecondConstant) :=
+        (abs_le.mp h).1
+      linarith
+    have hdiff : primeReciprocalSum b - primeReciprocalSum (a - 1) ≤
+        log (log (b : ℝ)) - log (log ((a - 1 : ℕ) : ℝ)) +
+          C / log (b : ℝ) + C / log ((a - 1 : ℕ) : ℝ) := by
+      linarith
+    have hlogb : 0 < log (b : ℝ) := Real.log_pos (by exact_mod_cast (by omega : 1 < b))
+    have hloga1 : 0 < log ((a - 1 : ℕ) : ℝ) :=
+      Real.log_pos (by exact_mod_cast (by omega : 1 < a - 1))
+    have hloga : 0 < log (a : ℝ) := Real.log_pos (by exact_mod_cast (by omega : 1 < a))
+    have hlogratio : log (log (b : ℝ)) - log (log ((a - 1 : ℕ) : ℝ)) =
+        log (log (b : ℝ) / log ((a - 1 : ℕ) : ℝ)) := by
+      rw [← Real.log_div (ne_of_gt hlogb) (ne_of_gt hloga1)]
+    have hlog2 : 0 < log 2 := Real.log_pos (by norm_num : (1 : ℝ) < 2)
+    have hratio_le : log (a : ℝ) / log ((a - 1 : ℕ) : ℝ) ≤ 2 := by
+      have hla : log (a : ℝ) ≤ log 2 + log ((a - 1 : ℕ) : ℝ) := by
+        have ha_le : (a : ℝ) ≤ 2 * ((a - 1 : ℕ) : ℝ) := by
+          have : a ≤ 2 * (a - 1) := by omega
+          exact_mod_cast this
+        calc
+          log (a : ℝ) ≤ log (2 * ((a - 1 : ℕ) : ℝ)) :=
+            Real.log_le_log (by positivity) ha_le
+          _ = log 2 + log ((a - 1 : ℕ) : ℝ) :=
+            Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) (by positivity : ((a - 1 : ℕ) : ℝ) ≠ 0)
+      have hla1ge : log 2 ≤ log ((a - 1 : ℕ) : ℝ) :=
+        Real.log_le_log (by norm_num) (by exact_mod_cast (by omega : 2 ≤ a - 1))
+      rw [div_le_iff₀ hloga1]
+      nlinarith
+    have hratio_ge : 1 ≤ log (a : ℝ) / log ((a - 1 : ℕ) : ℝ) := by
+      have hge : log ((a - 1 : ℕ) : ℝ) ≤ log (a : ℝ) :=
+        Real.log_le_log (by exact_mod_cast (by omega : 0 < a - 1))
+          (by exact_mod_cast (by omega : a - 1 ≤ a))
+      rw [le_div_iff₀ hloga1]
+      simpa using hge
+    have hsplit : log (log (b : ℝ) / log ((a - 1 : ℕ) : ℝ)) =
+        log (log (b : ℝ) / log (a : ℝ)) + log (log (a : ℝ) / log ((a - 1 : ℕ) : ℝ)) := by
+      have hprod : log (b : ℝ) / log ((a - 1 : ℕ) : ℝ) =
+          log (b : ℝ) / log (a : ℝ) * (log (a : ℝ) / log ((a - 1 : ℕ) : ℝ)) := by
+        field_simp [hloga.ne', hloga1.ne']
+      rw [hprod]
+      exact Real.log_mul (div_ne_zero (ne_of_gt hlogb) (ne_of_gt hloga))
+        (div_ne_zero (ne_of_gt hloga) (ne_of_gt hloga1))
+    have hratio_log : log (log (a : ℝ) / log ((a - 1 : ℕ) : ℝ)) ≤ log 2 :=
+      Real.log_le_log (lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) hratio_ge) hratio_le
+    have htail : C / log (b : ℝ) + C / log ((a - 1 : ℕ) : ℝ) ≤ 2 * C / log 2 := by
+      have hb1 : log 2 ≤ log (b : ℝ) :=
+        Real.log_le_log (by norm_num) (by exact_mod_cast (by omega : 2 ≤ b))
+      have ha1 : log 2 ≤ log ((a - 1 : ℕ) : ℝ) :=
+        Real.log_le_log (by norm_num) (by exact_mod_cast (by omega : 2 ≤ a - 1))
+      have hb_inv : 1 / log (b : ℝ) ≤ 1 / log 2 := one_div_le_one_div_of_le hlog2 hb1
+      have ha_inv : 1 / log ((a - 1 : ℕ) : ℝ) ≤ 1 / log 2 :=
+        one_div_le_one_div_of_le hlog2 ha1
+      have hsum : 1 / log (b : ℝ) + 1 / log ((a - 1 : ℕ) : ℝ) ≤ 2 / log 2 := by
+        calc
+          1 / log (b : ℝ) + 1 / log ((a - 1 : ℕ) : ℝ)
+              ≤ 1 / log 2 + 1 / log 2 := add_le_add hb_inv ha_inv
+          _ = 2 / log 2 := by ring
+      calc
+        C / log (b : ℝ) + C / log ((a - 1 : ℕ) : ℝ)
+            = C * (1 / log (b : ℝ) + 1 / log ((a - 1 : ℕ) : ℝ)) := by ring
+        _ ≤ C * (2 / log 2) := mul_le_mul_of_nonneg_left hsum hC.le
+        _ = 2 * C / log 2 := by ring
+    calc
+      primeReciprocalSum b - primeReciprocalSum (a - 1)
+          ≤ log (log (b : ℝ)) - log (log ((a - 1 : ℕ) : ℝ)) +
+              C / log (b : ℝ) + C / log ((a - 1 : ℕ) : ℝ) := hdiff
+      _ = log (log (b : ℝ) / log ((a - 1 : ℕ) : ℝ)) +
+              C / log (b : ℝ) + C / log ((a - 1 : ℕ) : ℝ) := by rw [hlogratio]
+      _ = log (log (b : ℝ) / log (a : ℝ)) +
+              log (log (a : ℝ) / log ((a - 1 : ℕ) : ℝ)) +
+              C / log (b : ℝ) + C / log ((a - 1 : ℕ) : ℝ) := by rw [hsplit]
+      _ ≤ log (log (b : ℝ) / log (a : ℝ)) + log 2 +
+              C / log (b : ℝ) + C / log ((a - 1 : ℕ) : ℝ) := by
+            linarith
+      _ ≤ log (log (b : ℝ) / log (a : ℝ)) + (log 2 + 2 * C / log 2) := by
+            linarith
+      _ = log (log (b : ℝ) / log (a : ℝ)) + E := by rfl
+
 end AnalyticNumberTheory.Mertens

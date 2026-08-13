@@ -13,6 +13,7 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.PrimeDistribution.chebyshevTheta_error
 #print axioms AnalyticNumberTheory.PrimeDistribution.chebyshevTheta_endpoint_error
 #print axioms AnalyticNumberTheory.PrimeDistribution.primeCounting_asymptotic_real
+#print axioms AnalyticNumberTheory.PrimeDistribution.primeCounting_upper_bound
 #print axioms AnalyticNumberTheory.PrimeDistribution.NatPrimeCountingPNT
 #print axioms AnalyticNumberTheory.PrimeDistribution.natPrimeCountingPNT
 #print axioms AnalyticNumberTheory.Sieve.goldbachNu_apply_prime
@@ -107,6 +108,7 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Mertens.mertensSecond_eventually
 #print axioms AnalyticNumberTheory.Mertens.mertensSecond_nat
 #print axioms AnalyticNumberTheory.Mertens.mertensSecond_isBigO
+#print axioms AnalyticNumberTheory.Mertens.primeReciprocalSum_range_le
 #print axioms AnalyticNumberTheory.Mertens.neg_log_primeProduct_eq_reciprocal_add_correction
 #print axioms AnalyticNumberTheory.Mertens.summable_logarithmicCorrectionTerm
 #print axioms AnalyticNumberTheory.Mertens.tendsto_logarithmicCorrection
