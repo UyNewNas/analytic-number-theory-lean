@@ -54,6 +54,7 @@ import Mathlib.Tactic.Ring
 
 import AnalyticNumberTheory.Sieve.LinearSieve
 import AnalyticNumberTheory.Sieve.SelbergIdentities
+import AnalyticNumberTheory.Sieve.WeightedPan
 
 namespace AnalyticNumberTheory.Sieve
 
@@ -701,6 +702,254 @@ theorem selberg_upper_bound_sieveProduct (SP : SieveProblem) :
   obtain ⟨w, hw1, hbound⟩ := selberg_upper_bound_optimal SP.toBoundingSieve
   refine ⟨w, hw1, ?_⟩
   rwa [selbergMainTerm_eq_sieveProduct SP] at hbound
+
+/-! ## 3.7 最优 Λ² 权重即 Möbius -/
+
+/-- 筛积除数上的"超集和"分解: 对乘性 `f`,
+`Σ_{e : d|e|P} f(e) = f(d)·Σ_{g | P/d} f(g)`. -/
+private lemma sum_multiplicative_over_supersets {S : BoundingSieve} {d : ℕ}
+    (hd : d ∣ S.prodPrimes) (f : ℕ → ℝ)
+    (hf_mul : ∀ {m n : ℕ}, m.Coprime n → f (m * n) = f m * f n) :
+    (∑ e ∈ S.prodPrimes.divisors, if d ∣ e then f e else 0) =
+      f d * (∑ g ∈ (S.prodPrimes / d).divisors, f g) := by
+  have hP0 : S.prodPrimes ≠ 0 := S.prodPrimes_ne_zero
+  have hd0 : d ≠ 0 := Nat.ne_of_gt (Nat.pos_of_dvd_of_pos hd (Nat.pos_of_ne_zero hP0))
+  have hPd : S.prodPrimes / d ≠ 0 :=
+    Nat.ne_of_gt (Nat.pos_of_dvd_of_pos (Nat.div_dvd_of_dvd hd) (Nat.pos_of_ne_zero hP0))
+  calc
+    (∑ e ∈ S.prodPrimes.divisors, if d ∣ e then f e else 0)
+        = ∑ e ∈ (S.prodPrimes.divisors.filter (fun e => d ∣ e)), f e := by
+            rw [← Finset.sum_filter]
+    _ = ∑ g ∈ (S.prodPrimes / d).divisors, f (d * g) := by
+            refine Finset.sum_bij (fun e he => e / d) ?_ ?_ ?_ ?_
+            · intro e he
+              rw [Finset.mem_filter] at he
+              rcases he with ⟨heP, hde⟩
+              have he_dvd : e ∣ S.prodPrimes := (Nat.mem_divisors.mp heP).1
+              have hmain : d * (e / d) ∣ d * (S.prodPrimes / d) := by
+                rw [Nat.mul_div_cancel' hde, Nat.mul_div_cancel' hd]
+                exact he_dvd
+              have hq : e / d ∣ S.prodPrimes / d :=
+                (Nat.mul_dvd_mul_iff_left (Nat.pos_of_ne_zero hd0)).mp hmain
+              exact Nat.mem_divisors.mpr ⟨hq, hPd⟩
+            · intro e1 he1 e2 he2 hdiv
+              have hde1 : d ∣ e1 := (Finset.mem_filter.mp he1).2
+              have hde2 : d ∣ e2 := (Finset.mem_filter.mp he2).2
+              calc
+                e1 = d * (e1 / d) := (Nat.mul_div_cancel' hde1).symm
+                _ = d * (e2 / d) := by rw [hdiv]
+                _ = e2 := Nat.mul_div_cancel' hde2
+            · intro g hg
+              have hg_dvd : g ∣ S.prodPrimes / d := (Nat.mem_divisors.mp hg).1
+              have hmain : d * g ∣ d * (S.prodPrimes / d) :=
+                (Nat.mul_dvd_mul_iff_left (Nat.pos_of_ne_zero hd0)).mpr hg_dvd
+              have hdvd : d * g ∣ S.prodPrimes := by rwa [Nat.mul_div_cancel' hd] at hmain
+              refine ⟨d * g, ?_, ?_⟩
+              · rw [Finset.mem_filter]
+                exact ⟨Nat.mem_divisors.mpr ⟨hdvd, hP0⟩, dvd_mul_right d g⟩
+              · rw [mul_comm]
+                exact Nat.mul_div_cancel g (Nat.pos_of_ne_zero hd0)
+            · intro e he
+              rw [Finset.mem_filter] at he
+              rcases he with ⟨heP, hde⟩
+              rw [Nat.mul_div_cancel' hde]
+    _ = f d * (∑ g ∈ (S.prodPrimes / d).divisors, f g) := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro g hg
+            have hg_dvd : g ∣ S.prodPrimes / d := (Nat.mem_divisors.mp hg).1
+            have hmain : d * g ∣ d * (S.prodPrimes / d) :=
+              (Nat.mul_dvd_mul_iff_left (Nat.pos_of_ne_zero hd0)).mpr hg_dvd
+            have hdvd : d * g ∣ S.prodPrimes := by rwa [Nat.mul_div_cancel' hd] at hmain
+            have hsq_dg : Squarefree (d * g) :=
+              Squarefree.squarefree_of_dvd hdvd S.prodPrimes_squarefree
+            have hcop : d.Coprime g := Nat.coprime_of_squarefree_mul hsq_dg
+            exact hf_mul hcop
+
+/-- `ν·μ` 的逐点乘性: `(νμ)(m·n) = (νμ)(m)·(νμ)(n)` (对互素 `m n`). -/
+private lemma nu_mul_moebius_mul {S : BoundingSieve} {m n : ℕ} (hcop : m.Coprime n) :
+    S.nu (m * n) * (μ (m * n) : ℝ) =
+      (S.nu m * (μ m : ℝ)) * (S.nu n * (μ n : ℝ)) := by
+  have hν := S.nu_mult.map_mul_of_coprime hcop
+  have hμ := ArithmeticFunction.isMultiplicative_moebius.map_mul_of_coprime hcop
+  have hμR : ((μ (m * n) : ℤ) : ℝ) = ((μ m : ℤ) : ℝ) * ((μ n : ℤ) : ℝ) := by
+    exact_mod_cast hμ
+  rw [hν, hμR]
+  ring
+
+/-- 对 squarefree `m`: `Σ_{f | m} ν(f)·μ(f) = ∏_{q | m}(1 − ν(q))`. -/
+private lemma sum_nu_mul_moebius_factors (S : BoundingSieve) (m : ℕ) (hm : Squarefree m) :
+    (∑ f ∈ m.divisors, S.nu f * (μ f : ℝ)) =
+      ∏ q ∈ m.primeFactors, (1 - S.nu q) := by
+  let F : ArithmeticFunction ℝ :=
+    { toFun := fun d : ℕ => S.nu d * (μ d : ℝ), map_zero' := by simp }
+  have hF : F.IsMultiplicative := by
+    constructor
+    · simp [F, S.nu_mult.map_one]
+    · intro a b hab
+      have h := nu_mul_moebius_mul (S := S) hab
+      simpa [F] using h
+  have hfac := ArithmeticFunction.IsMultiplicative.prodPrimeFactors_one_add_of_squarefree hF hm
+  change (∑ f ∈ m.divisors, F f) = ∏ q ∈ m.primeFactors, (1 - S.nu q)
+  rw [← hfac]
+  apply Finset.prod_congr rfl
+  intro q hq
+  have hq_p : q.Prime := Nat.prime_of_mem_primeFactors hq
+  have hμq : ((μ q : ℤ) : ℝ) = -1 := by
+    rw [ArithmeticFunction.moebius_apply_of_squarefree hq_p.squarefree]
+    have hΩ : ArithmeticFunction.cardFactors q = 1 :=
+      ArithmeticFunction.cardFactors_apply_prime hq_p
+    rw [hΩ]
+    norm_num
+  simp [F, hμq]
+  ring
+
+/-- **Möbius 满足与最优权重相同的 X-方程**:
+`Σ_{d : l|d|P} ν(d)·μ(d) = x*_l = g(l)·μ(l)·T`. -/
+theorem sum_nu_mul_moebius_over_supersets (S : BoundingSieve) (l : ℕ) (hl : l ∣ S.prodPrimes) :
+    (∑ d ∈ S.prodPrimes.divisors, if l ∣ d then S.nu d * (μ d : ℝ) else 0) =
+      S.selbergTerms l * (μ l : ℝ) * selbergMainTerm S := by
+  have hsup := sum_multiplicative_over_supersets (S := S) (d := l) hl
+    (fun d => S.nu d * (μ d : ℝ)) (fun {m n} hcop => nu_mul_moebius_mul hcop)
+  have hfact : (∑ f ∈ (S.prodPrimes / l).divisors, S.nu f * (μ f : ℝ)) =
+      ∏ q ∈ (S.prodPrimes / l).primeFactors, (1 - S.nu q) := by
+    exact sum_nu_mul_moebius_factors S (S.prodPrimes / l)
+      (Squarefree.squarefree_of_dvd (Nat.div_dvd_of_dvd hl) S.prodPrimes_squarefree)
+  have hR : S.selbergTerms l * (μ l : ℝ) * selbergMainTerm S =
+      (μ l : ℝ) * S.nu l * (∏ q ∈ (S.prodPrimes / l).primeFactors, (1 - S.nu q)) := by
+    have hsq_l : Squarefree l := Squarefree.squarefree_of_dvd hl S.prodPrimes_squarefree
+    have hl0 : l ≠ 0 := Nat.ne_of_gt (Nat.pos_of_dvd_of_pos hl (Nat.pos_of_ne_zero S.prodPrimes_ne_zero))
+    have hPd0 : S.prodPrimes / l ≠ 0 :=
+      Nat.ne_of_gt (Nat.pos_of_dvd_of_pos (Nat.div_dvd_of_dvd hl) (Nat.pos_of_ne_zero S.prodPrimes_ne_zero))
+    have hg : S.selbergTerms l = S.nu l * ∏ q ∈ l.primeFactors, (1 - S.nu q)⁻¹ := by
+      rw [BoundingSieve.selbergTerms_apply]
+    have hT : selbergMainTerm S = ∏ q ∈ S.prodPrimes.primeFactors, (1 - S.nu q) := by
+      unfold selbergMainTerm
+      rw [selbergSum_eq_prod_inv]
+      rw [Finset.prod_inv_distrib]
+      rw [inv_inv]
+    have hsplit : (∏ q ∈ S.prodPrimes.primeFactors, (1 - S.nu q)) =
+        (∏ q ∈ l.primeFactors, (1 - S.nu q)) *
+          (∏ q ∈ (S.prodPrimes / l).primeFactors, (1 - S.nu q)) := by
+      have heq : S.prodPrimes = l * (S.prodPrimes / l) := (Nat.mul_div_cancel' hl).symm
+      have hcop : l.Coprime (S.prodPrimes / l) := by
+        have hsq : Squarefree (l * (S.prodPrimes / l)) := by
+          rw [← heq]
+          exact S.prodPrimes_squarefree
+        exact Nat.coprime_of_squarefree_mul hsq
+      calc
+        (∏ q ∈ S.prodPrimes.primeFactors, (1 - S.nu q))
+            = (∏ q ∈ (l * (S.prodPrimes / l)).primeFactors, (1 - S.nu q)) := by
+                conv_lhs => rw [heq]
+        _ = (∏ q ∈ l.primeFactors, (1 - S.nu q)) *
+              (∏ q ∈ (S.prodPrimes / l).primeFactors, (1 - S.nu q)) := by
+                rw [Nat.primeFactors_mul hl0 hPd0,
+                  Finset.prod_union (Nat.Coprime.disjoint_primeFactors hcop)]
+    have hneA : (∏ q ∈ l.primeFactors, (1 - S.nu q)) ≠ 0 := by
+      apply Finset.prod_ne_zero_iff.mpr
+      intro q hq
+      have hq_p : q.Prime := Nat.prime_of_mem_primeFactors hq
+      have hq_dvd : q ∣ S.prodPrimes := (Nat.dvd_of_mem_primeFactors hq).trans hl
+      linarith [S.nu_lt_one_of_prime q hq_p hq_dvd]
+    calc
+      S.selbergTerms l * (μ l : ℝ) * selbergMainTerm S
+          = ((μ l : ℝ) * S.nu l * ∏ q ∈ l.primeFactors, (1 - S.nu q)⁻¹) *
+              (∏ q ∈ S.prodPrimes.primeFactors, (1 - S.nu q)) := by
+              rw [hg, hT]
+              ring
+      _ = (μ l : ℝ) * S.nu l *
+              (∏ q ∈ l.primeFactors, (1 - S.nu q))⁻¹ *
+              (∏ q ∈ l.primeFactors, (1 - S.nu q)) *
+              (∏ q ∈ (S.prodPrimes / l).primeFactors, (1 - S.nu q)) := by
+              rw [hsplit]
+              rw [Finset.prod_inv_distrib]
+              ring
+      _ = (μ l : ℝ) * S.nu l *
+              (∏ q ∈ (S.prodPrimes / l).primeFactors, (1 - S.nu q)) := by
+              field_simp [hneA]
+  have hL : (∑ d ∈ S.prodPrimes.divisors, if l ∣ d then S.nu d * (μ d : ℝ) else 0) =
+      (μ l : ℝ) * S.nu l * (∏ q ∈ (S.prodPrimes / l).primeFactors, (1 - S.nu q)) := by
+    calc
+      (∑ d ∈ S.prodPrimes.divisors, if l ∣ d then S.nu d * (μ d : ℝ) else 0)
+          = (S.nu l * (μ l : ℝ)) *
+              (∑ g ∈ (S.prodPrimes / l).divisors, S.nu g * (μ g : ℝ)) := hsup
+      _ = (S.nu l * (μ l : ℝ)) * (∏ q ∈ (S.prodPrimes / l).primeFactors, (1 - S.nu q)) := by
+              rw [hfact]
+      _ = (μ l : ℝ) * S.nu l * (∏ q ∈ (S.prodPrimes / l).primeFactors, (1 - S.nu q)) := by
+              ring
+  rw [hL, hR]
+
+/-- **Möbius 权重的主项**: `mainSum(Λ²μ) = (Σ_{d | P} selbergTerms d)⁻¹`. -/
+theorem mainSum_lambdaSquared_moebius_eq (S : BoundingSieve) :
+    S.mainSum (BoundingSieve.lambdaSquared (fun d => (μ d : ℝ))) = selbergMainTerm S := by
+  rw [mainSum_diag_via_mathlib]
+  have hx : ∀ l ∈ S.prodPrimes.divisors,
+      (∑ d ∈ S.prodPrimes.divisors, if l ∣ d then S.nu d * (μ d : ℝ) else 0) =
+        optimalSelbergX S l := by
+    intro l hl
+    exact sum_nu_mul_moebius_over_supersets S l ((Nat.mem_divisors.mp hl).1)
+  have hsum1 : (∑ l ∈ S.prodPrimes.divisors,
+        (S.selbergTerms l)⁻¹ *
+          (∑ d ∈ S.prodPrimes.divisors, if l ∣ d then S.nu d * (μ d : ℝ) else 0) ^ 2) =
+      ∑ l ∈ S.prodPrimes.divisors, (S.selbergTerms l)⁻¹ * (optimalSelbergX S l) ^ 2 := by
+    apply Finset.sum_congr rfl
+    intro l hl
+    rw [← hx l hl]
+  rw [hsum1]
+  have hsum2 : (∑ l ∈ S.prodPrimes.divisors,
+        (S.selbergTerms l)⁻¹ * (optimalSelbergX S l) ^ 2) =
+      (selbergMainTerm S) ^ 2 * (∑ l ∈ S.prodPrimes.divisors, S.selbergTerms l) := by
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro l hl
+    have hg : S.selbergTerms l ≠ 0 := (S.selbergTerms_pos ((Nat.mem_divisors.mp hl).1)).ne'
+    have hsq := S.squarefree_of_mem_divisors_prodPrimes hl
+    have hμsq : ((μ l : ℝ) ^ 2) = 1 := by
+      exact_mod_cast ArithmeticFunction.moebius_sq_eq_one_of_squarefree hsq
+    unfold optimalSelbergX
+    have hx2 : (S.selbergTerms l * (μ l : ℝ) * selbergMainTerm S) ^ 2 =
+        (S.selbergTerms l) ^ 2 * ((μ l : ℝ) ^ 2) * (selbergMainTerm S) ^ 2 := by ring
+    rw [hx2, hμsq]
+    field_simp [hg]
+  rw [hsum2]
+  unfold selbergMainTerm
+  have hsum_ne : (∑ l ∈ S.prodPrimes.divisors, S.selbergTerms l) ≠ 0 := by
+    have h1mem : (1 : ℕ) ∈ S.prodPrimes.divisors :=
+      Nat.mem_divisors.mpr ⟨one_dvd S.prodPrimes, S.prodPrimes_ne_zero⟩
+    have hpos1 : 0 < S.selbergTerms 1 := by
+      rw [BoundingSieve.selbergTerms_apply]
+      have hν1 : S.nu 1 = 1 := S.nu_mult.map_one
+      simp [hν1]
+    exact ne_of_gt (Finset.sum_pos
+      (fun l hl => S.selbergTerms_pos ((Nat.mem_divisors.mp hl).1)) ⟨1, h1mem⟩)
+  field_simp [hsum_ne]
+
+/-- **Selberg 上界的 Möbius 形式**: 以 `w = μ` 为 Λ² 权重,
+`siftedSum ≤ totalMass·(Σ selbergTerms)⁻¹ + errSum(Λ²μ)`, 且 `|μ| ≤ 1`. -/
+theorem selberg_upper_bound_moebius (S : BoundingSieve) :
+    S.siftedSum ≤ S.totalMass * (∑ l ∈ S.prodPrimes.divisors, S.selbergTerms l)⁻¹ +
+      S.errSum (BoundingSieve.lambdaSquared (fun d => (μ d : ℝ))) := by
+  have h := omega_upper_bound_via_mathlib S (fun d => (μ d : ℝ)) (by simp)
+  rw [mainSum_lambdaSquared_moebius_eq S] at h
+  simpa [selbergMainTerm] using h
+
+/-- **Selberg 上界 + 误差打包 (完整形式)**: 最优(Möbius)Λ² 权重下,
+
+  `siftedSum ≤ totalMass·(Σ_{d | P} selbergTerms d)⁻¹ + Σ_{d | P} 3^{ω(d)}·|rem d|`.
+
+这是经典 Selberg 上界筛 `S ≤ X/G(z) + Σ 3^{ω(d)}|Δ(d)|` 的精确有限形式:
+主项由 Mertens/奇异级数接缝控制, 误差由加权 Pan 输入控制 (chen #7). -/
+theorem selberg_upper_bound_moebius_pan (S : BoundingSieve) :
+    S.siftedSum ≤ S.totalMass * (∑ l ∈ S.prodPrimes.divisors, S.selbergTerms l)⁻¹ +
+      weightedPanRemainder S (fun d => (3 : ℝ) ^ d.primeFactors.card) := by
+  have h := selberg_upper_bound_moebius S
+  have hE : S.errSum (BoundingSieve.lambdaSquared (fun d => (μ d : ℝ))) ≤
+      weightedPanRemainder S (fun d => (3 : ℝ) ^ d.primeFactors.card) :=
+    errSum_lambdaSquared_le_threeOmegaWeightedPanRemainder (S := S)
+      (w := fun d => (μ d : ℝ)) (by
+        intro d
+        exact_mod_cast (ArithmeticFunction.abs_moebius_le_one : |μ d| ≤ 1))
+  linarith
 
 /-! ## 4. issue #6 目标陈述 -/
 
