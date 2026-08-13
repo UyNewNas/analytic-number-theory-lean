@@ -219,6 +219,65 @@ theorem errSum_le_threeOmegaWeightedPanRemainder {S : BoundingSieve} :
   have hw : (1 : ℝ) ≤ (3 : ℝ) ^ d.primeFactors.card := one_le_pow₀ (by norm_num)
   simpa using le_mul_of_one_le_left (abs_nonneg (S.rem d)) hw
 
+/-- **Selberg Λ² 权重的误差打包**: 对单位有界权重 `w` (`∀ d, |w d| ≤ 1`),
+每个 `|Λ²w(d)| ≤ 3^{ω(d)}` (squarefree `d` 上满足 `[d₁,d₂]=d` 的配对数为
+`3^{ω(d)}`, 见 `lcmPairCount`), 故
+
+  `errSum(Λ²w) ≤ Σ_{d | P} 3^{ω(d)}·|rem d| = weightedPanRemainder S 3^ω`.
+
+这是经典 Selberg 上界筛误差项 `Σ 3^{ω(d)}|Δ(d)|` 的精确有限形式, 供陈氏
+Ω 上界 (chen #7) 把加权 Pan 输入接进 `selberg_upper_bound_sieveProduct`. -/
+theorem errSum_lambdaSquared_le_threeOmegaWeightedPanRemainder
+    {S : BoundingSieve} {w : ℕ → ℝ} (hw : ∀ d : ℕ, |w d| ≤ 1) :
+    S.errSum (BoundingSieve.lambdaSquared w) ≤
+      weightedPanRemainder S (fun d => (3 : ℝ) ^ d.primeFactors.card) := by
+  rw [BoundingSieve.errSum, weightedPanRemainder]
+  apply Finset.sum_le_sum
+  intro d hd
+  have hsq : Squarefree d := S.squarefree_of_mem_divisors_prodPrimes hd
+  have hΛ : |BoundingSieve.lambdaSquared w d| ≤ (3 : ℝ) ^ d.primeFactors.card := by
+    unfold BoundingSieve.lambdaSquared
+    have hprod : (∑ d₁ ∈ d.divisors, ∑ d₂ ∈ d.divisors,
+          if d = Nat.lcm d₁ d₂ then w d₁ * w d₂ else 0) =
+        ∑ x ∈ d.divisors ×ˢ d.divisors,
+          if d = Nat.lcm x.1 x.2 then w x.1 * w x.2 else 0 := by
+      simpa using (Finset.sum_product (s := d.divisors) (t := d.divisors)
+        (f := fun p : ℕ × ℕ => if d = Nat.lcm p.1 p.2 then w p.1 * w p.2 else 0)).symm
+    rw [hprod]
+    calc
+      |∑ x ∈ d.divisors ×ˢ d.divisors,
+          if d = Nat.lcm x.1 x.2 then w x.1 * w x.2 else 0|
+          ≤ ∑ x ∈ d.divisors ×ˢ d.divisors,
+              |if d = Nat.lcm x.1 x.2 then w x.1 * w x.2 else 0| := by
+              exact Finset.abs_sum_le_sum_abs _ _
+      _ ≤ ∑ x ∈ d.divisors ×ˢ d.divisors,
+              if d = Nat.lcm x.1 x.2 then (1 : ℝ) else 0 := by
+              apply Finset.sum_le_sum
+              intro x hx
+              by_cases h : d = Nat.lcm x.1 x.2
+              · simp [h]
+                nlinarith [hw x.1, hw x.2, abs_nonneg (w x.1), abs_nonneg (w x.2),
+                  abs_mul (w x.1) (w x.2)]
+              · simp [h]
+      _ = ((d.divisors ×ˢ d.divisors).filter
+              (fun x : ℕ × ℕ => d = Nat.lcm x.1 x.2)).card := by
+              rw [← Finset.sum_filter]
+              rw [Finset.sum_const]
+              simp
+      _ = (3 : ℝ) ^ d.primeFactors.card := by
+              have hc : ((d.divisors ×ˢ d.divisors).filter
+                  (fun x : ℕ × ℕ => Nat.lcm x.1 x.2 = d)).card = 3 ^ d.primeFactors.card :=
+                lcmPairCount d hsq
+              have hfilt : (d.divisors ×ˢ d.divisors).filter
+                  (fun x : ℕ × ℕ => d = Nat.lcm x.1 x.2) =
+                  (d.divisors ×ˢ d.divisors).filter
+                    (fun x : ℕ × ℕ => Nat.lcm x.1 x.2 = d) := by
+                ext x
+                simp [eq_comm]
+              rw [hfilt, hc, Nat.cast_pow]
+              norm_num
+  exact mul_le_mul_of_nonneg_right hΛ (abs_nonneg (S.rem d))
+
 /-- **均匀加权 Pan 分布条件** (消费侧输入): 对每个 `A > 0` 存在一致常数 `C`,
 使得对所有充分大的偶数 `N`,
 
