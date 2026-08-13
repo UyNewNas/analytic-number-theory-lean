@@ -114,6 +114,11 @@ the common asymptotic/error-term API.
   `singularSeriesTruncated_ge_half` — `𝔖(N,z) ≥ 1/2` for every `N` and
   `z ≥ 2`, the twin-prime-constant-level input for the Chen main-term lower
   bound (finite-product/telescope argument, no Mertens needed).
+- [x] **Selberg upper bound in sieve-product form:** the optimal Λ² bound
+  re-expressed as `siftedSum ≤ totalMass·V(z) + errSum` via
+  `selbergMainTerm_eq_prod_one_sub_nu` /
+  `selbergMainTerm_eq_sieveProduct` / `selberg_upper_bound_sieveProduct`,
+  the exact main-term shape consumed by the Chen Ω upper bound (chen #7).
 - [ ] Prove `PanMeanValueUniform` (large sieve / Vaughan identity), the
   analytic core of issue #7, and close the bridge from it to
   `WeightedPanCondition` with PNT-level main-term estimates.
