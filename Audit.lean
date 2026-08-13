@@ -82,6 +82,9 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.panMaxL
 #print axioms AnalyticNumberTheory.Sieve.panMaxY
 #print axioms AnalyticNumberTheory.Sieve.PanMeanValueUniform
+#print axioms AnalyticNumberTheory.Sieve.primesInAPBelow_one
+#print axioms AnalyticNumberTheory.Sieve.primesInAPBelow_one_eq_primesInAP
+#print axioms AnalyticNumberTheory.Sieve.panDistributionError_one
 #print axioms AnalyticNumberTheory.LargeSieve.MontgomeryLargeSievePrimal
 #print axioms AnalyticNumberTheory.LargeSieve.MontgomeryLargeSieveDual
 #print axioms AnalyticNumberTheory.LargeSieve.realCauchySchwarz
