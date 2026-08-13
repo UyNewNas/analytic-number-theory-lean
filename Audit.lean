@@ -68,7 +68,13 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.WeightedPanCondition
 #print axioms AnalyticNumberTheory.Sieve.ThreeOmegaWeightedPanCondition
 #print axioms AnalyticNumberTheory.Sieve.threeOmega_eq_sum_twoOmega_divisors
+#print axioms AnalyticNumberTheory.Sieve.threeOmegaWeightedSum_packaging
 #print axioms AnalyticNumberTheory.Sieve.vaughanIdentity
+#print axioms AnalyticNumberTheory.Sieve.vaughanMiddle
+#print axioms AnalyticNumberTheory.Sieve.vaughanIdentity_threeTerm
+#print axioms AnalyticNumberTheory.Sieve.moebiusDivisorSum_eq_ite
+#print axioms AnalyticNumberTheory.Sieve.vaughanDoubleSum_swap
+#print axioms AnalyticNumberTheory.Sieve.vaughanFullSecondSum
 #print axioms AnalyticNumberTheory.Sieve.primesInAPBelow
 #print axioms AnalyticNumberTheory.Sieve.panDistributionError
 #print axioms AnalyticNumberTheory.Sieve.panDistributionSum
