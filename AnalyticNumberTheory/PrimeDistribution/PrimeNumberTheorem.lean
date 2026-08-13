@@ -39,4 +39,70 @@ theorem natPrimeCountingPNT : NatPrimeCountingPNT := by
   intro n
   simpa using hcount (n : ℝ)
 
+/-- **π 上界 (ant #17, 里程碑 2)**: 由 PNT 取显式常数, 对 `x ≥ 2` 一致地
+`π(x) ≤ C·x/log x`. 这是三因子主项估计中 `switchingCount ≤ π(N/a)` 的
+解析上界 (`≤ C·N/(a·log(N/a))`). -/
+theorem primeCounting_upper_bound :
+    ∃ C : ℝ, 0 < C ∧ ∀ x : ℕ, 2 ≤ x →
+      (Nat.primeCounting x : ℝ) ≤ C * (x : ℝ) / log (x : ℝ) := by
+  obtain ⟨c, hc, hcount⟩ := natPrimeCountingPNT
+  obtain ⟨C₀, hC₀ev⟩ := (hc.isBigO).bound
+  rcases Filter.eventually_atTop.mp hC₀ev with ⟨X₀, hX₀⟩
+  let C₀b : ℝ := max C₀ 1
+  have hC0b : 1 ≤ C₀b := by
+    dsimp [C₀b]
+    exact le_max_right _ _
+  let X : ℕ := max X₀ 2
+  let C : ℝ := max (1 + C₀b) (2 * log (X : ℝ))
+  refine ⟨C, ?_, ?_⟩
+  · dsimp [C]
+    have h1 : 0 < 1 + C₀b := by linarith
+    exact lt_of_lt_of_le h1 (le_max_left _ _)
+  · intro x hx
+    by_cases hxbig : X ≤ x
+    · have hx1 : (1 : ℝ) < x := by exact_mod_cast (by omega : 1 < x)
+      have hlog : 0 < log (x : ℝ) := Real.log_pos hx1
+      have hcx : |c x| ≤ C₀b := by
+        have h0 : |c x| ≤ C₀ := by
+          simpa using hX₀ x (le_trans (le_max_left X₀ 2) hxbig)
+        exact le_trans h0 (le_max_left _ _)
+      have hmain : (Nat.primeCounting x : ℝ) ≤ (1 + C₀b) * (x : ℝ) / log (x : ℝ) := by
+        rw [hcount]
+        have hle : 1 + c x ≤ 1 + C₀b := by linarith [le_trans (le_abs_self (c x)) hcx]
+        exact div_le_div_of_nonneg_right
+          (mul_le_mul_of_nonneg_right hle (by positivity : 0 ≤ (x : ℝ))) (le_of_lt hlog)
+      have hC : (1 + C₀b) * (x : ℝ) / log (x : ℝ) ≤ C * (x : ℝ) / log (x : ℝ) := by
+        have hC1 : 1 + C₀b ≤ C := by
+          dsimp [C]
+          exact le_max_left _ _
+        exact div_le_div_of_nonneg_right
+          (mul_le_mul_of_nonneg_right hC1 (by positivity : 0 ≤ (x : ℝ))) (le_of_lt hlog)
+      exact le_trans hmain hC
+    · have hxlt : x < X := lt_of_not_ge hxbig
+      have hpi : (Nat.primeCounting x : ℝ) ≤ (x : ℝ) + 1 := by
+        have hle : Nat.primeCounting x ≤ x + 1 := by
+          change Nat.count Nat.Prime (x + 1) ≤ x + 1
+          exact Nat.count_le Nat.Prime
+        exact_mod_cast hle
+      have hx1 : (1 : ℝ) ≤ x := by exact_mod_cast (by omega : 1 ≤ x)
+      have hlog : 0 < log (x : ℝ) := Real.log_pos (by exact_mod_cast (by omega : 1 < x))
+      have hlogX : 0 < log (X : ℝ) := by
+        have hX2 : (2 : ℝ) ≤ X := by exact_mod_cast (le_max_right X₀ 2)
+        exact Real.log_pos (by linarith)
+      have hlogx_le : log (x : ℝ) ≤ log (X : ℝ) :=
+        Real.log_le_log (by positivity) (by exact_mod_cast (le_of_lt hxlt))
+      have hC2 : 2 * log (x : ℝ) ≤ C := by
+        dsimp [C]
+        calc
+          2 * log (x : ℝ) ≤ 2 * log (X : ℝ) := by gcongr
+          _ ≤ max (1 + C₀b) (2 * log (X : ℝ)) := le_max_right _ _
+      calc
+        (Nat.primeCounting x : ℝ) ≤ (x : ℝ) + 1 := hpi
+        _ ≤ 2 * (x : ℝ) := by linarith
+        _ = (2 * log (x : ℝ)) * (x : ℝ) / log (x : ℝ) := by
+              field_simp [hlog.ne']
+        _ ≤ C * (x : ℝ) / log (x : ℝ) := by
+              exact div_le_div_of_nonneg_right
+                (mul_le_mul_of_nonneg_right hC2 (by positivity : 0 ≤ (x : ℝ))) (le_of_lt hlog)
+
 end AnalyticNumberTheory.PrimeDistribution
