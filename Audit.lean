@@ -67,10 +67,13 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.errSum_lambdaSquared_le_threeOmegaWeightedPanRemainder
 #print axioms AnalyticNumberTheory.Sieve.WeightedPanCondition
 #print axioms AnalyticNumberTheory.Sieve.ThreeOmegaWeightedPanCondition
-#print axioms AnalyticNumberTheory.Sieve.primesUpToDiv
-#print axioms AnalyticNumberTheory.Sieve.weightedDistributionError
-#print axioms AnalyticNumberTheory.Sieve.panWeightedError
-#print axioms AnalyticNumberTheory.Sieve.panWeightedErrorMax
+#print axioms AnalyticNumberTheory.Sieve.threeOmega_eq_sum_twoOmega_divisors
+#print axioms AnalyticNumberTheory.Sieve.vaughanIdentity
+#print axioms AnalyticNumberTheory.Sieve.primesInAPBelow
+#print axioms AnalyticNumberTheory.Sieve.panDistributionError
+#print axioms AnalyticNumberTheory.Sieve.panDistributionSum
+#print axioms AnalyticNumberTheory.Sieve.panMaxL
+#print axioms AnalyticNumberTheory.Sieve.panMaxY
 #print axioms AnalyticNumberTheory.Sieve.PanMeanValueUniform
 #print axioms AnalyticNumberTheory.Sieve.chenSieveRatio_approx
 #print axioms AnalyticNumberTheory.Mertens.log_primeProduct

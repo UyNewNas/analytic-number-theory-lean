@@ -192,6 +192,81 @@ theorem lcmPairWeightedSum (Q : ℕ) (hQ : Squarefree Q) (f : ℕ → ℝ) :
     _ = ∑ d₁ ∈ Q.divisors, ∑ d₂ ∈ Q.divisors, f (Nat.lcm d₁ d₂) := by
           rw [Finset.sum_product]
 
+/-! ## 1b. Pan 权重分解: `3^{ω(q)} = Σ_{d | q} 2^{ω(d)}` -/
+
+/-- 二项式级别的有限和: `Σ_{s ∈ t.powerset} 2^{|s|} = 3^{|t|}`, 即
+`(1 + 2)^{|t|}` 按子集大小展开。这是 Pan 权重分解 `3^{ω(q)} = Σ_{d|q} 2^{ω(d)}`
+的组合基座 (每个素因子对权重的三种选择 = 它在因子 `d` 中的幂次 ∈ {0, 1} 加上
+`2^{ω(d)}` 的两个方向)。 -/
+private theorem sum_powerset_pow_two {α : Type*} [DecidableEq α] (t : Finset α) :
+    ∑ u ∈ t.powerset, (2 : ℕ) ^ u.card = 3 ^ t.card := by
+  classical
+  induction t using Finset.induction with
+  | empty => simp
+  | insert a s ha ih =>
+      rw [Finset.powerset_insert (s := s) (a := a)]
+      have hdisj : Disjoint s.powerset (s.powerset.image (insert a)) := by
+        rw [Finset.disjoint_left]
+        intro u hu hiu
+        have hnu : a ∉ u := fun hx => ha ((Finset.mem_powerset.mp hu) hx)
+        rcases Finset.mem_image.mp hiu with ⟨w, hw, rfl⟩
+        have hau : a ∈ insert a w := Finset.mem_insert_self a w
+        exact hnu hau
+      have hinj : Set.InjOn (insert a) (s.powerset : Set (Finset α)) := by
+        intro u hu w hw h
+        have hua : a ∉ u := fun hx => ha ((Finset.mem_powerset.mp hu) hx)
+        have hwa : a ∉ w := fun hx => ha ((Finset.mem_powerset.mp hw) hx)
+        have h' := congrArg (fun v : Finset α => v.erase a) h
+        simpa [hua, hwa] using h'
+      rw [Finset.sum_union hdisj, Finset.sum_image hinj]
+      have hcard : (∑ u ∈ s.powerset, (2 : ℕ) ^ (insert a u).card) =
+          ∑ u ∈ s.powerset, (2 : ℕ) ^ u.card * 2 := by
+        apply Finset.sum_congr rfl
+        intro u hu
+        have hua : a ∉ u := fun hx => ha ((Finset.mem_powerset.mp hu) hx)
+        rw [Finset.card_insert_of_notMem hua, pow_succ]
+      rw [hcard, ← Finset.sum_mul, ih, Finset.card_insert_of_notMem ha, pow_succ]
+      ring
+
+/-- **Pan 权重分解** (Pan 1963; 亦见 Halberstam--Richert 1974 Lemma 10.3 的
+加权形式): 对 squarefree `q`,
+
+  `3^{ω(q)} = Σ_{d | q} 2^{ω(d)} = Σ_{d | q} τ(d)`,
+
+其中最后一个等号来自 squarefree `d` 上 `2^{ω(d)} = τ(d)`. 这是加权 Pan 均值
+定理中 `3^{ω(q)}` 权重被外层模数和吸收的关键: `3^{ω(q)}` 展开成对每个素因子
+的三种选择, 恰好按 `(d, d 的素因子幂次方向)` 重打包为除数和 `Σ_{d|q} 2^{ω(d)}`. -/
+theorem threeOmega_eq_sum_twoOmega_divisors {q : ℕ} (hq : Squarefree q) :
+    (3 : ℕ) ^ q.primeFactors.card = ∑ d ∈ q.divisors, (2 : ℕ) ^ d.primeFactors.card := by
+  rw [← sum_powerset_pow_two q.primeFactors]
+  apply Finset.sum_bij (i := fun s _ => ∏ p ∈ s, p)
+  · intro s hs
+    rw [Nat.mem_divisors]
+    constructor
+    · rw [← Nat.prod_primeFactors_of_squarefree hq]
+      exact Finset.prod_dvd_prod_of_subset s q.primeFactors (fun p => p)
+        (Finset.mem_powerset.mp hs)
+    · exact hq.ne_zero
+  · intro s₁ hs₁ s₂ hs₂ h
+    have hprime₁ : ∀ p ∈ s₁, p.Prime := by
+      intro p hp
+      exact (Nat.mem_primeFactors.mp ((Finset.mem_powerset.mp hs₁) hp)).1
+    have hprime₂ : ∀ p ∈ s₂, p.Prime := by
+      intro p hp
+      exact (Nat.mem_primeFactors.mp ((Finset.mem_powerset.mp hs₂) hp)).1
+    rw [← Nat.primeFactors_prod hprime₁, h, Nat.primeFactors_prod hprime₂]
+  · intro d hd
+    refine ⟨d.primeFactors, ?_, ?_⟩
+    · rw [Finset.mem_powerset]
+      exact Nat.primeFactors_mono (Nat.dvd_of_mem_divisors hd) hq.ne_zero
+    · have hsqd : Squarefree d := hq.squarefree_of_dvd (Nat.dvd_of_mem_divisors hd)
+      exact Nat.prod_primeFactors_of_squarefree hsqd
+  · intro s hs
+    have hprime : ∀ p ∈ s, p.Prime := by
+      intro p hp
+      exact (Nat.mem_primeFactors.mp ((Finset.mem_powerset.mp hs) hp)).1
+    rw [Nat.primeFactors_prod hprime]
+
 /-! ## 2. 消费侧接口: 均匀加权分布条件 -/
 
 /-- 筛积除数上的加权余项和 `Σ_{d | P} w(d)·|rem d|`, 其中
@@ -300,31 +375,46 @@ def ThreeOmegaWeightedPanCondition (x : ℕ → ℝ) (S : ℕ → BoundingSieve)
 
 /-! ## 3. 经典源头定理的精确陈述 -/
 
-/-- π(x/a; q, l): 满足 `p ≤ x/a`、`p` 素数、`p ≡ l [MOD q]` 的素数个数.
-这是 Ω 上界误差中按 `a` 缩放的等差数列素数计数. -/
-noncomputable def primesUpToDiv (x q l a : ℕ) : ℕ :=
-  ((range (x / a + 1)).filter (fun p => p.Prime ∧ p ≡ l [MOD q])).card
+/-- π(y; a, q, l): 满足 `p` 素数、`a·p ≤ y`、`a·p ≡ l [MOD q]` 的素数 `p`
+个数 (Liu 2022 §II 的精确定义). 这是 Ω 上界误差中按 `a` 缩放、同余在
+`a·p` 上的等差数列素数计数; 注意同余条件在乘积 `a·p` 上, 而非 `p` 上. -/
+def primesInAPBelow (y a q l : ℕ) : ℕ :=
+  ((range (y + 1)).filter (fun p => p.Prime ∧ a * p ≤ y ∧ a * p ≡ l [MOD q])).card
 
-/-- Δ(x/a; q, l) = π(x/a; q, l) − li(x/a)/φ(q): 缩放参数的分布误差. -/
-noncomputable def weightedDistributionError (x q l a : ℕ) : ℝ :=
-  (primesUpToDiv x q l a : ℝ) - logarithmicIntegral (x / a) / Nat.totient q
+/-- Δ(y; a, q, l) = π(y; a, q, l) − li(y/a)/φ(q): 缩放参数的分布误差. -/
+noncomputable def panDistributionError (y a q l : ℕ) : ℝ :=
+  (primesInAPBelow y a q l : ℝ) - logarithmicIntegral ((y : ℝ) / a) / Nat.totient q
 
-/-- `f` 加权的模 `q` 误差: `Σ_{a ≤ x} f(a)·|Δ(x/a; q, l)|`. -/
-noncomputable def panWeightedError (x q l : ℕ) (f : ℕ → ℝ) : ℝ :=
-  ∑ a ∈ range (x + 1), f a * |weightedDistributionError x q l a|
+/-- `f` 加权的模 `q` 分布误差和: `Σ_{(a,q)=1, a ≤ X} f(a)·Δ(y; a, q, l)`
+(带符号和, 未取绝对值; 经典 Pan 定理的 `(a,q)=1` 限制是 Liu §IV 修正的关键). -/
+noncomputable def panDistributionSum (y X q l : ℕ) (f : ℕ → ℝ) : ℝ :=
+  ∑ a ∈ range (X + 1), if a.Coprime q then f a * panDistributionError y a q l else 0
 
-/-- `max_{0<l<q,(l,q)=1} panWeightedError x q l f`, 空集 (q ≤ 1) 时取 0. -/
-noncomputable def panWeightedErrorMax (x q : ℕ) (f : ℕ → ℝ) : ℝ :=
+/-- `max_{0<l<q,(l,q)=1} |panDistributionSum y X q l f|`, 空集 (q ≤ 1) 时取 0. -/
+noncomputable def panMaxL (y X q : ℕ) (f : ℕ → ℝ) : ℝ :=
   let S : Finset ℕ := (Finset.Icc 1 (q - 1)).filter (fun l => l.Coprime q)
   if h : S.Nonempty then
-    (S.image (fun l => panWeightedError x q l f)).max' (Finset.image_nonempty.mpr h)
+    (S.image (fun l => |panDistributionSum y X q l f|)).max' (Finset.image_nonempty.mpr h)
   else 0
 
-/-- **经典加权 Pan 均值定理** (研究级开放目标): 对每个 `A > 0` 存在
-`C, B, x₀` 使得对所有 `x ≥ x₀`,
+/-- `max_{y ≤ x} panMaxL y X q f`: 对截断参数 `y` 的均匀最大值 (Liu Thm 2 的
+`max_{y ≤ x}`). -/
+noncomputable def panMaxY (X q x : ℕ) (f : ℕ → ℝ) : ℝ :=
+  ((Finset.range (x + 1)).image (fun y => panMaxL y X q f)).max'
+    (Finset.image_nonempty.mpr ⟨0, by simp⟩)
 
-  Σ_{q ≤ x^{1/2}/log^B x} μ²(q)·3^{ω(q)}·
-    max_{0<l<q,(l,q)=1} Σ_{a≤x} f(a)·|Δ(x/a; q, l)| ≤ C·x/log^A x.
+/-- **经典加权 Pan 均值定理** (研究级开放目标; Liu 2022 Theorem 2 的精确
+形式): 对每个 `A > 0` 存在 `C, B, x₀` 使得对所有 `X ≥ x₀`,
+
+  Σ_{q ≤ (x X)^{1/2}/log^B (x X)} μ²(q)·3^{ω(q)}·
+    max_{y ≤ x X} max_{0<l<q,(l,q)=1}
+      |Σ_{(a,q)=1, a ≤ X} f(a)·Δ(y; a, q, l)| ≤ C·x X / log^A (x X).
+
+其中 `Δ(y; a, q, l) = π(y; a, q, l) − li(y/a)/φ(q)`. 与旧版陈述的三处差异
+(红队审查, 见 `PAN_PROOF_ATLAS.md`): (1) 内和限制 `(a,q)=1`; (2) 加入
+`max_{y ≤ x X}`; (3) 绝对值包住整个内和 `|Σ f·Δ|` 而非 `Σ f·|Δ|`. 缺失
+(1) 的旧陈述对 Chen 权重 `f` 为假 (Liu §IV 的 `R₁` 修正); `R₁` 依赖 `f` 与
+筛积的具体形状, 按边界规则留在 chen 仓库处理.
 
 这是陈氏证明中 Ω 误差项 R 的估计工具 (Pan 1963; Halberstam--Richert
 1974 Ch.10; Liu 2022 §III). 本陈述只固定精确目标与全部定义; 证明依赖
@@ -337,7 +427,7 @@ def PanMeanValueUniform (x : ℕ → ℝ) (f : ℕ → ℝ) : Prop :=
       ∑ q ∈ Finset.range (Nat.floor ((x X) ^ (1 / 2 : ℝ) /
             (log (x X)) ^ B) + 1),
         ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
-          panWeightedErrorMax X q f ≤
+          panMaxY X q (Nat.floor (x X)) f ≤
         C * x X / (log (x X)) ^ A
 
 end AnalyticNumberTheory.Sieve
