@@ -123,6 +123,11 @@ the common asymptotic/error-term API.
   `errSum(Λ²w) ≤ Σ_{d | P} 3^{ω(d)}·|rem d|`
   (`errSum_lambdaSquared_le_threeOmegaWeightedPanRemainder`), the exact
   classical Selberg error form feeding the Pan input into the Ω upper bound.
+- [x] **Optimal Selberg weight = Möbius:** the X-equation
+  `Σ_{d ⊇ l} ν(d)·μ(d) = g(l)·μ(l)·T`, hence `mainSum(Λ²μ) = (Σg)⁻¹`
+  (`mainSum_lambdaSquared_moebius_eq`) and the full classical Selberg bound
+  `siftedSum ≤ totalMass·V + Σ 3^{ω(d)}·|rem d|`
+  (`selberg_upper_bound_moebius_pan`), with the unit-bounded weight `μ`.
 - [ ] Prove `PanMeanValueUniform` (large sieve / Vaughan identity), the
   analytic core of issue #7, and close the bridge from it to
   `WeightedPanCondition` with PNT-level main-term estimates.

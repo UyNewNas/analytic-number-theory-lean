@@ -159,5 +159,9 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.selbergMainTerm_eq_prod_one_sub_nu
 #print axioms AnalyticNumberTheory.Sieve.selbergMainTerm_eq_sieveProduct
 #print axioms AnalyticNumberTheory.Sieve.selberg_upper_bound_sieveProduct
+#print axioms AnalyticNumberTheory.Sieve.sum_nu_mul_moebius_over_supersets
+#print axioms AnalyticNumberTheory.Sieve.mainSum_lambdaSquared_moebius_eq
+#print axioms AnalyticNumberTheory.Sieve.selberg_upper_bound_moebius
+#print axioms AnalyticNumberTheory.Sieve.selberg_upper_bound_moebius_pan
 #print axioms AnalyticNumberTheory.Sieve.uniformSelbergUpperBound
 #print axioms AnalyticNumberTheory.Sieve.coefficient_product
