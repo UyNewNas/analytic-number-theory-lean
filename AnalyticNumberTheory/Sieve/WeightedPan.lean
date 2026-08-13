@@ -516,4 +516,45 @@ def PanMeanValueUniform (x : ℕ → ℝ) (f : ℕ → ℝ) : Prop :=
           panMaxY X q (Nat.floor (x X)) f ≤
         C * x X / (log (x X)) ^ A
 
+/-! ## Pan 桥 (ant #25): `PanMeanValueUniform` ⇒ `WeightedPanCondition`
+
+第一步 (a = 1 恒等式): Pan 对象 `primesInAPBelow y a q l` 在 `a = 1` 时
+正是普通素数等差计数 `#{p ≤ y : p 素数, p ≡ l [MOD q]}` — 陈氏筛余项
+`#{p ∈ support : p ≡ N [MOD d]}` 的分布误差来源. 后续桥引理将把
+`WeightedPanCondition` 的筛余项和按此归约到 `panMaxY` 的 `3^{ω(q)}` 加权和. -/
+
+/-- `a = 1` 时缩放计数退化为普通素数等差计数. -/
+theorem primesInAPBelow_one (y q l : ℕ) :
+    primesInAPBelow y 1 q l =
+      ((Finset.range (y + 1)).filter (fun p => p.Prime ∧ p ≡ l [MOD q])).card := by
+  unfold primesInAPBelow
+  congr 1
+  ext p
+  constructor
+  · intro hp
+    rw [Finset.mem_filter] at hp ⊢
+    rcases hp with ⟨hp1, hp2⟩
+    rcases hp2 with ⟨hpp, hle, hcong⟩
+    exact ⟨hp1, ⟨hpp, by simpa using hcong⟩⟩
+  · intro hp
+    rw [Finset.mem_filter] at hp ⊢
+    rcases hp with ⟨hp1, hp2⟩
+    rcases hp2 with ⟨hpp, hcong⟩
+    exact ⟨hp1, ⟨hpp, ⟨by simpa [one_mul] using
+      (Nat.lt_succ_iff.mp (Finset.mem_range.mp hp1)), by simpa using hcong⟩⟩⟩
+
+/-- `a = 1` 时缩放计数恰为 `primesInAP` (BV 接口的普通等差计数). -/
+theorem primesInAPBelow_one_eq_primesInAP (y q l : ℕ) :
+    primesInAPBelow y 1 q l = primesInAP y q l := by
+  simpa [primesInAP] using primesInAPBelow_one y q l
+
+/-- `a = 1` 时的分布误差 = 普通素数等差误差 `π(y; q, l) − li(y)/φ(q)`. -/
+theorem panDistributionError_one (y q l : ℕ) :
+    panDistributionError y 1 q l =
+      (((Finset.range (y + 1)).filter (fun p => p.Prime ∧ p ≡ l [MOD q])).card : ℝ) -
+        logarithmicIntegral (y : ℝ) / Nat.totient q := by
+  unfold panDistributionError
+  rw [primesInAPBelow_one]
+  simp [logarithmicIntegral]
+
 end AnalyticNumberTheory.Sieve
