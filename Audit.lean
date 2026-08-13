@@ -64,6 +64,7 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.lcmPairWeightedSum
 #print axioms AnalyticNumberTheory.Sieve.weightedPanRemainder_eq_lcmDoubleSum
 #print axioms AnalyticNumberTheory.Sieve.errSum_le_threeOmegaWeightedPanRemainder
+#print axioms AnalyticNumberTheory.Sieve.errSum_lambdaSquared_le_threeOmegaWeightedPanRemainder
 #print axioms AnalyticNumberTheory.Sieve.WeightedPanCondition
 #print axioms AnalyticNumberTheory.Sieve.ThreeOmegaWeightedPanCondition
 #print axioms AnalyticNumberTheory.Sieve.primesUpToDiv

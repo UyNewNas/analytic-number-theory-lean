@@ -119,6 +119,10 @@ the common asymptotic/error-term API.
   `selbergMainTerm_eq_prod_one_sub_nu` /
   `selbergMainTerm_eq_sieveProduct` / `selberg_upper_bound_sieveProduct`,
   the exact main-term shape consumed by the Chen Ω upper bound (chen #7).
+- [x] **Selberg Λ² error-term bridge:** for unit-bounded weights,
+  `errSum(Λ²w) ≤ Σ_{d | P} 3^{ω(d)}·|rem d|`
+  (`errSum_lambdaSquared_le_threeOmegaWeightedPanRemainder`), the exact
+  classical Selberg error form feeding the Pan input into the Ω upper bound.
 - [ ] Prove `PanMeanValueUniform` (large sieve / Vaughan identity), the
   analytic core of issue #7, and close the bridge from it to
   `WeightedPanCondition` with PNT-level main-term estimates.
