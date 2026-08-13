@@ -132,7 +132,7 @@ means a proposed new bridge that still needs a falsifier.
 | V2 | Classical three-term form, valid for `n > v` | proven | BV/Pan type-II extraction | `Sieve.VaughanIdentity.vaughanIdentity_threeTerm` (via `vaughanFullSecondSum`, `vaughanDoubleSum_swap`, `moebiusDivisorSum_eq_ite`) |
 | P1 | `Squarefree q → 3^{ω(q)} = Σ_{d\|q} 2^{ω(d)}` | proven | weight absorption in Pan mean value | `Sieve.WeightedPan.threeOmega_eq_sum_twoOmega_divisors` |
 | P2 | Double-sum packaging `Σ_q μ²(q)3^{ω(q)}F(q) = Σ_d μ²(d)2^{ω(d)} Σ_m μ²(m)F(dm)` | proven | outer-sum variable change | `Sieve.WeightedPan.threeOmegaWeightedSum_packaging` |
-| LS1 | Additive large sieve (Montgomery): `Σ_r \|Σ_n a_n e(n x_r)\|² ≤ (N + δ⁻¹)Σ_n \|a_n\|²` for δ-well-spaced `{x_r}` | target (module landed: defs, both target statements, primal/dual equivalence `largeSieveDuality` + `montgomeryDuality`, the geometric-sum bound `geomSum_exp_bound` with the interval version `geomSum_exp_bound_Icc`/`charRealSubIcc_eq_shift` in `LargeSieve/GeomSum.lean`, and the Parseval step `dualExpansion`/`dualQuadraticIdentity`(+`_Icc`/`_circle`) in `LargeSieve/Duality.lean` — all kernel-checked; only the well-spaced/Schur assembly into the full inequality remains) | LS2 | Needs the well-spaced/Schur step (counting argument with `dist x 0`), then the full Montgomery inequality follows |
+| LS1 | Additive large sieve (Montgomery): `Σ_r \|Σ_n a_n e(n x_r)\|² ≤ (N + δ⁻¹)Σ_n \|a_n\|²` for δ-well-spaced `{x_r}` | proven with explicit weak constant, ℝ version (`LargeSieve/WellSpaced.lean`: `wellSpacedRowSum` dyadic-shell row sum + `quadraticFormBound` Schur/CS test yield `largeSieveDual_wellSpaced`/`largeSievePrimal_wellSpaced` with constant `C(N,δ) = N + (2⌈log₂(1/δ)⌉+12)/δ`; counting lemmas `sepCard_le_interval`, `wellSpaced_ball_card_le`; kernel-checked). Strong constant `N + δ⁻¹` is an open dependency (needs positive-definite kernel device). The `AddCircle 1` statement (`MontgomeryLargeSievePrimal/Dual`) needs the real↔circle bridge (representative lift + `dist = distToInt`) | LS2 | Bridge the ℝ theorem to the `AddCircle 1` statement via `AddCircle.liftIco`/`dist` lemmas, then derive the multiplicative large sieve via `DirichletCharacter` orthogonality |
 | LS2 | Multiplicative large sieve: `Σ_{q≤Q} (q/φ(q)) Σ*_χ \|Σ_n a_n χ(n)\|² ≤ (Q²+N)Σ_n \|a_n\|²` | hypothesis | LS3 | Derived from LS1 via `DirichletCharacter` orthogonality + Gauss sums |
 | LS3 | Arithmetic form in residue classes | hypothesis | type I bounds | Standard dual reformulation; falsifiable on the `1/q` centering |
 | MV | Montgomery mean-value: `∫₀^T \|Σ_{n≤N} a_n n^{-it}\|² dt = (T+O(N))Σ\|a_n\|²` (discrete form via Gallagher) | hypothesis | type I/II | Needs complex integration of Dirichlet polynomials |
@@ -176,17 +176,31 @@ P2 are all `proven`.
   character-cross lemmas `charReal_cross` / `charPow_cross`) are
   kernel-checked. The circle version matches the `MontgomeryLargeSieveDual`
   statement exactly, so the Parseval seam of LS1 is now fully formal.
-- **Smallest next artifact**: the well-spaced/Schur step that closes LS1 —
-  show `Σ_{y∈X} min(N, 1/(2·dist x y)) ≤ N + 1/δ` for δ-well-spaced `X`,
-  then feed the geometric-sum bound into the dual form. Note on constants:
-  the strongest constant `N + 1/δ` needs Montgomery's positive-definite
-  kernel/Parseval device; a plain Schur test gives only a weak constant
-  `(N + 1/δ)·(π/2)²`-type (dyadic shells + a `log(1/δ)` factor), which is
-  provable with the current machinery but is not the classical optimum.
-  Decision gate: prove the weak-constant Schur step here and record the
-  strong constant as an open dependency (needs additional Fourier-kernel
-  infrastructure), or build the kernel device in a later cycle. Afterwards
-  the multiplicative large sieve LS2 via `DirichletCharacter` orthogonality.
+- **This cycle (done)**: the well-spaced/Schur step that closes LS1 in its
+  ℝ-parameterized form (`LargeSieve/WellSpaced.lean`). Counting: an interval
+  of length `L` contains at most `L/δ + 1` pairwise `δ`-separated points
+  (`sepCard_le_interval`, max-point induction), which yields the mod-1 ball
+  count `#{y : distToInt(x−y) ≤ r} ≤ 2r/δ + 2` for `r ≤ 1/2`
+  (`wellSpaced_ball_card_le`). Row sum: dyadic shells with the geometric-sum
+  bound give `Σ_{y∈X} |Σ_{M<n≤M+N} e(n(x−y))| ≤ N + (2K+12)/δ` with
+  `K = ⌈log₂(1/δ)⌉` (`wellSpacedRowSum`). Schur/CS: Hermitian symmetric
+  kernels with row sums ≤ C bound the dual quadratic form by `C·Σ|b_x|²`
+  (`quadraticFormBound`). Assembly: `largeSieveDual_wellSpaced` and
+  `largeSievePrimal_wellSpaced` (constant `C(N,δ) = N + (2⌈log₂(1/δ)⌉+12)/δ`,
+  the primal form via `largeSieveDuality`). **Constant honesty**: the strong
+  constant `N + 1/δ` needs Montgomery's positive-definite kernel/Parseval
+  device; a plain Schur test is structurally limited to a `log(1/δ)`-loss
+  weak constant (dyadic shells + Schur row sums), and the sharp constant is
+  recorded as an open dependency (needs additional Fourier-kernel
+  infrastructure, e.g. the Fejér-kernel majorant `|D_N|²/N`).
+- **Smallest next artifact**: bridge the ℝ theorem to the `AddCircle 1`
+  target statements `MontgomeryLargeSievePrimal/Dual` — choose a
+  representative `rep : AddCircle 1 → ℝ` (e.g. `AddCircle.liftIco`),
+  prove `dist (mk a) (mk b) = distToInt (a−b)` and the character
+  compatibility `charPow n (mk z) = charReal (n·z)`, then transport
+  `largeSievePrimal_wellSpaced`/`largeSieveDual_wellSpaced` to the circle.
+  Afterwards the multiplicative large sieve LS2 via `DirichletCharacter`
+  orthogonality.
 - **Evidence required to retain the route**: V1/P1 must hold at the boundaries
   `n = 1`, `q = 1` and the cutoff extremes `u = 0`, `v = 0` (V1 is stated for
   all of them, so this is discharged); the corrected PAN statement must be
