@@ -101,3 +101,128 @@ theorem sumTwoPowWeighted_mono : Monotone sumTwoPowWeighted := by
   · intro d hd hnq
     exact sumTwoPowWeighted_term_nonneg d
 
+
+/-- **引理 C (W1 子台阶)**: `Σ_{d ≤ Q} μ²(d)·2^{ω(d)}/d ≤ C·(log(Q+2))²`.
+子集展开 + `∏(1+u) ≤ exp(Σu)` + `Σ_{p ≤ Q} 2/p = 2·Σ_{p ≤ Q} 1/p` + Mertens
+第二定理; 有限初段 (Q ≤ 2) 吸收进常数. -/
+theorem sumTwoPowWeighted_le_polylog :
+    ∃ C : ℝ, 0 < C ∧ ∀ Q : ℕ,
+      sumTwoPowWeighted Q ≤ C * (Real.log (Q + 2)) ^ (2 : ℝ) := by
+  classical
+  obtain ⟨C₁, hC₁, hM⟩ := mertensSecond_nat
+  let K : ℝ := |mertensSecondConstant| + C₁ / log 2
+  let C : ℝ := max (2 / (log 2) ^ (2 : ℝ)) (rexp (2 * K))
+  have hlg2 : (0 : ℝ) < log 2 := Real.log_pos (by norm_num : (1 : ℝ) < 2)
+  have hCpos : 0 < C := by
+    dsimp [C]
+    exact lt_max_of_lt_left (div_pos (by norm_num : (0 : ℝ) < 2) (Real.rpow_pos_of_pos hlg2 (2 : ℝ)))
+  refine ⟨C, hCpos, ?_⟩
+  intro Q
+  by_cases hQ : Q ≤ 2
+  · have hbnd : sumTwoPowWeighted Q ≤ 2 := by
+      calc
+        sumTwoPowWeighted Q ≤ sumTwoPowWeighted 2 := sumTwoPowWeighted_mono hQ
+        _ ≤ ∏ p ∈ primesUpTo 2, (1 + (2 : ℝ) / (p : ℝ)) := sumTwoPowWeighted_le_prod_one_add 2
+        _ = 2 := by
+              have hP : primesUpTo 2 = ({2} : Finset ℕ) := by
+                ext p
+                constructor
+                · intro hp
+                  have hp_pr : p.Prime := (mem_primesUpTo.mp hp).1
+                  have hp_le : p ≤ 2 := (mem_primesUpTo.mp hp).2
+                  interval_cases p
+                  · norm_num at hp_pr
+                  · norm_num at hp_pr
+                  · simp
+                · intro hp
+                  have hp2 : p = 2 := by simpa using hp
+                  subst p
+                  exact mem_primesUpTo.2 ⟨by norm_num, by norm_num⟩
+              rw [hP]
+              norm_num
+    have hQ2 : (2 : ℕ) ≤ Q + 2 := by omega
+    have hlgQ2nn : (0 : ℝ) ≤ Real.log (Q + 2) :=
+      Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Q + 2))
+    have hlogle : (log 2) ^ (2 : ℝ) ≤ (Real.log (Q + 2)) ^ (2 : ℝ) := by
+      exact Real.rpow_le_rpow (le_of_lt hlg2)
+        (Real.log_le_log (by norm_num : (0 : ℝ) < 2) (by exact_mod_cast hQ2))
+        (by norm_num : (0 : ℝ) ≤ (2 : ℝ))
+    calc
+      sumTwoPowWeighted Q ≤ 2 := hbnd
+      _ = 2 / (log 2) ^ (2 : ℝ) * (log 2) ^ (2 : ℝ) := by
+        have hx : (log 2) ^ (2 : ℝ) ≠ 0 := (Real.rpow_pos_of_pos hlg2 (2 : ℝ)).ne'
+        field_simp [hx]
+      _ ≤ 2 / (log 2) ^ (2 : ℝ) * (Real.log (Q + 2)) ^ (2 : ℝ) := by
+        exact mul_le_mul_of_nonneg_left hlogle
+          (div_nonneg (by norm_num : (0 : ℝ) ≤ 2) (le_of_lt (Real.rpow_pos_of_pos hlg2 (2 : ℝ))))
+      _ ≤ C * (Real.log (Q + 2)) ^ (2 : ℝ) := by
+        exact mul_le_mul_of_nonneg_right (le_max_left (2 / (log 2) ^ (2 : ℝ)) (rexp (2 * K)))
+          (Real.rpow_nonneg hlgQ2nn (2 : ℝ))
+  · have hQ3 : 3 ≤ Q := by omega
+    have hQ2 : 2 ≤ Q := by omega
+    have hQ1 : (1 : ℝ) < (Q : ℝ) := by exact_mod_cast (by omega : 1 < Q)
+    have hlogQ : (0 : ℝ) < log (Q : ℝ) := Real.log_pos hQ1
+    have hlogQnn : (0 : ℝ) ≤ log (Q : ℝ) := le_of_lt hlogQ
+    have hM' : |primeReciprocalSum Q - (log (log (Q : ℝ)) + mertensSecondConstant)| ≤
+        C₁ / log (Q : ℝ) := hM Q hQ2
+    have hpRS : primeReciprocalSum Q ≤ log (log (Q : ℝ)) + K := by
+      have hle1 : primeReciprocalSum Q ≤
+          log (log (Q : ℝ)) + mertensSecondConstant + C₁ / log (Q : ℝ) := by
+        linarith [(abs_le.mp hM').2]
+      have hc : mertensSecondConstant ≤ |mertensSecondConstant| := le_abs_self _
+      have hC : C₁ / log (Q : ℝ) ≤ C₁ / log 2 := by
+        exact div_le_div_of_nonneg_left (le_of_lt hC₁) hlg2
+          (Real.log_le_log (by norm_num : (0 : ℝ) < 2) (by exact_mod_cast hQ2))
+      dsimp [K]
+      linarith
+    have hsum : (∑ p ∈ primesUpTo Q, (2 : ℝ) / (p : ℝ)) ≤ 2 * primeReciprocalSum Q := by
+      calc
+        (∑ p ∈ primesUpTo Q, (2 : ℝ) / (p : ℝ))
+            = 2 * (∑ p ∈ primesUpTo Q, 1 / (p : ℝ)) := by
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro p hp
+              ring
+        _ = 2 * primeReciprocalSum Q := by
+              unfold primeReciprocalSum
+              rfl
+    have hlgQ2nn : (0 : ℝ) ≤ Real.log (Q + 2) :=
+      Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Q + 2))
+    have hlogle : (log (Q : ℝ)) ^ (2 : ℝ) ≤ (Real.log (Q + 2)) ^ (2 : ℝ) := by
+      exact Real.rpow_le_rpow hlogQnn
+        (Real.log_le_log (by positivity : (0 : ℝ) < (Q : ℝ)) (by exact_mod_cast (by omega : Q ≤ Q + 2)))
+        (by norm_num : (0 : ℝ) ≤ (2 : ℝ))
+    calc
+      sumTwoPowWeighted Q ≤ ∏ p ∈ primesUpTo Q, (1 + (2 : ℝ) / (p : ℝ)) :=
+            sumTwoPowWeighted_le_prod_one_add Q
+      _ ≤ rexp (∑ p ∈ primesUpTo Q, (2 : ℝ) / (p : ℝ)) := by
+            exact Real.prod_one_add_le_exp_sum (primesUpTo Q)
+              (fun p => div_nonneg (by norm_num : (0 : ℝ) ≤ 2) (Nat.cast_nonneg p))
+      _ ≤ rexp (2 * primeReciprocalSum Q) := by
+            exact Real.exp_le_exp.mpr hsum
+      _ ≤ rexp (2 * (log (log (Q : ℝ)) + K)) := by
+            exact Real.exp_le_exp.mpr (by
+              have h2 : (0 : ℝ) ≤ 2 := by norm_num
+              exact mul_le_mul_of_nonneg_left hpRS h2)
+      _ = rexp (2 * K) * (log (Q : ℝ)) ^ (2 : ℝ) := by
+            have h1 : rexp (2 * (log (log (Q : ℝ)) + K)) =
+                rexp (2 * K) * (log (Q : ℝ)) ^ (2 : ℝ) := by
+              calc
+                rexp (2 * (log (log (Q : ℝ)) + K)) = rexp (2 * log (log (Q : ℝ)) + 2 * K) := by
+                  congr 1
+                  ring
+                _ = rexp (2 * log (log (Q : ℝ))) * rexp (2 * K) := by rw [Real.exp_add]
+                _ = (log (Q : ℝ)) ^ (2 : ℝ) * rexp (2 * K) := by
+                  have h2 : rexp (2 * log (log (Q : ℝ))) = (log (Q : ℝ)) ^ (2 : ℝ) := by
+                    calc
+                      rexp (2 * log (log (Q : ℝ))) = rexp (log (log (Q : ℝ)) * 2) := by
+                        congr 1
+                        ring
+                      _ = rexp (log (log (Q : ℝ))) ^ (2 : ℝ) := by rw [Real.exp_mul]
+                      _ = (log (Q : ℝ)) ^ (2 : ℝ) := by rw [Real.exp_log hlogQ]
+                  rw [h2]
+                _ = rexp (2 * K) * (log (Q : ℝ)) ^ (2 : ℝ) := by ring
+            exact h1
+      _ ≤ C * (Real.log (Q + 2)) ^ (2 : ℝ) := by
+            exact mul_le_mul (le_max_right (2 / (log 2) ^ (2 : ℝ)) (rexp (2 * K))) hlogle
+              (Real.rpow_nonneg hlogQnn (2 : ℝ)) (le_of_lt hCpos)

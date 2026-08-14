@@ -379,6 +379,7 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.sumTwoPowWeighted_term_non_squarefree
 #print axioms AnalyticNumberTheory.Sieve.sumTwoPowWeighted_le_prod_one_add
 #print axioms AnalyticNumberTheory.Sieve.sumTwoPowWeighted_mono
+#print axioms AnalyticNumberTheory.Sieve.sumTwoPowWeighted_le_polylog
 #print axioms AnalyticNumberTheory.Sieve.PanMainSieveAbsorption
 #print axioms AnalyticNumberTheory.Sieve.panMainSieve_log_ge_one
 #print axioms AnalyticNumberTheory.Sieve.panMainSieve_polylog_le
