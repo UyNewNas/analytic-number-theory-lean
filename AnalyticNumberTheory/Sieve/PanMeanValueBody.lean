@@ -37,13 +37,18 @@ max 脚手架                  -- 本文件 Section 3: `panMaxL`/`panMaxY` 的
 后续台阶 (本仓库已有装置): 大筛在 Farey 点上的均值定理
 (`LargeSieve.Multiplicative.largeSieveRationalPoints`), 模 q 特征大筛
 (`characterSieveModulus_le`), Vaughan 恒等式 (`Sieve.VaughanIdentity`),
-以及 `3^{ω(q)} = Σ_{d|q} 2^{ω(d)}` 权重打包 (`WeightedPan`). 尚未落地:
-type I/type II 界与最终装配 (见 `PAN_PROOF_ATLAS.md` 的路线表, 状态标注).
+以及 `3^{ω(q)} = Σ_{d|q} 2^{ω(d)}` 权重打包 (`WeightedPan`).
+
+**T1 进展 (ant #15, PR #31)**: type I 加权界已被 §5 的有限代数链精确归约:
+`PanTypeIWeightedBound` 从开放引理 `PanTypeICharacterMeanValue` (特征均值界,
+§5) 推出 (见 `PanTypeIWeightedBound.of_characterMeanValue`). 尚未落地:
+type II 界 (T2) 与最终装配 (见 `PAN_PROOF_ATLAS.md` 的路线表, 状态标注).
 -/
 
 import AnalyticNumberTheory.Sieve.WeightedPan
 import AnalyticNumberTheory.Sieve.VaughanIdentity
 import Mathlib.Data.ZMod.Basic
+import AnalyticNumberTheory.LargeSieve.CharacterIndicators
 import Mathlib.Tactic
 
 namespace AnalyticNumberTheory.Sieve
@@ -361,5 +366,309 @@ def PanMainTermBound (x f : ℕ → ℝ) : Prop :=
           panPieceMaxY X q (Nat.floor (x X)) f
             (fun y q l => logarithmicIntegral (y : ℝ) / Nat.totient q) ≤
         C * x X / (log (x X)) ^ A
+
+
+/-! ## 5. T1: type I 加权界的有限代数归约 (character-mean-value 归约)
+
+经典证明 (Liu 2022 §III Lemma 1; HR 1974 Ch.10) 中 type I 片段 (Vaughan V1, 小因子
+d ≤ u 部分) 的加权界被本节的有限代数链精确归约到一个特征均值对象:
+
+```text
+apV1 的等差和 --[charSum_ap 特征展开]--> 特征和 V_chi(y,u) = Σ_{n<=y} vaughanFirst(n,u)*chi(n)
+  --[点式界 |apV1| <= phi(q)^-1 * Σ_chi ||V_chi|| (|chi(l)| = 1)]--> 单项三角形归约
+  --[l-一致界 (与 l 无关)]--> panPieceMaxL <= panTypeIDistributionSum
+  --[y-max 归约]--> panPieceMaxY <= panTypeIMeanValueMaxY
+  --[权重单调]--> PanTypeICharacterMeanValue => PanTypeIWeightedBound
+```
+
+唯一的剩余解析输入是 PanTypeICharacterMeanValue (特征均值界, 经典证明用乘法
+大筛对 Σ_chi||V_chi||^2 的均值 + Cauchy-Schwarz 装配), 见 §4 开放引理表的 T1 条目.
+-/
+noncomputable section
+
+set_option linter.style.haveILetI false
+
+/-- 单位剩余类代表集 {1 ≤ l ≤ q-1 : (l,q) = 1} (q ≤ 1 时为空集). -/
+noncomputable def unitResidues (q : ℕ) : Finset ℕ := (Finset.Icc 1 (q - 1)).filter (fun l => l.Coprime q)
+
+/-- type I 片段的特征和: V_χ(y,u) = Σ_{n ≤ y} vaughanFirst(n,u)·χ(n) (复值). -/
+noncomputable def panTypeIV1CharSum (q y u : ℕ) (χ : DirichletCharacter ℂ q) : ℂ := 
+  ∑ n ∈ Finset.range (y + 1), (vaughanFirst n u : ℂ) * χ (n : ZMod q)
+
+/-- 单位上 Dirichlet 特征值的模为 1: χ(l) 是单位群元素 (有限阶) 的像, 是单位根. -/
+theorem charValue_norm_eq_one {q : ℕ} {χ : DirichletCharacter ℂ q} {l : ℕ}
+    (hl : IsUnit (l : ZMod q)) : ‖χ (l : ZMod q)‖ = 1 := by
+  haveI : Fintype (ZMod q)ˣ := Fintype.ofFinite _
+  let n : ℕ := Fintype.card (ZMod q)ˣ
+  have hn : n ≠ 0 := by
+    exact ne_of_gt (Fintype.card_pos (α := (ZMod q)ˣ))
+  have hpow_u : hl.unit ^ n = 1 := pow_card_eq_one (G := (ZMod q)ˣ) (x := hl.unit)
+  have hpow_l : (l : ZMod q) ^ n = 1 := by
+    have hspec : (l : ZMod q) = (hl.unit : ZMod q) := hl.unit_spec.symm
+    rw [hspec]
+    simpa using congrArg (fun u : (ZMod q)ˣ => (u : ZMod q)) hpow_u
+  have hpow_χ : (χ (l : ZMod q)) ^ n = 1 := by
+    rw [← map_pow, hpow_l, map_one]
+  exact Complex.norm_eq_one_of_pow_eq_one hpow_χ hn
+
+/-- apV1 的特征展开 (复值): (apV1 y q l u : ℂ) = φ(q)⁻¹·Σ_χ star(χ(l))·V_χ(y,u)
+    (对单位 l; 由 charSum_ap 直接给出). -/
+theorem apV1_charSum {q y u : ℕ} (hq : 0 < q) {l : ℕ} (hl : IsUnit (l : ZMod q)) :
+    (apV1 y q l u : ℂ) = (Nat.totient q : ℂ)⁻¹ *
+      ∑ χ : DirichletCharacter ℂ q, star (χ (l : ZMod q)) * panTypeIV1CharSum q y u χ := by
+  unfold apV1 panTypeIV1CharSum
+  have hcast : ((∑ n ∈ Finset.range (y + 1),
+        (if n ≡ l [MOD q] then vaughanFirst n u else 0) : ℝ) : ℂ) =
+      ∑ n ∈ Finset.range (y + 1),
+        (vaughanFirst n u : ℂ) * (if n ≡ l [MOD q] then 1 else 0) := by
+    calc
+      ((∑ n ∈ Finset.range (y + 1),
+          (if n ≡ l [MOD q] then vaughanFirst n u else 0) : ℝ) : ℂ)
+          = ∑ n ∈ Finset.range (y + 1),
+              ((if n ≡ l [MOD q] then vaughanFirst n u else 0 : ℝ) : ℂ) := by
+            exact map_sum Complex.ofRealHom
+              (fun n => (if n ≡ l [MOD q] then vaughanFirst n u else 0 : ℝ)) (Finset.range (y + 1))
+      _ = ∑ n ∈ Finset.range (y + 1),
+            (vaughanFirst n u : ℂ) * (if n ≡ l [MOD q] then 1 else 0) := by
+          apply Finset.sum_congr rfl
+          intro n hn
+          by_cases hmod : n ≡ l [MOD q] <;> simp [hmod]
+  rw [hcast]
+  exact AnalyticNumberTheory.LargeSieve.charSum_ap hq hl (fun n : ℕ => (vaughanFirst n u : ℂ)) y
+
+/-- apV1 点式界: 对单位 l, |apV1 y q l u| ≤ φ(q)⁻¹·Σ_χ ‖V_χ(y,u)‖. -/
+theorem apV1_abs_le {q y u : ℕ} (hq : 0 < q) {l : ℕ} (hl : IsUnit (l : ZMod q)) :
+    |apV1 y q l u| ≤ (Nat.totient q : ℝ)⁻¹ *
+      ∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q y u χ‖ := by
+  have hnorm : ‖(apV1 y q l u : ℂ)‖ = |apV1 y q l u| := by
+    exact RCLike.norm_ofReal (apV1 y q l u)
+  rw [← hnorm]
+  rw [apV1_charSum hq hl]
+  calc
+    ‖(Nat.totient q : ℂ)⁻¹ * ∑ χ : DirichletCharacter ℂ q,
+        star (χ (l : ZMod q)) * panTypeIV1CharSum q y u χ‖
+        ≤ ‖(Nat.totient q : ℂ)⁻¹‖ * ‖∑ χ : DirichletCharacter ℂ q,
+            star (χ (l : ZMod q)) * panTypeIV1CharSum q y u χ‖ := by
+          exact norm_mul_le _ _
+    _ = (Nat.totient q : ℝ)⁻¹ * ‖∑ χ : DirichletCharacter ℂ q,
+            star (χ (l : ZMod q)) * panTypeIV1CharSum q y u χ‖ := by
+          congr 1
+          rw [norm_inv, Complex.norm_natCast]
+    _ ≤ (Nat.totient q : ℝ)⁻¹ * ∑ χ : DirichletCharacter ℂ q,
+          ‖star (χ (l : ZMod q)) * panTypeIV1CharSum q y u χ‖ := by
+          exact mul_le_mul_of_nonneg_left (norm_sum_le _ _)
+            (inv_nonneg.mpr (Nat.cast_nonneg (Nat.totient q)))
+    _ ≤ (Nat.totient q : ℝ)⁻¹ * ∑ χ : DirichletCharacter ℂ q,
+          ‖panTypeIV1CharSum q y u χ‖ := by
+          exact mul_le_mul_of_nonneg_left
+            (by
+              apply Finset.sum_le_sum
+              intro χ hχ
+              calc
+                ‖star (χ (l : ZMod q)) * panTypeIV1CharSum q y u χ‖
+                    ≤ ‖star (χ (l : ZMod q))‖ * ‖panTypeIV1CharSum q y u χ‖ := norm_mul_le _ _
+                _ = ‖χ (l : ZMod q)‖ * ‖panTypeIV1CharSum q y u χ‖ := by
+                      congr 1
+                      simpa using (Complex.norm_conj (χ (l : ZMod q)))
+                _ = ‖panTypeIV1CharSum q y u χ‖ := by
+                      rw [charValue_norm_eq_one hl]
+                      simp)
+            (inv_nonneg.mpr (Nat.cast_nonneg (Nat.totient q)))
+
+/-- 模 q 单位 a 的逆代表与单位 l 的乘积剩余类仍是单位 (用于 apV1 点式界). -/
+lemma isUnit_natInvMod_mul_residue {q a l : ℕ} (hq : 0 < q) (hcop_a : a.Coprime q)
+    (hl : l.Coprime q) : IsUnit (((natInvMod q a * l % q) : ℕ) : ZMod q) := by
+  haveI : NeZero q := ⟨Nat.ne_of_gt hq⟩
+  have hval : (((natInvMod q a * l % q : ℕ) : ZMod q)) =
+      (((natInvMod q a * l : ℕ) : ZMod q)) := by
+    have hz := ZMod.natCast_zmod_val (((natInvMod q a * l : ℕ) : ZMod q))
+    simpa [ZMod.val_natCast] using hz
+  rw [hval, Nat.cast_mul]
+  have hni : (natInvMod q a : ZMod q) = (a⁻¹ : ZMod q) := by
+    unfold natInvMod
+    rw [dif_pos hcop_a]
+    exact ZMod.natCast_zmod_val (a⁻¹ : ZMod q)
+  have hui : IsUnit (a⁻¹ : ZMod q) := by
+    refine ⟨⟨(a⁻¹ : ZMod q), (a : ZMod q), ?_, ?_⟩, rfl⟩
+    · rw [mul_comm]
+      exact ZMod.coe_mul_inv_eq_one a hcop_a
+    · exact ZMod.coe_mul_inv_eq_one a hcop_a
+  have hni_unit : IsUnit (natInvMod q a : ZMod q) := by
+    rw [hni]
+    exact hui
+  have hl' : IsUnit (l : ZMod q) := (ZMod.isUnit_iff_coprime l q).mpr hl
+  refine ⟨hni_unit.unit * hl'.unit, ?_⟩
+  simp [Units.val_mul]
+
+/-- **type I 的分布和 (开放引理的对象)**: 对每个 y, 把 a-吸收后的 type I 片段
+  加权和归约到的特征均值对象:
+  Σ_{a ≤ X} |f(a)|/|log(y/a)| · Σ_χ ‖V_χ(y/a, u)‖. -/
+noncomputable def panTypeIDistributionSum (y X q : ℕ) (f : ℕ → ℝ) (u : ℕ) : ℝ :=
+  ∑ a ∈ Finset.Icc 1 X,
+    |f a| / |Real.log ((y / a : ℕ) : ℝ)| *
+      ∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q (y / a) u χ‖
+
+/-- 分布和非负. -/
+theorem panTypeIDistributionSum_nonneg (y X q : ℕ) (f : ℕ → ℝ) (u : ℕ) :
+    0 ≤ panTypeIDistributionSum y X q f u := by
+  unfold panTypeIDistributionSum
+  apply Finset.sum_nonneg
+  intro a ha
+  exact mul_nonneg (div_nonneg (abs_nonneg _) (abs_nonneg _))
+    (Finset.sum_nonneg (fun χ hχ => norm_nonneg _))
+
+/-- type I 单项的三角形归约: 对互素 a 与单位 l,
+  |f(a)·apV1(y/a; q, a⁻¹l)/log(y/a)| ≤ |f(a)|/|log(y/a)| · Σ_χ ‖V_χ(y/a, u)‖
+  (特征展开点式界 + φ(q)⁻¹ ≤ 1). -/
+private lemma panTypeI_summand_abs_le (y _X q : ℕ) (f : ℕ → ℝ) (u a l : ℕ)
+    (hq : 0 < q) (hcop : a.Coprime q) (hl : l.Coprime q) :
+    |f a * (apV1 (y / a) q (natInvMod q a * l % q) u / Real.log ((y / a : ℕ) : ℝ))|
+      ≤ |f a| / |Real.log ((y / a : ℕ) : ℝ)| *
+          ∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q (y / a) u χ‖ := by
+  calc
+    |f a * (apV1 (y / a) q (natInvMod q a * l % q) u / Real.log ((y / a : ℕ) : ℝ))|
+        = |f a| * |apV1 (y / a) q (natInvMod q a * l % q) u / Real.log ((y / a : ℕ) : ℝ)| := by
+          rw [abs_mul]
+    _ = |f a| * (|apV1 (y / a) q (natInvMod q a * l % q) u| / |Real.log ((y / a : ℕ) : ℝ)|) := by
+          rw [abs_div]
+    _ ≤ |f a| * (((Nat.totient q : ℝ)⁻¹ *
+            ∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q (y / a) u χ‖) /
+            |Real.log ((y / a : ℕ) : ℝ)|) := by
+          have h1 : |apV1 (y / a) q (natInvMod q a * l % q) u| ≤
+              (Nat.totient q : ℝ)⁻¹ *
+                ∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q (y / a) u χ‖ :=
+            apV1_abs_le (q := q) (y := y / a) (u := u) hq (isUnit_natInvMod_mul_residue hq hcop hl)
+          exact mul_le_mul_of_nonneg_left (div_le_div_of_nonneg_right h1 (abs_nonneg _)) (abs_nonneg _)
+    _ = |f a| / |Real.log ((y / a : ℕ) : ℝ)| *
+          ((Nat.totient q : ℝ)⁻¹ * ∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q (y / a) u χ‖) := by
+          ring
+    _ ≤ |f a| / |Real.log ((y / a : ℕ) : ℝ)| *
+          (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q (y / a) u χ‖) := by
+          have hqpos : 0 < (Nat.totient q : ℝ) := by
+            exact_mod_cast (Nat.totient_pos.mpr hq)
+          have hq1 : (1 : ℝ) ≤ (Nat.totient q : ℝ) := by
+            exact_mod_cast (Nat.succ_le_of_lt (Nat.totient_pos.mpr hq))
+          have hφ : (Nat.totient q : ℝ)⁻¹ ≤ 1 := (inv_le_one₀ hqpos).mpr hq1
+          have hS : 0 ≤ (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q (y / a) u χ‖) := by
+            apply Finset.sum_nonneg
+            intro χ hχ
+            exact norm_nonneg _
+          have hPhiS : (Nat.totient q : ℝ)⁻¹ * (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q (y / a) u χ‖) ≤
+              (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q (y / a) u χ‖) := by
+            simpa using (mul_le_mul_of_nonneg_right hφ hS)
+          exact mul_le_mul_of_nonneg_left hPhiS
+            (div_nonneg (abs_nonneg _) (abs_nonneg _))
+
+/-- **type I 的 l-一致归约**: 对单位 l, 每个 |panPieceSum y X q l f g| 被
+  panTypeIDistributionSum 一致控制 (界与 l 无关). -/
+theorem panPieceSum_typeI_abs_le (y X q : ℕ) (f : ℕ → ℝ) (u l : ℕ) (hq : 0 < q)
+    (hl : l.Coprime q) :
+    |panPieceSum y X q l f (fun y' q' l' => apV1 y' q' l' u / Real.log (y' : ℝ))|
+      ≤ panTypeIDistributionSum y X q f u := by
+  calc
+    |panPieceSum y X q l f (fun y' q' l' => apV1 y' q' l' u / Real.log (y' : ℝ))|
+        ≤ ∑ a ∈ Finset.Icc 1 X,
+            |if a.Coprime q then
+              f a * (apV1 (y / a) q (natInvMod q a * l % q) u / Real.log ((y / a : ℕ) : ℝ))
+            else 0| := by
+          unfold panPieceSum
+          exact abs_sum_le_sum_abs _ _
+    _ ≤ ∑ a ∈ Finset.Icc 1 X,
+          |f a| / |Real.log ((y / a : ℕ) : ℝ)| *
+            ∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q (y / a) u χ‖ := by
+          apply Finset.sum_le_sum
+          intro a ha
+          by_cases hcop : a.Coprime q
+          · rw [if_pos hcop]
+            exact panTypeI_summand_abs_le y X q f u a l hq hcop hl
+          · have hnonneg : 0 ≤ |f a| / |Real.log ((y / a : ℕ) : ℝ)| *
+                ∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q (y / a) u χ‖ := by
+              exact mul_nonneg (div_nonneg (abs_nonneg _) (abs_nonneg _))
+                (Finset.sum_nonneg (fun χ hχ => norm_nonneg _))
+            simp [hcop]
+            exact hnonneg
+
+/-- **l-max 归约**: panPieceMaxL ≤ panTypeIDistributionSum (界与 l 无关, 故 max 直接进入). -/
+theorem panPieceMaxL_le_typeIDistributionSum (y X q : ℕ) (f : ℕ → ℝ) (u : ℕ) :
+    panPieceMaxL y X q f (fun y' q' l' => apV1 y' q' l' u / Real.log (y' : ℝ)) ≤
+      panTypeIDistributionSum y X q f u := by
+  unfold panPieceMaxL
+  by_cases hS : ((Finset.Icc 1 (q - 1)).filter (fun l => l.Coprime q)).Nonempty
+  · dsimp only []
+    rw [dif_pos hS]
+    apply Finset.max'_le
+    intro z hz
+    rcases Finset.mem_image.mp hz with ⟨l, hl, rfl⟩
+    have hlS : l ∈ (Finset.Icc 1 (q - 1)).filter (fun l => l.Coprime q) := hl
+    have hl' : l.Coprime q := (Finset.mem_filter.mp hlS).2
+    have hlIcc : l ∈ Finset.Icc 1 (q - 1) := (Finset.mem_filter.mp hlS).1
+    have hq : 0 < q := by
+      have h1 : 1 ≤ l := (Finset.mem_Icc.mp hlIcc).1
+      have h2 : l ≤ q - 1 := (Finset.mem_Icc.mp hlIcc).2
+      omega
+    exact panPieceSum_typeI_abs_le y X q f u l hq hl'
+  · rw [dif_neg hS]
+    exact panTypeIDistributionSum_nonneg y X q f u
+
+/-- **特征均值对象的 y-max**: 镜像 panPieceMaxY. -/
+noncomputable def panTypeIMeanValueMaxY (X q x : ℕ) (f : ℕ → ℝ) (u : ℕ) : ℝ :=
+  ((Finset.range (x + 1)).image (fun y => panTypeIDistributionSum y X q f u)).max'
+    (Finset.image_nonempty.mpr ⟨0, by simp⟩)
+
+/-- **y-max 归约**: panPieceMaxY ≤ panTypeIMeanValueMaxY (逐 y 的
+  panPieceMaxL ≤ panTypeIDistributionSum 后取 max). -/
+theorem panPieceMaxY_le_typeIMeanValueMaxY (X q x : ℕ) (f : ℕ → ℝ) (u : ℕ) :
+    panPieceMaxY X q x f (fun y' q' l' => apV1 y' q' l' u / Real.log (y' : ℝ)) ≤
+      panTypeIMeanValueMaxY X q x f u := by
+  unfold panPieceMaxY panTypeIMeanValueMaxY
+  apply Finset.max'_le
+  intro z hz
+  rcases Finset.mem_image.mp hz with ⟨y, hy, rfl⟩
+  exact le_trans (panPieceMaxL_le_typeIDistributionSum y X q f u)
+    (Finset.le_max'
+      (s := (Finset.range (x + 1)).image (fun y => panTypeIDistributionSum y X q f u))
+      (x := panTypeIDistributionSum y X q f u)
+      (Finset.mem_image.mpr ⟨y, hy, rfl⟩))
+
+/-- **开放引理 T1' (特征均值界)**: type I 的剩余分析输入 — 在 3^{ω(q)} 权重下
+  特征均值对象的界 (对 |f| ≤ 1 一致; 经典证明: 乘法大筛对 Σ_χ‖V_χ‖² 的均值
+  + Cauchy-Schwarz 装配). 这是 PanTypeIWeightedBound 归约后剩下的唯一解析台阶. -/
+def PanTypeICharacterMeanValue (x : ℕ → ℝ) (f : ℕ → ℝ) (u : ℕ) : Prop :=
+  (∀ a : ℕ, |f a| ≤ 1) ∧
+    ∀ A : ℝ, 0 < A → ∃ C : ℝ, 0 < C ∧ ∃ B : ℝ, ∃ x₀ : ℕ,
+      ∀ X : ℕ, x₀ ≤ X →
+        ∑ q ∈ Finset.range (Nat.floor ((x X) ^ (1 / 2 : ℝ) / (log (x X)) ^ B) + 1),
+          ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+            panTypeIMeanValueMaxY X q (Nat.floor (x X)) f u ≤
+          C * x X / (log (x X)) ^ A
+
+/-- **T1 归约定理**: PanTypeICharacterMeanValue (特征均值, 开放) ⇒
+  PanTypeIWeightedBound (加权 type I 界). 全部有限代数 (特征展开, 点式界,
+  l-max/y-max 归约, 权重单调) 在此证明; 剩下的唯一解析输入是特征均值界本身. -/
+theorem PanTypeIWeightedBound.of_characterMeanValue {x : ℕ → ℝ} {f : ℕ → ℝ} {u : ℕ} :
+    PanTypeICharacterMeanValue x f u → PanTypeIWeightedBound x f u := by
+  intro hP
+  rcases hP with ⟨hfb, hBound⟩
+  intro A hA
+  rcases hBound A hA with ⟨C, hC, B, x₀, hMain⟩
+  refine ⟨C, hC, B, x₀, ?_⟩
+  intro X hX
+  calc
+    (∑ q ∈ Finset.range (Nat.floor ((x X) ^ (1 / 2 : ℝ) / (log (x X)) ^ B) + 1),
+        ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+          panPieceMaxY X q (Nat.floor (x X)) f
+            (fun y q l => apV1 y q l u / Real.log (y : ℝ)))
+        ≤ ∑ q ∈ Finset.range (Nat.floor ((x X) ^ (1 / 2 : ℝ) / (log (x X)) ^ B) + 1),
+            ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+              panTypeIMeanValueMaxY X q (Nat.floor (x X)) f u := by
+          apply Finset.sum_le_sum
+          intro q hq
+          have hw : 0 ≤ ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card := by
+            exact mul_nonneg (sq_nonneg _) (pow_nonneg (by norm_num) _)
+          exact mul_le_mul_of_nonneg_left
+            (panPieceMaxY_le_typeIMeanValueMaxY X q (Nat.floor (x X)) f u) hw
+    _ ≤ C * x X / (log (x X)) ^ A := hMain X hX
+
+end
 
 end AnalyticNumberTheory.Sieve
