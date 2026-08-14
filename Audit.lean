@@ -298,3 +298,17 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.PanTypeIWeightedBound
 #print axioms AnalyticNumberTheory.Sieve.PanTypeIIWeightedBound
 #print axioms AnalyticNumberTheory.Sieve.PanMainTermBound
+#print axioms AnalyticNumberTheory.Sieve.unitResidues
+#print axioms AnalyticNumberTheory.Sieve.panTypeIV1CharSum
+#print axioms AnalyticNumberTheory.Sieve.charValue_norm_eq_one
+#print axioms AnalyticNumberTheory.Sieve.apV1_charSum
+#print axioms AnalyticNumberTheory.Sieve.apV1_abs_le
+#print axioms AnalyticNumberTheory.Sieve.isUnit_natInvMod_mul_residue
+#print axioms AnalyticNumberTheory.Sieve.panTypeIDistributionSum
+#print axioms AnalyticNumberTheory.Sieve.panTypeIDistributionSum_nonneg
+#print axioms AnalyticNumberTheory.Sieve.panPieceSum_typeI_abs_le
+#print axioms AnalyticNumberTheory.Sieve.panPieceMaxL_le_typeIDistributionSum
+#print axioms AnalyticNumberTheory.Sieve.panTypeIMeanValueMaxY
+#print axioms AnalyticNumberTheory.Sieve.panPieceMaxY_le_typeIMeanValueMaxY
+#print axioms AnalyticNumberTheory.Sieve.PanTypeICharacterMeanValue
+#print axioms AnalyticNumberTheory.Sieve.PanTypeIWeightedBound.of_characterMeanValue
