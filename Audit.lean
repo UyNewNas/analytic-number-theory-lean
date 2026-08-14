@@ -453,3 +453,4 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.panTypeIWeight3_le_sqfree_three_pow
 #print axioms AnalyticNumberTheory.Sieve.panTypeIWeight3_le_Q_mul_sumTwoPowWeighted
 #print axioms AnalyticNumberTheory.Sieve.panTypeIWeight3_le_polylog
+#print axioms AnalyticNumberTheory.Sieve.totient_div_q_mul_q_div_totient_eq_one
