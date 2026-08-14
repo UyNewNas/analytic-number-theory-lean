@@ -101,6 +101,27 @@ the RHS of the whole main-term sub-chain (and hence of `PanVaughanSplit` /
 classical `C·x/log^A x` form remains the open BRG target (sieve-main-term
 subtraction, out of scope for this chain).
 
+**Why the polylog form is the correct level for the crude chain (T3i follow-up
+analysis, ant #15)**: the failure is not an artifact of the crude bounds.
+(a) Even sharpening the y,a factor to li's true decay
+(`|li(m)| = m/log m` for m ≥ 2, giving `Σ_{a ≤ X} |li(⌊y/a⌋)| ≪ y·(1 + log log y)`
+by the standard `Σ 1/(a log(y/a)) ≍ log log y` estimate — the §3 comment's
+"classical sharper estimate") leaves the main piece ≍
+`xX·(log log xX)·(log xX)^6` (q-factor `Σ μ²3^ω/φ ≪ log⁶Q` alone is polylog⁶),
+which is ≫ `xX/log^A(xX)` for every fixed A. (b) Even classically — with the
+(a,q)=1 restriction and the Chen weight making the a-harmonic sum converge to
+`∏(1-ν(p)/p)` — the `3^{ω(q)}`-weighted q-sum still contributes ≍ `log³Q`, so
+the li main term is ≍ `xX·(log xX)^3/log(xX)`, not O(`xX/log^A(xX)`). The
+classical `x/log^A x` bound is a *difference* bound: `|li-main − sieve-main| ≪
+x/log^A x` with the sieve main term `x·∏(1-ν(p)/p)`-type object (Halberstam–
+Richert Ch.10). Hence within ant's current single-inequality chain the polylog RHS
+`C·xX·(log xX)^{A+7}` (implemented and proved in `PanMainTerm.lean` §6.1) is the
+honest maximum; the classical form requires (1) the (a,q)=1 + Chen-weight a-sum
+(chen repo) and (2) the sieve-main-term difference (BRG). Formal counterexample
+(A = 1, `x X = X`): `not_panMainSieveAbsorption_old_natCast` in
+`PanMainTerm.lean` — the old asymptotic claim is refuted by
+`(1+log X)·log⁶(X+2)·log X ≥ log X → ∞`.
+
 ## Architecture source
 
 - **Landmark proof**: Pan (1963); Bombieri (1965) / A.I. Vinogradov (1965);
