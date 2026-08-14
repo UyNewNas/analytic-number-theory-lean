@@ -872,6 +872,17 @@ def PanMainSieveAbsorption (x : ℕ → ℝ) : Prop :=
 (`≤ C·xX·(log xX)^{A+7}`) 是粗链 (`|f| ≤ 1`, 无 `(a,q)=1` 权重) 内的
 诚实最大内容.
 
+**更深一层 (拆分形状, 见 `PanVaughanPointwise.lean` 红队注记)**: 本节的
+多对数吸收界的是**当前拆分**的纯 |li| 内和 (`mainTermInnerSumMax·Σ`);
+而当前拆分本身形状错误 — `PanChebyshevApprox`/`PanVaughanPointwiseSplit`
+的第三块是纯 `|Σ f(a)·li/φ(q)|` (绝对值, 无权重相消), 但本仓库自己的有限
+代数 (`panWeightedVonMangoldt_abs_le`) 给出的是**带符号差**
+`|Σ f(a)·(apSmall − apMiddle)|`. 经典 Liu §III 的第三块是 li 与 middle 的
+带符号差 (Chebyshev ψ↔π 后 `|Σ f(a)·((apSmall − apMiddle)/log(y/a) −
+li(y/a)/φ(q))|`, PNT 级主项). 修正拆分 (第三块 → 带符号差) 与主项子链的
+联合重设计见 `PAN_PROOF_ATLAS.md` 深析 (BRG/chen 权重结构); 当前链的多对数
+闭合是错误形状下的诚实最大, 修正后由 PNT 级主项界取代.
+
 全部是 mathlib 初等分析 (tendsto / rpow / log 单调), 零 sorry. -/
 
 section PanMainSieveAbsorption_proof

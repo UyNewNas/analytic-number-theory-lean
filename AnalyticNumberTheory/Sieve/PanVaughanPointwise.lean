@@ -36,6 +36,21 @@
 装配 (PanAssembly.lean) 消费 `PanVaughanPointwiseSplit` 作为 `hsplit`,
 与 `PanLogEventuallyLarge` 一起经 `PanVaughanSplit.of_analyticInputs`
 给出 `PanMeanValueUniform` 的完整证明.
+
+**红队注记 (ant #15, T3i 后续 — 拆分形状)**: 本文件的有限代数
+`panWeightedVonMangoldt_abs_le` (加权 Vaughan 拆分) 的第三块是**带符号差**
+`|Σ f(a)·(apSmall − apMiddle)|` (由 `apVonMangoldt_eq_pieces` 精确得出);
+但解析台阶 `PanChebyshevApprox`/`PanVaughanPointwiseSplit` 把第三块写成
+**纯 li 绝对值** `|Σ f(a)·li/φ(q)|`, 声称 middle/small 经 Möbius 反演吸收进
+li 主项. 该形状是**错误**的: 即使 middle 因 `Σ_{d>u} μ(d)/d` 的 Möbius 尾部
+消去而相对小 (`O(1/log u)`), 纯 |li| 块 `Σ_q w_q·Σ_a f(a)·|li(y/a)|/φ(q)`
+(绝对值, 无权重相消) ≍ `(x/log x)·(1+log X)·log³Q` — 对任意固定 A 都
+≫ `x/log^A x`. 经典 Liu §III 的正确形状: 第三块是 li 与 middle/small 的
+**带符号差** (Chebyshev ψ↔π 转换后 `|Σ f(a)·((apSmall − apMiddle)/log(y/a)
+− li(y/a)/φ(q))|`, PNT 级主项), 其 `x/log^A` 界需要 (a,q)=1 + Chen 权重
+(a-调和和收敛) 与筛主项相减 (BRG). 修正拆分 (第三块 → 带符号差) 与主项子链
+(`PanMainTermSieveBound`/`PanMainSieveAbsorption`) 的联合重设计见
+`PAN_PROOF_ATLAS.md` 深析; 当前链 (`|li|` 形状) 的多对数闭合是诚实最大.
 -/
 
 import AnalyticNumberTheory.Sieve.PanAssembly

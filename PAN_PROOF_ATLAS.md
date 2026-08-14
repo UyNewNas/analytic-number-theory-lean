@@ -332,3 +332,29 @@ PAN: Σ_q μ²(q)3^ω(q)·panMaxY ≤ C·x/log^A x      (assembly of T1+T2+T3 wi
   statement cannot be discharged by this route, the bridge to
   `WeightedPanCondition` must be re-audited (issue #7).
 
+
+**Joint redesign of the split and the main sub-chain (T3i follow-up, ant #15)**:
+the root cause is not `PanMainSieveAbsorption` alone — it is the *split shape*.
+`PanVaughanPointwise.lean`'s own finite algebra (`panWeightedVonMangoldt_abs_le`)
+splits the Λ-count exactly as
+`|Σ f(a)Λ| ≤ |Σ f(a)apV1| + |Σ f(a)apV3| + |Σ f(a)(apSmall − apMiddle)|` —
+a *signed* third block. But the analytic step `PanChebyshevApprox` /
+`PanVaughanPointwiseSplit` replaces it with the *pure* absolute
+`|Σ f(a)·li/φ(q)|`, absorbing middle/small into li "by Möbius inversion". Even
+though the middle is relatively small (tail `Σ_{d>u} μ(d)/d = O(1/log u)`), the
+pure-|li| block is ≍ `(x/log x)·(1+log X)·log³Q` (absolute value, no weight
+cancellation) — ≫ `x/log^A x` for every fixed A, even with the Chen weight.
+The correct classical shape (Liu §III) is the *signed* third block
+`|Σ f(a)·((apSmall − apMiddle)/log(y/a) − li(y/a)/φ(q))|` — the PNT-level main
+term (≍ `x/log x·∏(1−ν(p)/p)` with the Chen weight; difference with the sieve
+main term ≪ `x/log^A x`). Joint redesign: (1) restate
+`PanChebyshevApprox`/`PanVaughanPointwiseSplit` third block as the signed
+difference (matches the finite algebra; of_chebyshevApprox application reworked);
+(2) restate `PanMainTermSieveBound`/`PanMainTermBound` to the signed main-block
+object — its `x/log^A` bound is PNT-level (chen weight a-sum + sieve-main-term
+difference, BRG), replacing the current pure-li polylog absorption (which remains
+the honest closure of the *current* wrong-shape split, implemented and proved);
+(3) `of_analyticInputs`'s final scale = max of the block scales — with the signed
+main block at `x/log^A` (classical) the assembly reaches `x/log^A`, otherwise
+polylog. Formal counterexample and current-state closure are in `PanMainTerm.lean`
+§6.1.
