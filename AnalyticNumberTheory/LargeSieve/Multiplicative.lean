@@ -5,29 +5,44 @@
 
 Pan 均值定理证明链的第二块分析台阶 (图谱 LS1 → LS2): 从加法大筛
 (`LargeSieve/WellSpaced.lean`) 出发, 经 Dirichlet 特征正交性与有限傅里叶
-Parseval, 得到对模 `q ≤ Q` 的所有 (复值) Dirichlet 特征的均值定理
+Parseval, 得到
 
-  Σ_{q ≤ Q} (q/φ(q)) · Σ_{χ mod q} |Σ_n a_n·χ(n)|² ≤ C(N, 1/Q²) · Σ_n |a_n|².
+  * 有理点集 `X_Q = {r/q : 1 ≤ q ≤ Q, 0 ≤ r < q}` (去重后即 Farey 分数集) 上的
+    加法大筛: `Σ_{x∈X_Q} |Σ_n a_n·e(nx)|² ≤ C(N, 1/Q²)·Σ_n |a_n|²`
+    (`largeSieveRationalPoints`);
+  * 模 `q` 点式特征大筛不等式:
+    `(q/φ(q))·Σ_{χ mod q} |Σ_n a_n·χ(n)|² ≤ Σ_{r<q} |Σ_n a_n·e(nr/q)|²`
+    (`characterSieveModulus_le`).
 
-证明骨架 (Montgomery 的经典路线, 绕开 Gauss 和的数值):
+证明骨架 (Montgomery 的经典路线):
 
 1. **特征正交性**: 对模 `q` 的所有特征,
    `Σ_χ |S(χ)|² = φ(q)·Σ_{(a,q)=1} |Σ_{n≡a (q)} a_n|²`
    (mathlib `DirichletCharacter.sum_char_inv_mul_char_eq`; 这里
    `χ(n) = 0` 当 `(n,q) > 1` 自动处理互素限制).
-2. **有限傅里叶 Parseval**: `Σ_{a mod q} |Σ_{n≡a (q)} a_n|² ≤ (1/q)·Σ_{r mod q} |S(r/q)|²`
-   (把同余指示函数用加法特征 `e(nr/q)` 展开, 几何级数核 `Σ_a e(a(r−s)/q) = q·1_{r=s}`).
-3. **有理点集 well-spaced**: `X_Q = {r/q : 1 ≤ q ≤ Q, 0 ≤ r < q}` 是
-   `1/Q²`-well-spaced (分子分母差分的下界 `≥ 1/(q₁q₂)`).
-4. **加法大筛**: 对 `X_Q` 应用 `largeSievePrimal_wellSpaced`, 得乘法大筛
-   (`largeSieveMultiplicative`), 常数为加法大筛弱常数 `C(N, 1/Q²)`.
+2. **有限傅里叶 Parseval**: `Σ_{a mod q} |Σ_{n≡a (q)} a_n|² = (1/q)·Σ_{r mod q} |S(r/q)|²`
+   (`zmodParseval_inv`/`zmodParseval_character`; 几何级数核
+   `Σ_a e(a(r−s)/q) = q·1_{r=s}`).
+3. **有理点集 well-spaced**: `X_Q` 是 `1/Q²`-well-spaced (分子分母差分的
+   下界 `≥ 1/(q₁q₂)`, `rationalPoints_wellSpaced`).
+4. **加法大筛**: 对 `X_Q` 应用 `largeSievePrimal_wellSpaced`, 得
+   `largeSieveRationalPoints`, 常数为加法大筛弱常数 `C(N, 1/Q²)`
+   (`largeSieveBound`).
 
-注意: 这里的 `Σ_χ` 遍历模 `q` 的**所有**特征 (而非仅原特征), 故无需 Gauss 和
-与原特征诱导; 该版本蕴含经典的原特征版本 (原特征是子集). 弱常数 `C(N,δ)`
-来自 LS1 (最强 `N + δ⁻¹` 仍是开放依赖).
+**红队注记 (装配边界)**: 经典 Bombieri--Davenport 乘法大筛
+`Σ_{q≤Q} (q/φ(q))·Σ*_{χ mod q} |S(χ)|² ≤ (Q²+N−1)·Σ_n |a_n|²` (其中 `Σ*`
+限定**原特征**) 需要两条本模块尚不具备的额外装置: (i) 原特征分解与 Gauss 和
+(`|τ(χ)|² = q`, 把 `(q/φ(q))·|S(χ)|²` 写成
+`(1/φ(q))·|Σ_{(a,q)=1} conj(χ(a))·S(a/q)|²`); (ii) 对既约分数对的显式求和
+(与 `rationalPoints` 去重集合等价, 但需既约-值双射). 直接对**全体**特征或
+**带重数**点集 `Σ_{q≤Q} Σ_{r<q} |S(r/q)|²` 叠加 Parseval 路线不成立
+(反例: `a_n ≡ 1`, `Q = 2`, `N` 充分大: 左边 `Σ_q (q/φ(q))Σ_χ |S(χ)|² ≈ 3N²/2`
+而 `C(N,1/4)·N = (N+64)·N`), 故原特征版本保留为开放目标 (图谱 LS2/LS3).
+弱常数 `C(N,δ)` 来自 LS1 (最强 `N + δ⁻¹` 仍是开放依赖).
 
 参考: Montgomery, "Topics in Multiplicative Number Theory" (1971), Ch. 1;
-Iwaniec & Kowalski, "Analytic Number Theory" (2004), Ch. 7.
+Iwaniec & Kowalski, "Analytic Number Theory" (2004), Ch. 7;
+Kedlaya, "Notes on Analytic Number Theory", Ch. 16 (Bombieri--Davenport).
 -/
 
 import AnalyticNumberTheory.LargeSieve.WellSpaced
@@ -113,6 +128,13 @@ theorem charReal_int_eq_one (k : ℤ) : charReal (k : ℝ) = 1 := by
     charReal (k : ℝ) = charReal (Int.fract (k : ℝ)) := charReal_eq_charReal_fract (k : ℝ)
     _ = charReal 0 := by rw [hf]
     _ = 1 := charReal_zero
+
+/-- `e` 以任意整数为周期: `e(x + k) = e(x)` (`k : ℤ`). -/
+theorem charReal_periodic_int (x : ℝ) (k : ℤ) : charReal (x + (k : ℝ)) = charReal x := by
+  calc
+    charReal (x + (k : ℝ)) = charReal (Int.fract (x + (k : ℝ))) := charReal_eq_charReal_fract (x + (k : ℝ))
+    _ = charReal (Int.fract x) := by congr 1; rw [Int.fract_add_intCast]
+    _ = charReal x := (charReal_eq_charReal_fract x).symm
 
 /-- **几何级数核 (模 q)**: `Σ_{r<q} e(r·k/q) = q·1_{q|k}` 对整数 `k`.
 `q | k` 时每项为 1; 否则用几何级数公式 (分子 `e(k) = 1`). -/
@@ -1062,3 +1084,512 @@ theorem rationalPoints_wellSpaced (Q : ℕ) (hQ : 0 < Q) :
     1 / (Q : ℝ) ^ 2 = 1 / ((Q : ℝ) * (Q : ℝ)) := by rw [hQ2]
     _ ≤ 1 / ((q₁ : ℝ) * (q₂ : ℝ)) := hQinv
     _ ≤ distToInt ((r₁ : ℝ) / (q₁ : ℝ) - (r₂ : ℝ) / (q₂ : ℝ)) := hd
+
+/-! ## 5. 乘法大筛装配: Parseval 逆变换、字符版与 Farey 点集加法大筛 -/
+
+/-- 模 `q` 剩余类与 `0..q−1` 的双射求和: `Σ_{x : ZMod q} f x = Σ_{a < q} f ↑a`. -/
+theorem zmod_sum_range {q : ℕ} [NeZero q] {M : Type*} [AddCommMonoid M] (f : ZMod q → M) :
+    (∑ x : ZMod q, f x) = ∑ a ∈ Finset.range q, f (a : ZMod q) := by
+  symm
+  refine Finset.sum_bij (s := Finset.range q) (t := (Finset.univ : Finset (ZMod q)))
+    (fun a _ => (a : ZMod q)) ?_ ?_ ?_ ?_
+  · intro a ha
+    simp
+  · intro a ha b hb hab
+    have hltb : b < q := Finset.mem_range.mp hb
+    have hmod : a ≡ b [MOD q] := (ZMod.natCast_eq_natCast_iff a b q).mp hab
+    exact Nat.ModEq.eq_of_lt_of_lt hmod (Finset.mem_range.mp ha) hltb
+  · intro x hx
+    refine ⟨x.val, Finset.mem_range.mpr (ZMod.val_lt x), ?_⟩
+    exact (ZMod.natCast_zmod_val x)
+  · intro a ha
+    rfl
+
+/-- 对 `0 ≤ a,b < q`: `q | a+b` 当且仅当 `b = (q−a) mod q`. -/
+theorem zmod_dvd_add_iff {q a b : ℕ} (hq : 0 < q) (ha : a < q) (hb : b < q) :
+    ((q : ℤ) ∣ ((a : ℤ) + (b : ℤ))) ↔ b = (q - a) % q := by
+  constructor
+  · intro hd
+    rcases hd with ⟨m, hm⟩
+    have hmz : (a : ℤ) + (b : ℤ) = m * (q : ℤ) := by simpa [mul_comm] using hm
+    have hnonneg : 0 ≤ (a : ℤ) + (b : ℤ) := by positivity
+    have hlt : (a : ℤ) + (b : ℤ) < 2 * (q : ℤ) := by
+      have ha' : (a : ℤ) < (q : ℤ) := by exact_mod_cast ha
+      have hb' : (b : ℤ) < (q : ℤ) := by exact_mod_cast hb
+      linarith
+    have hm0 : 0 ≤ m := by
+      have hqpos : 0 < (q : ℤ) := by exact_mod_cast hq
+      have hmq : m * (q : ℤ) ≥ 0 := by rwa [← hmz]
+      nlinarith
+    have hm2 : m < 2 := by
+      have hmq : m * (q : ℤ) < 2 * (q : ℤ) := by
+        rw [← hmz]
+        exact hlt
+      nlinarith
+    have hm01 : m = 0 ∨ m = 1 := by omega
+    rcases hm01 with hm0 | hm1
+    · have hab0 : (a : ℤ) + (b : ℤ) = 0 := by
+        rw [hmz, hm0]
+        norm_num
+      have habn : a + b = 0 := by exact_mod_cast hab0
+      have ha0 : a = 0 := by omega
+      have hb0 : b = 0 := by omega
+      rw [ha0, hb0]
+      simp
+    · have habq : (a : ℤ) + (b : ℤ) = (q : ℤ) := by
+        rw [hmz, hm1]
+        norm_num
+      have habn : a + b = q := by exact_mod_cast habq
+      by_cases ha0 : a = 0
+      · have : b = q := by omega
+        omega
+      · have hqapos : 0 < q - a := by omega
+        have hqalt : q - a < q := by omega
+        have hmod : (q - a) % q = q - a := Nat.mod_eq_of_lt hqalt
+        have hbqa : b = q - a := by omega
+        rw [hbqa, hmod]
+  · intro hb'
+    by_cases ha0 : a = 0
+    · have hb0 : b = 0 := by
+        rw [ha0] at hb'
+        simpa using hb'
+      rw [ha0, hb0]
+      exact dvd_zero (q : ℤ)
+    · have hqapos : 0 < q - a := by omega
+      have hqalt : q - a < q := by omega
+      have hmod : (q - a) % q = q - a := Nat.mod_eq_of_lt hqalt
+      have hbqa : b = q - a := by
+        rw [hmod] at hb'
+        exact hb'
+      have habq : a + b = q := by omega
+      have habq' : (a : ℤ) + (b : ℤ) = (q : ℤ) := by exact_mod_cast habq
+      rw [habq']
+
+/-- 对 `0 ≤ a,b < q`: `q | a−b` 当且仅当 `a = b`. -/
+theorem zmod_dvd_sub_iff {q a b : ℕ} (hq : 0 < q) (ha : a < q) (hb : b < q) :
+    ((q : ℤ) ∣ ((a : ℤ) - (b : ℤ))) ↔ a = b := by
+  constructor
+  · intro hd
+    rcases hd with ⟨m, hm⟩
+    have hm' : (a : ℤ) - (b : ℤ) = m * (q : ℤ) := by
+      simpa [mul_comm] using hm
+    have hlt1 : (a : ℤ) - (b : ℤ) < (q : ℤ) := by
+      have ha' : (a : ℤ) < (q : ℤ) := by exact_mod_cast ha
+      have hb0 : 0 ≤ (b : ℤ) := by exact_mod_cast (Nat.zero_le b)
+      linarith
+    have hlt2 : -(q : ℤ) < (a : ℤ) - (b : ℤ) := by
+      have hb' : (b : ℤ) < (q : ℤ) := by exact_mod_cast hb
+      have ha0 : 0 ≤ (a : ℤ) := by exact_mod_cast (Nat.zero_le a)
+      linarith
+    have habs : |(a : ℤ) - (b : ℤ)| < (q : ℤ) := (abs_lt).2 ⟨hlt2, hlt1⟩
+    have hm0 : m = 0 := by
+      by_contra hmne
+      have hmm1 : (1 : ℝ) ≤ |(m : ℝ)| := by
+        have hz : m.natAbs ≠ 0 := Int.natAbs_ne_zero.mpr hmne
+        have hmm1' : (1 : ℝ) ≤ (m.natAbs : ℝ) := by
+          exact_mod_cast (Nat.succ_le_of_lt (Nat.pos_of_ne_zero hz))
+        have hcast : |(m : ℝ)| = ((m.natAbs : ℕ) : ℝ) := by
+          rw [← Int.cast_abs]
+          congr 1
+          exact Int.abs_eq_natAbs m
+        rwa [hcast]
+      have hcast2 : (a : ℝ) - (b : ℝ) = (m : ℝ) * (q : ℝ) := by exact_mod_cast hm'
+      have habsR : |(a : ℝ) - (b : ℝ)| < (q : ℝ) := by exact_mod_cast habs
+      have hqR : 0 < (q : ℝ) := by exact_mod_cast hq
+      have hbig : |(a : ℝ) - (b : ℝ)| = |(m : ℝ)| * (q : ℝ) := by
+        rw [hcast2, abs_mul, abs_of_nonneg (le_of_lt hqR)]
+      have hmq : |(m : ℝ)| * (q : ℝ) < (q : ℝ) := by
+        rw [← hbig]
+        exact habsR
+      have hltm : |(m : ℝ)| < 1 := by
+        by_contra hge
+        have h1 : (1 : ℝ) ≤ |(m : ℝ)| := le_of_not_gt hge
+        have h2 : (1 : ℝ) * (q : ℝ) ≤ |(m : ℝ)| * (q : ℝ) :=
+          mul_le_mul_of_nonneg_right h1 (le_of_lt hqR)
+        have h3 : |(m : ℝ)| * (q : ℝ) < (1 : ℝ) * (q : ℝ) := by simpa using hmq
+        have hbad : (1 : ℝ) * (q : ℝ) < (1 : ℝ) * (q : ℝ) := lt_of_le_of_lt h2 h3
+        exact (lt_irrefl ((1 : ℝ) * (q : ℝ))) hbad
+      have hbad : (1 : ℝ) < (1 : ℝ) := lt_of_le_of_lt hmm1 hltm
+      exact (lt_irrefl (1 : ℝ)) hbad
+    have habz : (a : ℤ) - (b : ℤ) = 0 := by
+      rw [hm', hm0]
+      norm_num
+    have habn : a = b := by omega
+    exact habn
+  · intro hab
+    subst hab
+    simp
+
+/-- **核 (模 q)**: `Σ_{r<q} e(ar/q)·conj(e(br/q)) = q·1_{a=b}` 对 `0 ≤ a,b < q`. -/
+theorem zmodCharKernel {q : ℕ} (hq : 0 < q) (a b : ℕ) (ha : a < q) (hb : b < q) :
+    (∑ r ∈ Finset.range q, charReal ((a : ℝ) * (r : ℝ) / (q : ℝ)) *
+        star (charReal ((b : ℝ) * (r : ℝ) / (q : ℝ)))) =
+      if a = b then (q : ℂ) else 0 := by
+  have hterm : ∀ r : ℕ,
+      charReal ((a : ℝ) * (r : ℝ) / (q : ℝ)) *
+          star (charReal ((b : ℝ) * (r : ℝ) / (q : ℝ))) =
+        charReal ((((a : ℤ) - (b : ℤ) : ℤ) : ℝ) * (r : ℝ) / (q : ℝ)) := by
+    intro r
+    have hs : star (charReal ((b : ℝ) * (r : ℝ) / (q : ℝ))) =
+        charReal (-((b : ℝ) * (r : ℝ) / (q : ℝ))) := (charReal_neg _).symm
+    have hcast : ((((a : ℤ) - (b : ℤ) : ℤ) : ℝ) * (r : ℝ) / (q : ℝ)) =
+        ((a : ℝ) - (b : ℝ)) * (r : ℝ) / (q : ℝ) := by
+      norm_num
+    have harg : (a : ℝ) * (r : ℝ) / (q : ℝ) + (-((b : ℝ) * (r : ℝ) / (q : ℝ))) =
+        ((((a : ℤ) - (b : ℤ) : ℤ) : ℝ) * (r : ℝ) / (q : ℝ)) := by
+      rw [hcast]
+      field_simp [show (q : ℝ) ≠ 0 by exact_mod_cast hq.ne']
+      ring
+    calc
+      charReal ((a : ℝ) * (r : ℝ) / (q : ℝ)) *
+          star (charReal ((b : ℝ) * (r : ℝ) / (q : ℝ)))
+          = charReal ((a : ℝ) * (r : ℝ) / (q : ℝ)) *
+              charReal (-((b : ℝ) * (r : ℝ) / (q : ℝ))) := by rw [hs]
+      _ = charReal ((((a : ℤ) - (b : ℤ) : ℤ) : ℝ) * (r : ℝ) / (q : ℝ)) := by
+            rw [← charReal_add, harg]
+  calc
+    (∑ r ∈ Finset.range q, charReal ((a : ℝ) * (r : ℝ) / (q : ℝ)) *
+        star (charReal ((b : ℝ) * (r : ℝ) / (q : ℝ))))
+        = ∑ r ∈ Finset.range q,
+            charReal ((((a : ℤ) - (b : ℤ) : ℤ) : ℝ) * (r : ℝ) / (q : ℝ)) := by
+          apply Finset.sum_congr rfl
+          intro r hr
+          exact hterm r
+    _ = if (q : ℤ) ∣ ((a : ℤ) - (b : ℤ)) then (q : ℂ) else 0 :=
+          geomSum_zmod_charReal hq ((a : ℤ) - (b : ℤ))
+    _ = if a = b then (q : ℂ) else 0 := by
+          have hdiv : ((q : ℤ) ∣ ((a : ℤ) - (b : ℤ))) ↔ a = b := zmod_dvd_sub_iff hq ha hb
+          by_cases hab : a = b
+          · rw [if_pos hab]
+            rw [if_pos (hdiv.mpr hab)]
+          · rw [if_neg hab]
+            rw [if_neg (fun h => hab (hdiv.mp h))]
+
+/-- **Parseval 逆变换**: `Σ_{a<q} |c a|² = (1/q)·Σ_{r<q} |Σ_{a<q} c a e(ar/q)|²`.
+直接展开 `Σ_r |ĉ r|²` 并用核 `Σ_r e((a−b)r/q) = q·1_{a=b}` (`zmodCharKernel`),
+无需傅里叶逆/共轭符号处理. -/
+theorem zmodParseval_inv {q : ℕ} (hq : 0 < q) (c : ℕ → ℂ) :
+    (∑ a ∈ Finset.range q, ‖c a‖ ^ 2) =
+      (1 / (q : ℝ)) * ∑ r ∈ Finset.range q,
+        ‖∑ a ∈ Finset.range q, c a * charReal ((a : ℝ) * (r : ℝ) / (q : ℝ))‖ ^ 2 := by
+  let ĉ : ℕ → ℂ := fun r =>
+    ∑ a ∈ Finset.range q, c a * charReal ((a : ℝ) * (r : ℝ) / (q : ℝ))
+  have hExp : (∑ r ∈ Finset.range q, (‖ĉ r‖ : ℂ) ^ 2) =
+      ∑ r ∈ Finset.range q, ∑ a ∈ Finset.range q, ∑ b ∈ Finset.range q,
+        (c a * charReal ((a : ℝ) * (r : ℝ) / (q : ℝ))) *
+          star (c b * charReal ((b : ℝ) * (r : ℝ) / (q : ℝ))) := by
+    apply Finset.sum_congr rfl
+    intro r hr
+    exact normSq_sum_eq_sum_mul_star (Finset.range q)
+      (fun a => c a * charReal ((a : ℝ) * (r : ℝ) / (q : ℝ)))
+  have hSwap : (∑ r ∈ Finset.range q, ∑ a ∈ Finset.range q, ∑ b ∈ Finset.range q,
+        (c a * charReal ((a : ℝ) * (r : ℝ) / (q : ℝ))) *
+          star (c b * charReal ((b : ℝ) * (r : ℝ) / (q : ℝ)))) =
+      ∑ a ∈ Finset.range q, ∑ b ∈ Finset.range q,
+        (c a * star (c b)) * (∑ r ∈ Finset.range q,
+          charReal ((a : ℝ) * (r : ℝ) / (q : ℝ)) *
+            star (charReal ((b : ℝ) * (r : ℝ) / (q : ℝ)))) := by
+    rw [Finset.sum_comm]
+    apply Finset.sum_congr rfl
+    intro a ha
+    rw [Finset.sum_comm]
+    apply Finset.sum_congr rfl
+    intro b hb
+    rw [Finset.mul_sum]
+    apply Finset.sum_congr rfl
+    intro r hr
+    have hterm : (c a * charReal ((a : ℝ) * (r : ℝ) / (q : ℝ))) *
+          star (c b * charReal ((b : ℝ) * (r : ℝ) / (q : ℝ))) =
+        (c a * star (c b)) * (charReal ((a : ℝ) * (r : ℝ) / (q : ℝ)) *
+          star (charReal ((b : ℝ) * (r : ℝ) / (q : ℝ)))) := by
+      rw [star_mul]
+      ring
+    exact hterm
+  have hKern : (∑ a ∈ Finset.range q, ∑ b ∈ Finset.range q,
+        (c a * star (c b)) * (∑ r ∈ Finset.range q,
+          charReal ((a : ℝ) * (r : ℝ) / (q : ℝ)) *
+            star (charReal ((b : ℝ) * (r : ℝ) / (q : ℝ))))) =
+      (q : ℂ) * ∑ a ∈ Finset.range q, (‖c a‖ : ℂ) ^ 2 := by
+    calc
+      (∑ a ∈ Finset.range q, ∑ b ∈ Finset.range q,
+          (c a * star (c b)) * (∑ r ∈ Finset.range q,
+            charReal ((a : ℝ) * (r : ℝ) / (q : ℝ)) *
+              star (charReal ((b : ℝ) * (r : ℝ) / (q : ℝ)))))
+          = ∑ a ∈ Finset.range q, ∑ b ∈ Finset.range q,
+              (c a * star (c b)) * (if a = b then (q : ℂ) else 0) := by
+            apply Finset.sum_congr rfl
+            intro a ha
+            apply Finset.sum_congr rfl
+            intro b hb
+            rw [zmodCharKernel hq a b (Finset.mem_range.mp ha) (Finset.mem_range.mp hb)]
+      _ = ∑ a ∈ Finset.range q, (c a * star (c a)) * (q : ℂ) := by
+            apply Finset.sum_congr rfl
+            intro a ha
+            calc
+              (∑ b ∈ Finset.range q, (c a * star (c b)) * if a = b then (q : ℂ) else 0)
+                  = (c a * star (c a)) * if a = a then (q : ℂ) else 0 := by
+                    refine Finset.sum_eq_single a ?_ ?_
+                    · intro b hb hba
+                      simp [hba.symm]
+                    · intro hna
+                      exact False.elim (hna ha)
+              _ = (c a * star (c a)) * (q : ℂ) := by simp
+      _ = (q : ℂ) * ∑ a ∈ Finset.range q, (‖c a‖ : ℂ) ^ 2 := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro a ha
+            have hmul : c a * star (c a) = (‖c a‖ : ℂ) ^ 2 := by
+              have h := Complex.mul_conj (c a)
+              rw [Complex.normSq_eq_norm_sq] at h
+              simpa using h
+            rw [hmul, mul_comm]
+  have hMain : (∑ r ∈ Finset.range q, (‖ĉ r‖ : ℂ) ^ 2) =
+      (q : ℂ) * ∑ a ∈ Finset.range q, (‖c a‖ : ℂ) ^ 2 := by
+    calc
+      (∑ r ∈ Finset.range q, (‖ĉ r‖ : ℂ) ^ 2)
+          = ∑ r ∈ Finset.range q, ∑ a ∈ Finset.range q, ∑ b ∈ Finset.range q,
+              (c a * charReal ((a : ℝ) * (r : ℝ) / (q : ℝ))) *
+                star (c b * charReal ((b : ℝ) * (r : ℝ) / (q : ℝ))) := hExp
+      _ = ∑ a ∈ Finset.range q, ∑ b ∈ Finset.range q,
+            (c a * star (c b)) * (∑ r ∈ Finset.range q,
+              charReal ((a : ℝ) * (r : ℝ) / (q : ℝ)) *
+                star (charReal ((b : ℝ) * (r : ℝ) / (q : ℝ)))) := hSwap
+      _ = (q : ℂ) * ∑ a ∈ Finset.range q, (‖c a‖ : ℂ) ^ 2 := hKern
+  have hL : (∑ r ∈ Finset.range q, (‖ĉ r‖ : ℂ) ^ 2) =
+      (↑(∑ r ∈ Finset.range q, ‖ĉ r‖ ^ 2) : ℂ) := by
+    calc
+      (∑ r ∈ Finset.range q, (‖ĉ r‖ : ℂ) ^ 2)
+          = ∑ r ∈ Finset.range q, (↑(‖ĉ r‖ ^ 2) : ℂ) := by
+            apply Finset.sum_congr rfl
+            intro r hr
+            norm_num
+      _ = (↑(∑ r ∈ Finset.range q, ‖ĉ r‖ ^ 2) : ℂ) := by
+            exact (map_sum (algebraMap ℝ ℂ) (fun r => ‖ĉ r‖ ^ 2) (Finset.range q)).symm
+  have hR : (q : ℂ) * ∑ a ∈ Finset.range q, (‖c a‖ : ℂ) ^ 2 =
+      (↑((q : ℝ) * ∑ a ∈ Finset.range q, ‖c a‖ ^ 2) : ℂ) := by
+    calc
+      (q : ℂ) * ∑ a ∈ Finset.range q, (‖c a‖ : ℂ) ^ 2
+          = ∑ a ∈ Finset.range q, (q : ℂ) * (‖c a‖ : ℂ) ^ 2 := by
+            rw [Finset.mul_sum]
+      _ = ∑ a ∈ Finset.range q, (↑((q : ℝ) * ‖c a‖ ^ 2) : ℂ) := by
+            apply Finset.sum_congr rfl
+            intro a ha
+            norm_num
+      _ = (↑(∑ a ∈ Finset.range q, (q : ℝ) * ‖c a‖ ^ 2) : ℂ) := by
+            exact (map_sum (algebraMap ℝ ℂ) (fun a => (q : ℝ) * ‖c a‖ ^ 2) (Finset.range q)).symm
+      _ = (↑((q : ℝ) * ∑ a ∈ Finset.range q, ‖c a‖ ^ 2) : ℂ) := by
+            congr 1
+            rw [← Finset.mul_sum]
+  have hMainR : (∑ r ∈ Finset.range q, ‖ĉ r‖ ^ 2) =
+      (q : ℝ) * ∑ a ∈ Finset.range q, ‖c a‖ ^ 2 := by
+    have h := hL.symm.trans hMain
+    have h2 := h.trans hR
+    exact Complex.ofReal_inj.mp h2
+  have hqne : (q : ℝ) ≠ 0 := by exact_mod_cast hq.ne'
+  calc
+    (∑ a ∈ Finset.range q, ‖c a‖ ^ 2)
+        = (1 / (q : ℝ)) * ((q : ℝ) * (∑ a ∈ Finset.range q, ‖c a‖ ^ 2)) := by
+          field_simp [hqne]
+    _ = (1 / (q : ℝ)) * (∑ r ∈ Finset.range q, ‖ĉ r‖ ^ 2) := by rw [← hMainR]
+    _ = (1 / (q : ℝ)) * ∑ r ∈ Finset.range q,
+          ‖∑ a ∈ Finset.range q, c a * charReal ((a : ℝ) * (r : ℝ) / (q : ℝ))‖ ^ 2 := by
+          simp [ĉ]
+
+/-- 模 `q` 剩余类与 `ZMod q` 元素的同余周期: 对整数 `m` 与自然数 `n`,
+  `(m : ZMod q) = (n : ZMod q)` 蕴含 `e(mr/q) = e(nr/q)`. -/
+theorem charReal_zmod_eq {q : ℕ} (hq : 0 < q) {m : ℤ} {n : ℕ}
+    (hmn : (m : ZMod q) = (n : ZMod q)) (r : ℕ) :
+    charReal ((m : ℝ) * (r : ℝ) / (q : ℝ)) = charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) := by
+  have hmod : m ≡ (n : ℤ) [ZMOD (q : ℤ)] := by
+    rw [← ZMod.intCast_eq_intCast_iff m (n : ℤ) (q)]
+    simpa using hmn
+  rcases (Int.modEq_iff_add_fac.mp hmod) with ⟨t, ht⟩
+  have hRt : (n : ℝ) = (m : ℝ) + (q : ℝ) * (t : ℝ) := by exact_mod_cast ht
+  calc
+    charReal ((m : ℝ) * (r : ℝ) / (q : ℝ))
+        = charReal (((n : ℝ) * (r : ℝ) / (q : ℝ)) + (-(t : ℝ) * (r : ℝ))) := by
+          congr 1
+          field_simp [show (q : ℝ) ≠ 0 by exact_mod_cast hq.ne']
+          nlinarith
+    _ = charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) := by
+          have hk : (-(t : ℝ) * (r : ℝ)) = ((-(t * (r : ℤ) : ℤ) : ℤ) : ℝ) := by
+            norm_num
+          rw [hk]
+          exact charReal_periodic_int ((n : ℝ) * (r : ℝ) / (q : ℝ)) (-(t * (r : ℤ) : ℤ))
+
+/-- **Parseval 字符版**: `Σ_{x mod q} |Σ_{n≡x (q)} a_n|² = (1/q)·Σ_{r<q} |S(r/q)|²`,
+  其中 `S(r/q) = Σ_n a_n·e(nr/q)`. 由 `zmodParseval_inv` 取
+  `c a = Σ_{n≡a (q)} a_n` 直接得到. -/
+theorem zmodParseval_character {q : ℕ} [NeZero q] (a : ℤ → ℂ) (M : ℤ) (N : ℕ) :
+    (∑ x : ZMod q, ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+        a n * if (n : ZMod q) = x then 1 else 0‖ ^ 2) =
+      (1 / (q : ℝ)) * ∑ r ∈ Finset.range q,
+        ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+          (charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) : ℂ) * a n‖ ^ 2 := by
+  classical
+  have hq : 0 < q := Nat.pos_of_ne_zero (NeZero.ne q)
+  let c : ℕ → ℂ := fun a' =>
+    ∑ n ∈ Finset.Icc (M + 1) (M + N), a n * if (n : ZMod q) = (a' : ZMod q) then 1 else 0
+  have hInv := zmodParseval_inv hq c
+  have hL : (∑ a' ∈ Finset.range q, ‖c a'‖ ^ 2) =
+      ∑ x : ZMod q, ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+        a n * if (n : ZMod q) = x then 1 else 0‖ ^ 2 := by
+    calc
+      (∑ a' ∈ Finset.range q, ‖c a'‖ ^ 2)
+          = ∑ a' ∈ Finset.range q, ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+              a n * if (n : ZMod q) = (a' : ZMod q) then 1 else 0‖ ^ 2 := by rfl
+      _ = ∑ x : ZMod q, ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+            a n * if (n : ZMod q) = x then 1 else 0‖ ^ 2 := by
+            rw [← zmod_sum_range (q := q) (f := fun x : ZMod q =>
+              ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+                a n * if (n : ZMod q) = x then 1 else 0‖ ^ 2)]
+  have hR : ∀ r : ℕ, r ∈ Finset.range q →
+      (∑ a' ∈ Finset.range q, c a' * charReal ((a' : ℝ) * (r : ℝ) / (q : ℝ))) =
+        ∑ n ∈ Finset.Icc (M + 1) (M + N),
+          (charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) : ℂ) * a n := by
+    intro r hr
+    calc
+      (∑ a' ∈ Finset.range q, c a' * charReal ((a' : ℝ) * (r : ℝ) / (q : ℝ)))
+          = ∑ a' ∈ Finset.range q, ∑ n ∈ Finset.Icc (M + 1) (M + N),
+              (a n * (if (n : ZMod q) = (a' : ZMod q) then 1 else 0)) *
+                charReal ((a' : ℝ) * (r : ℝ) / (q : ℝ)) := by
+            apply Finset.sum_congr rfl
+            intro a' ha'
+            rw [Finset.sum_mul]
+      _ = ∑ n ∈ Finset.Icc (M + 1) (M + N), a n *
+            (∑ a' ∈ Finset.range q, (if (n : ZMod q) = (a' : ZMod q) then 1 else 0) *
+              charReal ((a' : ℝ) * (r : ℝ) / (q : ℝ))) := by
+            rw [Finset.sum_comm]
+            apply Finset.sum_congr rfl
+            intro n hn
+            calc
+              (∑ a' ∈ Finset.range q, (a n * (if (n : ZMod q) = (a' : ZMod q) then 1 else 0)) *
+                  charReal ((a' : ℝ) * (r : ℝ) / (q : ℝ)))
+                  = ∑ a' ∈ Finset.range q, a n * ((if (n : ZMod q) = (a' : ZMod q) then 1 else 0) *
+                      charReal ((a' : ℝ) * (r : ℝ) / (q : ℝ))) := by
+                    apply Finset.sum_congr rfl
+                    intro a' ha'
+                    ring
+              _ = a n * (∑ a' ∈ Finset.range q, (if (n : ZMod q) = (a' : ZMod q) then 1 else 0) *
+                      charReal ((a' : ℝ) * (r : ℝ) / (q : ℝ))) := by
+                    rw [← Finset.mul_sum]
+      _ = ∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) := by
+            apply Finset.sum_congr rfl
+            intro n hn
+            have hsingle : ∀ n : ℤ,
+                (∑ a' ∈ Finset.range q, (if (n : ZMod q) = (a' : ZMod q) then 1 else 0) *
+                    charReal ((a' : ℝ) * (r : ℝ) / (q : ℝ))) =
+                  charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) := by
+              intro n
+              let v : ℕ := (n : ZMod q).val
+              have hvlt : v < q := ZMod.val_lt (n : ZMod q)
+              have hvn : (v : ZMod q) = (n : ZMod q) := ZMod.natCast_zmod_val (n : ZMod q)
+              calc
+                (∑ a' ∈ Finset.range q, (if (n : ZMod q) = (a' : ZMod q) then 1 else 0) *
+                    charReal ((a' : ℝ) * (r : ℝ) / (q : ℝ)))
+                    = (if (n : ZMod q) = (v : ZMod q) then 1 else 0) *
+                        charReal ((v : ℝ) * (r : ℝ) / (q : ℝ)) := by
+                      refine Finset.sum_eq_single v ?_ ?_
+                      · intro a' ha' hav'
+                        have hne : ¬ (n : ZMod q) = (a' : ZMod q) := by
+                          intro heq
+                          apply hav'
+                          have hmod : (a' : ℕ) ≡ v [MOD q] :=
+                            (ZMod.natCast_eq_natCast_iff a' v q).1 (heq.symm.trans hvn.symm)
+                          exact Nat.ModEq.eq_of_lt_of_lt hmod (Finset.mem_range.mp ha') hvlt
+                        simp [hne]
+                      · intro hnot
+                        exact False.elim (hnot (Finset.mem_range.mpr hvlt))
+                    _ = charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) := by
+                          have hch := charReal_zmod_eq hq (m := n) (n := v) hvn.symm r
+                          simp [hvn.symm, hch.symm]
+            rw [hsingle n]
+      _ = ∑ n ∈ Finset.Icc (M + 1) (M + N),
+            (charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) : ℂ) * a n := by
+            apply Finset.sum_congr rfl
+            intro n hn
+            ring
+  have hMain : (∑ a' ∈ Finset.range q, ‖c a'‖ ^ 2) =
+      (1 / (q : ℝ)) * ∑ r ∈ Finset.range q,
+        ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+          (charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) : ℂ) * a n‖ ^ 2 := by
+    calc
+      (∑ a' ∈ Finset.range q, ‖c a'‖ ^ 2)
+          = (1 / (q : ℝ)) * ∑ r ∈ Finset.range q,
+              ‖∑ a' ∈ Finset.range q, c a' * charReal ((a' : ℝ) * (r : ℝ) / (q : ℝ))‖ ^ 2 := hInv
+      _ = (1 / (q : ℝ)) * ∑ r ∈ Finset.range q,
+            ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+              (charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) : ℂ) * a n‖ ^ 2 := by
+            apply congrArg (fun t : ℝ => (1 / (q : ℝ)) * t) ?_
+            apply Finset.sum_congr rfl
+            intro r hr
+            rw [hR r hr]
+  calc
+    (∑ x : ZMod q, ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+        a n * if (n : ZMod q) = x then 1 else 0‖ ^ 2)
+        = ∑ a' ∈ Finset.range q, ‖c a'‖ ^ 2 := hL.symm
+    _ = (1 / (q : ℝ)) * ∑ r ∈ Finset.range q,
+          ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+            (charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) : ℂ) * a n‖ ^ 2 := hMain
+
+/-- **有理点集上的加法大筛**: 对 Farey 点集 `X_Q = {r/q : 1 ≤ q ≤ Q, 0 ≤ r < q}`
+  (去重后即既约分数集, 是 `1/Q²`-well-spaced),
+  `Σ_{x∈X_Q} |Σ_{M<n≤M+N} a_n·e(nx)|² ≤ C(N, 1/Q²)·Σ_n |a_n|²`,
+  其中 `C(N,δ) = largeSieveBound N δ` 是 LS1 的加法大筛弱常数. -/
+theorem largeSieveRationalPoints (M : ℤ) (N : ℕ) (Q : ℕ) (hQ : 0 < Q) (a : ℤ → ℂ) :
+    (∑ x ∈ rationalPoints Q, ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+        (charReal ((n : ℝ) * x) : ℂ) * a n‖ ^ 2)
+      ≤ largeSieveBound N (1 / (Q : ℝ) ^ 2) * (∑ n ∈ Finset.Icc (M + 1) (M + N), ‖a n‖ ^ 2) := by
+  have hQ' : 0 < (Q : ℝ) := by exact_mod_cast hQ
+  have hδ : 0 < 1 / (Q : ℝ) ^ 2 := by positivity
+  exact largeSievePrimal_wellSpaced M N hδ (rationalPoints Q) (rationalPoints_wellSpaced Q hQ) a
+
+/-- **模 `q` 点式特征大筛不等式**: 由特征正交性 (`charOrthogonality_le`) 与
+  Parseval 字符版 (`zmodParseval_character`),
+  `(q/φ(q))·Σ_{χ mod q} |Σ_n a_n·χ(n)|² ≤ Σ_{r<q} |Σ_n a_n·e(nr/q)|²`.
+  注意: 求和到 `q ≤ Q` 的全体特征版本不成立 (见模块头红队注记); 经典
+  Bombieri--Davenport 版本需要原特征与 Gauss 和, 保留为开放目标. -/
+theorem characterSieveModulus_le {q : ℕ} [NeZero q] (a : ℤ → ℂ) (M : ℤ) (N : ℕ) :
+    ((q : ℝ) / (q.totient : ℝ)) *
+        ∑ χ : DirichletCharacter ℂ q, ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * χ (n : ZMod q)‖ ^ 2
+      ≤ ∑ r ∈ Finset.range q,
+          ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+            (charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) : ℂ) * a n‖ ^ 2 := by
+  have hq : 0 < q := Nat.pos_of_ne_zero (NeZero.ne q)
+  have h1 := charOrthogonality_le (q := q) a M N
+  have h2 := zmodParseval_character (q := q) a M N
+  have h3 : (∑ χ : DirichletCharacter ℂ q,
+        ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * χ (n : ZMod q)‖ ^ 2)
+      ≤ (q.totient : ℝ) / (q : ℝ) *
+          (∑ r ∈ Finset.range q,
+            ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+              (charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) : ℂ) * a n‖ ^ 2) := by
+    calc
+      (∑ χ : DirichletCharacter ℂ q, ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * χ (n : ZMod q)‖ ^ 2)
+          ≤ (q.totient : ℝ) * ∑ x : ZMod q,
+              ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * if (n : ZMod q) = x then 1 else 0‖ ^ 2 := h1
+      _ = (q.totient : ℝ) * ((1 / (q : ℝ)) * ∑ r ∈ Finset.range q,
+              ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+                (charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) : ℂ) * a n‖ ^ 2) := by
+            rw [h2]
+      _ = (q.totient : ℝ) / (q : ℝ) * (∑ r ∈ Finset.range q,
+              ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+                (charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) : ℂ) * a n‖ ^ 2) := by
+            field_simp [show (q : ℝ) ≠ 0 by exact_mod_cast hq.ne']
+  have hqφpos : 0 < (q : ℝ) / (q.totient : ℝ) := by
+    have hqR : 0 < (q : ℝ) := by exact_mod_cast hq
+    have hφ : 0 < (q.totient : ℝ) := by exact_mod_cast (Nat.totient_pos.mpr hq)
+    exact div_pos hqR hφ
+  calc
+    ((q : ℝ) / (q.totient : ℝ)) * ∑ χ : DirichletCharacter ℂ q,
+        ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * χ (n : ZMod q)‖ ^ 2
+        ≤ ((q : ℝ) / (q.totient : ℝ)) * ((q.totient : ℝ) / (q : ℝ) *
+            (∑ r ∈ Finset.range q,
+              ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+                (charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) : ℂ) * a n‖ ^ 2)) := by
+          exact mul_le_mul_of_nonneg_left h3 (le_of_lt hqφpos)
+    _ = ∑ r ∈ Finset.range q,
+          ‖∑ n ∈ Finset.Icc (M + 1) (M + N),
+            (charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) : ℂ) * a n‖ ^ 2 := by
+          field_simp [show (q : ℝ) ≠ 0 by exact_mod_cast hq.ne',
+            show (q.totient : ℝ) ≠ 0 by exact_mod_cast (Nat.totient_pos.mpr hq).ne']
