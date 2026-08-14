@@ -54,7 +54,7 @@
 `PAN_PROOF_ATLAS.md` 红队注记一致. §5 给出归约链的诚实多对数版本
 `panMainWeightedSum_polylog` 作为中间证据, 供装配期与红队审查使用.
 
-## 状态 (线 T3i, PR #38)
+## 状态 (线 T3i)
 
 - §4 已实现: `panMainTotientWeightedSum_le_polylog` (q 因子 `C·log⁶(Q+2)`, 全证).
 - §5 已实现: `panMainWeightedSum_polylog` (诚实多对数版主项界, 全证).
