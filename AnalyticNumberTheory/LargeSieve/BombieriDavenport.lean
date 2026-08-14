@@ -164,8 +164,7 @@ lemma gaussSum_mulShift_apply {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ 
 /-- The sum over ZMod q equals the sum over representatives r < q. -/
 lemma zmodSum_eq_rangeSum {q : ℕ} [NeZero q] {M : Type*} [AddCommMonoid M] (f : ZMod q → M) :
     (∑ a : ZMod q, f a) = ∑ r ∈ Finset.range q, f (r : ZMod q) := by
-  rw [Finset.sum_bij (s := Finset.univ) (t := Finset.range q) (f := f)
-    (g := fun r : ℕ => f (r : ZMod q)) (i := fun a _ => a.val)]
+  rw [Finset.sum_bij (s := Finset.univ) (t := Finset.range q) (fun a _ => a.val)]
   · intro a ha
     exact Finset.mem_range.mpr (ZMod.val_lt a)
   · intro a₁ ha₁ a₂ ha₂ h
@@ -634,13 +633,10 @@ lemma reducedFracs_sum {Q : ℕ} (T : ℝ → ℂ) :
       ∑ x ∈ reducedFracs Q, ‖T x‖ ^ 2 := by
   rw [← Finset.sum_sigma (s := Finset.Icc 1 Q)
     (t := fun q => (Finset.range q).filter (fun r => r.Coprime q))
-    (f := fun p : Σ q : ℕ, ℕ => ‖T ((p.2 : ℝ) / (p.1 : ℝ))‖ ^ 2)]
   rw [Finset.sum_bij (s := (Finset.Icc 1 Q).sigma (fun q =>
       (Finset.range q).filter (fun r => r.Coprime q)))
     (t := reducedFracs Q)
-    (f := fun p : Σ q : ℕ, ℕ => ‖T ((p.2 : ℝ) / (p.1 : ℝ))‖ ^ 2)
-    (g := fun x : ℝ => ‖T x‖ ^ 2)
-    (i := fun p _ => ((p.2 : ℝ) / (p.1 : ℝ)))]
+    (fun p _ => ((p.2 : ℝ) / (p.1 : ℝ)))]
   · -- hi: i p = p.2/p.1 ∈ reducedFracs
     intro p hp
     rw [Finset.mem_sigma] at hp
@@ -718,9 +714,7 @@ lemma unitsSum_eq_reducedFracs {q : ℕ} [NeZero q] (T : ZMod q → ℂ) :
   rw [← Finset.sum_filter]
   rw [Finset.sum_bij (s := (Finset.univ : Finset (ZMod q)).filter (fun x => IsUnit x))
     (t := (Finset.range q).filter (fun r => r.Coprime q))
-    (f := fun x : ZMod q => ‖T x‖ ^ 2)
-    (g := fun r : ℕ => ‖T (r : ZMod q)‖ ^ 2)
-    (i := fun x _ => x.val)]
+    (fun x _ => x.val)]
   · intro x hx
     -- x.val ∈ t: IsUnit x → x.val.Coprime q
     have hx' := (Finset.mem_filter.mp hx).2
@@ -858,10 +852,7 @@ lemma vaughanFirst_Icc_charSum {q m u : ℕ} (χ : DirichletCharacter ℂ q) :
     (∑ n ∈ Finset.Icc (0 : ℤ) (m : ℤ),
       (if 0 ≤ n then (vaughanFirst n.toNat u : ℂ) else 0) * χ (n : ZMod q)) =
       ∑ n ∈ Finset.range (m + 1), (vaughanFirst n u : ℂ) * χ (n : ZMod q) := by
-  rw [Finset.sum_bij (s := Finset.Icc (0 : ℤ) (m : ℤ)) (t := Finset.range (m + 1))
-    (f := fun n : ℤ => (if 0 ≤ n then (vaughanFirst n.toNat u : ℂ) else 0) * χ (n : ZMod q))
-    (g := fun n : ℕ => (vaughanFirst n u : ℂ) * χ (n : ZMod q))
-    (i := fun n _ => n.toNat)]
+  rw [Finset.sum_bij (s := Finset.Icc (0 : ℤ) (m : ℤ)) (t := Finset.range (m + 1)) (fun n _ => n.toNat)]
   · intro n hn
     rw [Finset.mem_Icc] at hn
     rw [Finset.mem_range]
@@ -900,10 +891,7 @@ lemma vaughanFirst_Icc_normSq (m u : ℕ) :
     (∑ n ∈ Finset.Icc (0 : ℤ) (m : ℤ),
       ‖(if 0 ≤ n then (vaughanFirst n.toNat u : ℂ) else 0)‖ ^ 2) =
       ∑ n ∈ Finset.range (m + 1), (vaughanFirst n u) ^ 2 := by
-  rw [Finset.sum_bij (s := Finset.Icc (0 : ℤ) (m : ℤ)) (t := Finset.range (m + 1))
-    (f := fun n : ℤ => ‖(if 0 ≤ n then (vaughanFirst n.toNat u : ℂ) else 0)‖ ^ 2)
-    (g := fun n : ℕ => (vaughanFirst n u) ^ 2)
-    (i := fun n _ => n.toNat)]
+  rw [Finset.sum_bij (s := Finset.Icc (0 : ℤ) (m : ℤ)) (t := Finset.range (m + 1)) (fun n _ => n.toNat)]
   · intro n hn
     rw [Finset.mem_Icc] at hn
     rw [Finset.mem_range]
@@ -1060,9 +1048,7 @@ lemma perModulus_regroup {Q : ℕ} (w : ℕ → ℝ) (f : ℝ → ℂ) :
     have hbij : (∑ p ∈ s, w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ))) =
         (∑ p ∈ t, w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ))) := by
       rw [Finset.sum_bij (s := s) (t := t)
-        (f := fun p : Σ q : ℕ, ℕ => w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ)))
-        (g := fun p : Σ q' : ℕ, ℕ × ℕ => w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ)))
-        (i := fun p _ => (⟨p.1 / p.1.gcd p.2, (p.2 / p.1.gcd p.2, p.1.gcd p.2)⟩ : Σ q' : ℕ, ℕ × ℕ))]
+        (fun p _ => (⟨p.1 / p.1.gcd p.2, (p.2 / p.1.gcd p.2, p.1.gcd p.2)⟩ : Σ q' : ℕ, ℕ × ℕ))]
       · -- i p ∈ t
         intro p hp
         rw [Finset.mem_sigma] at hp
@@ -1189,13 +1175,11 @@ lemma perModulus_regroup {Q : ℕ} (w : ℕ → ℝ) (f : ℝ → ℂ) :
             rw [Finset.mul_sum]
       _ = ∑ p ∈ s, w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ)) := by
             rw [Finset.sum_sigma (s := Finset.Icc 1 Q) (t := fun q => Finset.range q)
-              (f := fun p : Σ q : ℕ, ℕ => w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ)))]
       _ = ∑ p ∈ t, w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ)) := hbij
       _ = ∑ q' ∈ Finset.Icc 1 Q, ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'),
             ∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d) * f ((r' : ℝ) / (q' : ℝ)) := by
             rw [Finset.sum_sigma (s := Finset.Icc 1 Q)
               (t := fun q' => ((Finset.range q').filter (fun r' => r'.Coprime q')).product (Finset.Icc 1 (Q / q')))
-              (f := fun p : Σ q' : ℕ, ℕ × ℕ => w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ)))]
             apply Finset.sum_congr rfl
             intro q' hq'
             rw [Finset.sum_product]
