@@ -104,4 +104,17 @@ theorem sum_squarefree_divisors_eq_sum_powerset {q : ℕ} (hq : Squarefree q) :
       exact (Nat.mem_primeFactors.mp ((Finset.mem_powerset.mp hS) hp)).1
     rw [Nat.primeFactors_prod hprime]
 
+/-- **W1 引理 B** (issue #42, S3): 对平方自由 `q`,
+
+  `3^{ω(q)} = Σ_{d | q, Squarefree d} 2^{ω(d)}`.
+
+组合展开: 每个素因子独立贡献因子 `3 = 1 + 2` ("不在 `d` 中" 或 "在 `d` 中" 的
+两个方向), 而每个平方自由因子 `d | q` 恰好对应素因子集的一个子集. -/
+theorem three_pow_omega_eq_sum_two_pow {q : ℕ} (hq : Squarefree q) :
+    (3 : ℝ) ^ q.primeFactors.card =
+      ∑ d ∈ q.divisors.filter Squarefree, (2 : ℝ) ^ d.primeFactors.card := by
+  classical
+  rw [← sum_squarefree_divisors_eq_sum_powerset hq]
+  exact (sum_powerset_two_pow_eq_three_pow q.primeFactors).symm
+
 end AnalyticNumberTheory.Sieve
