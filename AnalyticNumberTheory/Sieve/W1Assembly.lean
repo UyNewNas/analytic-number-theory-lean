@@ -234,7 +234,7 @@ private lemma sqfreeDoubleSum_le (Q : ℕ) (g : ℕ → ℝ) (hg : ∀ d, 0 ≤ 
                     exact_mod_cast (le_trans hcnt1 hcnt2)
               _ ≤ (Q : ℝ) / (d : ℝ) := by
                     calc
-                      (((Finset.Icc 1 Q).filter (fun q => d ∣ q)).card : ℝ) = (Q / d : ℝ) := by
+                      (((Finset.Icc 1 Q).filter (fun q => d ∣ q)).card : ℝ) = ((Q / d : ℕ) : ℝ) := by
                         rw [hcnt3]
                       _ ≤ (Q : ℝ) / (d : ℝ) := Nat.cast_div_le
           exact mul_le_mul_of_nonneg_left hcount (hg d)
