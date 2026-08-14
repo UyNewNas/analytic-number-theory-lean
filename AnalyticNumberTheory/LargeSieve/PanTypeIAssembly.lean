@@ -497,7 +497,8 @@ lemma panTypeI_nonCoprimeDensity_le_primePartition (q m u : ℕ) (hq : 0 < q) :
       |vaughanFirst n u| = ∑ p ∈ ({p} : Finset ℕ), (if p ∣ n then |vaughanFirst n u| else 0) := by
             simp [hpn]
       _ ≤ ∑ p ∈ q.primeFactors, (if p ∣ n then |vaughanFirst n u| else 0) := by
-            simpa using Finset.single_le_sum (fun p hp => by simp [abs_nonneg]) hp'
+            simpa using Finset.single_le_sum (fun p hp => by
+              by_cases hpd : p ∣ n <;> simp [hpd, abs_nonneg]) hp'
   calc
     (∑ n ∈ Finset.range (m + 1), if ¬ n.Coprime q then |vaughanFirst n u| else 0)
         ≤ ∑ n ∈ Finset.range (m + 1),
@@ -505,7 +506,8 @@ lemma panTypeI_nonCoprimeDensity_le_primePartition (q m u : ℕ) (hq : 0 < q) :
             exact Finset.sum_le_sum (fun n hn => by
               by_cases hc : n.Coprime q
               · simp [hc]
-                exact Finset.sum_nonneg (fun p hp => by simp [abs_nonneg])
+                exact Finset.sum_nonneg (fun p hp => by
+                  by_cases hpd : p ∣ n <;> simp [hpd, abs_nonneg])
               · exact hpoint n hc)
     _ = ∑ p ∈ q.primeFactors,
           ∑ n ∈ Finset.range (m + 1), (if p ∣ n then |vaughanFirst n u| else 0) := by
