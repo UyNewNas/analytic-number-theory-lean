@@ -214,3 +214,66 @@ P2 are all `proven`.
   `BombieriVinogradov`, weight identities next to `WeightedPan`); LS1–MV are
   reusable and should open a new `AnalyticNumberTheory/LargeSieve/` layer so
   the BV workline can share them.
+
+## Body workline (ant #15): proof route and status
+
+> Branch `research/pan-mean-value-body`. The route below is the concrete
+> lemma-by-lemma plan for proving `PanMeanValueUniform` (the PAN node),
+> mapping each step to existing infrastructure or to an explicitly recorded
+> open lemma. Chinese annotations per the workline convention.
+
+### Route (Liu 2022 §II--§III, Halberstam--Richert Ch.10)
+
+```text
+PAN statement (WeightedPan.lean)
+  │  [B1] max removal: panMaxY ≤ Σ_y Σ_l |panDistributionSum|      ← DONE (B)
+  │  [A ] a-absorption: panDistributionSum = weighted AP-error sum  ← DONE (A)
+  │  [P2] 3^ω(q) = Σ_{d|q} 2^ω(d) repackaging                      ← existing (WeightedPan)
+  v
+weighted AP-error sum  Σ_{(a,q)=1} f(a)·(π(y/a;q,la⁻¹) − li(y/a)/φ(q))
+  │  [V ] Vaughan identity on the AP prime count (Λ = μ∗log)        ← existing (VaughanIdentity)
+  │  [C ] character expansion of the AP indicator (orthogonality)   ← open (needs sum_char_inv_mul_char_eq assembly)
+  v
+type I  (small factors)   ← [T1] OPEN: weighted large-sieve/BV-type bound
+type II (bilinear)        ← [T2] OPEN: mean value at Farey points, bilinear form
+main term (li sums)       ← [T3] OPEN: PNT-level li(y/a) main-term estimate
+  │
+  v
+PAN: Σ_q μ²(q)3^ω(q)·panMaxY ≤ C·x/log^A x      (assembly of T1+T2+T3 with B1, A, P2)
+```
+
+### Status of the current cycle (branch research/pan-mean-value-body)
+
+- **[A] a-absorption — DONE (kernel-checked)**: `Sieve/PanMeanValueBody.lean`
+  Sections 1--2. `natInvMod` (least inverse residue), `modEq_mul_left_inv_iff`
+  (coprime multiplication cancels in `ModEq`), `primesInAPBelow_eq_primesInAP_inv`
+  (scaled count = plain AP count at `y/a`), `panDistributionError_scaled_inv`,
+  and the Liu §II weighted form `panDistributionSum_eq_weighted` (the a=0 term
+  is split off explicitly; it is nonzero only for q = 1).
+- **[B1] max scaffolding — DONE (kernel-checked)**: Section 3.
+  `panMaxL_nonneg`, `panMaxY_le_sum`, `panMaxL_le_sum_abs`,
+  `panMaxY_le_sum_abs` (double max ≤ double sum).
+- **Next smallest artifacts**: (C) the AP-indicator character expansion
+  `Σ_χ χ(n)·conj(χ(l)) = φ(q)·1_{n≡l}` for units (via
+  `DirichletCharacter.sum_char_inv_mul_char_eq` already used in
+  `charOrthSum`), then (T1/T2) the type I/II bounds consuming
+  `largeSieveRationalPoints` / `characterSieveModulus_le` / Vaughan.
+
+### Open lemmas (recorded as Prop defs in PanMeanValueBody.lean §4, sources cited)
+
+| Tag | Statement (def) | Source | Needed by |
+| --- | --- | --- | --- |
+| T1 | `PanTypeIWeightedBound` — weighted type-I estimate at level `Q = x^{1/2}/log^B x` | Liu §III Lem.1; HR 1974 Ch.10 | PAN assembly |
+| T2 | `PanTypeIIWeightedBound` — bilinear type-II estimate | Liu §III; Montgomery mean value | PAN assembly |
+| T3 | `PanMainTermBound` — li(y/a) main-term sums | PNT (PrimeDistribution) | PAN assembly |
+
+### Evidence / stop conditions
+
+- A is exact for all `y,a,q,l` with `(a,q)=1, a ≥ 1` (no analytic input);
+  B1 is exact finite combinatorics.
+- T1/T2 need the large-sieve constants of LS1/LS2; the strong constant
+  `N + δ⁻¹` remains an open dependency (see LS1 note above).
+- Stop condition unchanged from the PAN node: if the (a,q)=1-restricted
+  statement cannot be discharged by this route, the bridge to
+  `WeightedPanCondition` must be re-audited (issue #7).
+
