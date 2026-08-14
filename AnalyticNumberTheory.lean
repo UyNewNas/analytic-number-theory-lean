@@ -21,6 +21,7 @@ import AnalyticNumberTheory.Sieve.BombieriVinogradov
 import AnalyticNumberTheory.Sieve.WeightedPan
 import AnalyticNumberTheory.Sieve.VaughanIdentity
 import AnalyticNumberTheory.Sieve.PanMeanValueBody
+import AnalyticNumberTheory.Sieve.PanMainTerm
 import AnalyticNumberTheory.LargeSieve.Additive
 import AnalyticNumberTheory.LargeSieve.GeomSum
 import AnalyticNumberTheory.LargeSieve.Multiplicative
