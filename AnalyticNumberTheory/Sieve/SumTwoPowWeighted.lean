@@ -193,7 +193,7 @@ theorem sumTwoPowWeighted_le_polylog :
           (Real.log_le_log (by norm_num : (0 : ℝ) < 2) (by exact_mod_cast hQ2))
       dsimp [K]
       linarith
-    have hsum : (∑ p ∈ primesUpTo Q, (2 : ℝ) / (p : ℝ)) ≤ 2 * primeReciprocalSum Q := by
+    have hsum_eq : (∑ p ∈ primesUpTo Q, (2 : ℝ) / (p : ℝ)) = 2 * primeReciprocalSum Q := by
       calc
         (∑ p ∈ primesUpTo Q, (2 : ℝ) / (p : ℝ))
             = 2 * (∑ p ∈ primesUpTo Q, 1 / (p : ℝ)) := by
@@ -204,6 +204,8 @@ theorem sumTwoPowWeighted_le_polylog :
         _ = 2 * primeReciprocalSum Q := by
               unfold primeReciprocalSum
               rfl
+    have hsum : (∑ p ∈ primesUpTo Q, (2 : ℝ) / (p : ℝ)) ≤ 2 * primeReciprocalSum Q := by
+      exact le_of_eq hsum_eq
     have hlgQ2nn : (0 : ℝ) ≤ Real.log (Q + 2) :=
       Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Q + 2))
     have hlogle : (log (Q : ℝ)) ^ (2 : ℝ) ≤ (Real.log (Q + 2)) ^ (2 : ℝ) := by
