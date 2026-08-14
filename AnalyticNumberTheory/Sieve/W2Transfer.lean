@@ -44,4 +44,20 @@ theorem q_div_totient_mul_totient_div_q_eq_one {q : ℕ} (hq : 1 ≤ q) :
   field_simp [hqR, hφR]
   ring
 
+
+/-- **W2c** (issue #42, S4b): 权重 `w` 乘 `φ(q)/q` 再乘 `q/φ(q)` 后还原为 `w`
+
+  `w · (φ(q)/q) · (q/φ(q)) = w` 对 `q ≥ 1`, 任意 `w : ℝ`.
+
+先用 `mul_div_assoc` 把内积 `(φ/q)·(q/φ)` 化为 W2a 的左结合形式, 再用 W2a 对消
+成 `1`, 最后 `ring` 还原 `w·1 = w`. -/
+theorem mul_totient_div_q_mul_q_div_totient {q : ℕ} (hq : 1 ≤ q) (w : ℝ) :
+    w * ((Nat.totient q : ℝ) / (q : ℝ)) * ((q : ℝ) / (Nat.totient q : ℝ)) = w := by
+  have hinner :
+      ((Nat.totient q : ℝ) / (q : ℝ)) * ((q : ℝ) / (Nat.totient q : ℝ)) = 1 := by
+    rw [← mul_div_assoc]
+    exact totient_div_q_mul_q_div_totient_eq_one hq
+  rw [← mul_assoc, hinner]
+  ring
+
 end AnalyticNumberTheory.Sieve
