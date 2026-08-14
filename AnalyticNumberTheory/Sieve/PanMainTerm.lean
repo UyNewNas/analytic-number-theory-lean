@@ -860,6 +860,29 @@ def PanMainSieveAbsorption (x : ℕ → ℝ) : Prop :=
    rpow 在底数 ≥ 1 处关于指数单调 (`Real.rpow_le_rpow_of_exponent_le`),
    `log⁷(xX) ≤ (log xX)^{A+7}` (`7 ≤ A+7` 来自 `0 < A`), 乘 `xX ≥ 0` 得目标.
 
+**红队验证**: 旧吸收陈述 (`C·xX/log^A(xX)` 形式, line T3i / PR #41) 的渐近部分
+对典型实例 `x X = (X : ℝ)` 为假, 由反例定理
+`not_panMainSieveAbsorption_old_natCast` 形式验证: 取 `A = 1`, 约掉 `X > 0`
+后 `(1 + log X)·log⁶(X+2)·log X ≤ C` 左侧 ≥ `log X → ∞`, 任意固定 `C` 最终
+被超过. 更一般地: 即使把 y,a 因子的界精化到 li 的真实衰减
+(`mainTermInnerSumMax ≤ C·xX·(1 + log log xX)`, 见 §3 注记), 加上 q 因子的
+`log⁶`, 主项片段仍 ≍ `xX·polylog·loglog ≫ xX/log^A(xX)` (对任意固定 A);
+经典 `x/log^A x` 是**差界** (`|li 主项 − 筛主项| ≪ x/log^A x`, 筛主项
+`x·∏(1-ν(p)/p)` 型对象, BRG 节点), 不是单个不等式. 本节的 polylog 形式
+(`≤ C·xX·(log xX)^{A+7}`) 是粗链 (`|f| ≤ 1`, 无 `(a,q)=1` 权重) 内的
+诚实最大内容.
+
+**更深一层 (拆分形状, 见 `PanVaughanPointwise.lean` 红队注记)**: 本节的
+多对数吸收界的是**当前拆分**的纯 |li| 内和 (`mainTermInnerSumMax·Σ`);
+而当前拆分本身形状错误 — `PanChebyshevApprox`/`PanVaughanPointwiseSplit`
+的第三块是纯 `|Σ f(a)·li/φ(q)|` (绝对值, 无权重相消), 但本仓库自己的有限
+代数 (`panWeightedVonMangoldt_abs_le`) 给出的是**带符号差**
+`|Σ f(a)·(apSmall − apMiddle)|`. 经典 Liu §III 的第三块是 li 与 middle 的
+带符号差 (Chebyshev ψ↔π 后 `|Σ f(a)·((apSmall − apMiddle)/log(y/a) −
+li(y/a)/φ(q))|`, PNT 级主项). 修正拆分 (第三块 → 带符号差) 与主项子链的
+联合重设计见 `PAN_PROOF_ATLAS.md` 深析 (BRG/chen 权重结构); 当前链的多对数
+闭合是错误形状下的诚实最大, 修正后由 PNT 级主项界取代.
+
 全部是 mathlib 初等分析 (tendsto / rpow / log 单调), 零 sorry. -/
 
 section PanMainSieveAbsorption_proof
@@ -970,6 +993,89 @@ theorem panMainSieveAbsorption_natCast :
   apply panMainSieveAbsorption_of_dom
   intro X
   rfl
+
+/-- **红队反例 (形式验证)**: 对典型实例 `x X = (X : ℝ)`, 旧吸收陈述的渐近部分
+(多对数因子被 `C·xX/log^A(xX)` 压制) 为假: 取 `A = 1`, 不等式约掉 `X > 0` 后
+等价于 `(1 + log X)·log⁶(X+2)·log X ≤ C`, 而左侧 `≥ log X → ∞` (X → ∞),
+故对任意 `C > 0, x₀` 存在 `X ≥ x₀` 使该式 > C — 矛盾. 这形式验证 §6 红队注记:
+`li` 主项片段单独 (`|f| ≤ 1`, 无 `(a,q)=1` 权重) 不可能被 `x/log^A x` 压制;
+经典 `x/log^A x` 是差界 (筛主项相减吸收, BRG 节点). -/
+theorem not_panMainSieveAbsorption_old_natCast :
+    ¬ ∀ A : ℝ, 0 < A → ∃ C : ℝ, 0 < C ∧ ∃ x₀ : ℕ,
+      ∀ X : ℕ, x₀ ≤ X →
+        (X : ℝ) * (1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ) ≤
+          C * (X : ℝ) / (Real.log (X : ℝ)) ^ A := by
+  intro h
+  rcases h 1 (by norm_num) with ⟨C, hC, x₀, hb⟩
+  let f : ℕ → ℝ := fun X =>
+    (1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ) *
+      (Real.log (X : ℝ)) ^ (1 : ℝ)
+  have hlogX : Tendsto (fun X : ℕ => Real.log (X : ℝ)) atTop atTop :=
+    Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop
+  have hlog2X : Tendsto (fun X : ℕ => Real.log ((X : ℝ) + 2)) atTop atTop := by
+    refine Real.tendsto_log_atTop.comp ?_
+    exact tendsto_atTop_mono (fun X => by linarith) tendsto_natCast_atTop_atTop
+  have h2ge1 : ∀ᶠ X : ℕ in atTop, 1 ≤ Real.log ((X : ℝ) + 2) := hlog2X (eventually_ge_atTop 1)
+  have h0ge : ∀ᶠ X : ℕ in atTop, 0 ≤ Real.log (X : ℝ) := hlogX (eventually_ge_atTop 0)
+  have hfge : ∀ᶠ X : ℕ in atTop, Real.log (X : ℝ) ≤ f X := by
+    filter_upwards [h2ge1, h0ge] with X h2 h0
+    have h2p : (1 : ℝ) ≤ (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ) :=
+      Real.one_le_rpow h2 (by norm_num : (0 : ℝ) ≤ 6)
+    have h1 : (1 : ℝ) ≤ 1 + Real.log (X : ℝ) := by linarith
+    dsimp [f]
+    calc
+      Real.log (X : ℝ) ≤
+          (1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ) *
+            (Real.log (X : ℝ)) := by
+        calc
+          Real.log (X : ℝ) = 1 * Real.log (X : ℝ) := by ring
+          _ ≤ (1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ) *
+              Real.log (X : ℝ) := by
+            have h' : (1 : ℝ) ≤ (1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ) := by
+              calc
+                (1 : ℝ) ≤ (1 + Real.log (X : ℝ)) * 1 := by nlinarith [h1]
+                _ ≤ (1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ) := by
+                  exact mul_le_mul_of_nonneg_left h2p (by linarith : 0 ≤ 1 + Real.log (X : ℝ))
+            exact mul_le_mul_of_nonneg_right h' h0
+      _ = (1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ) *
+          (Real.log (X : ℝ)) ^ (1 : ℝ) := by rw [Real.rpow_one]
+  have hf_tend : Tendsto f atTop atTop := tendsto_atTop_mono' atTop hfge hlogX
+  have hgt : ∀ᶠ X : ℕ in atTop, C + 1 ≤ f X := hf_tend (eventually_ge_atTop (C + 1))
+  rcases eventually_atTop.mp hgt with ⟨x₁, hx₁⟩
+  let X : ℕ := max x₀ (max x₁ 2)
+  have hX₀ : x₀ ≤ X := by omega
+  have hX₁ : x₁ ≤ X := by omega
+  have hX2 : 2 ≤ X := by omega
+  have hX1r : (1 : ℝ) < (X : ℝ) := by exact_mod_cast (by omega : 1 < X)
+  have hXpos : (0 : ℝ) < (X : ℝ) := lt_trans (by norm_num) hX1r
+  have hBpos : 0 < (Real.log (X : ℝ)) ^ (1 : ℝ) := by
+    rw [Real.rpow_one]
+    exact Real.log_pos hX1r
+  have hbX := hb X hX₀
+  have hb' : (X : ℝ) * ((1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ)) ≤
+      C * (X : ℝ) / (Real.log (X : ℝ)) ^ (1 : ℝ) := by
+    simpa [mul_assoc] using hbX
+  have hb'' : (X : ℝ) * (((1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ)) *
+      (Real.log (X : ℝ)) ^ (1 : ℝ)) ≤ C * (X : ℝ) := by
+    calc
+      (X : ℝ) * (((1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ)) *
+          (Real.log (X : ℝ)) ^ (1 : ℝ))
+          ≤ (C * (X : ℝ) / (Real.log (X : ℝ)) ^ (1 : ℝ)) *
+              (Real.log (X : ℝ)) ^ (1 : ℝ) := by
+            simpa [mul_assoc] using
+              (mul_le_mul_of_nonneg_right hb' (le_of_lt hBpos))
+      _ = C * (X : ℝ) := by
+        field_simp [ne_of_gt hBpos]
+  have hA' : ((1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ)) *
+      (Real.log (X : ℝ)) ^ (1 : ℝ) ≤ C := by
+    have hm : (X : ℝ) * (((1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ)) *
+        (Real.log (X : ℝ)) ^ (1 : ℝ)) ≤ (X : ℝ) * C := by
+      simpa [mul_assoc, mul_comm, mul_left_comm] using hb''
+    exact le_of_mul_le_mul_left hm hXpos
+  have hfX : f X = ((1 + Real.log (X : ℝ)) * (Real.log ((X : ℝ) + 2)) ^ (6 : ℝ)) *
+      (Real.log (X : ℝ)) ^ (1 : ℝ) := rfl
+  have hgtX : C + 1 ≤ f X := hx₁ X hX₁
+  linarith [hA', hgtX, hfX]
 
 end PanMainSieveAbsorption_proof
 
