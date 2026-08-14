@@ -345,3 +345,15 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.panTypeIICharMeanSieveBound
 #print axioms AnalyticNumberTheory.Sieve.panTypeIICharSquareMeanBound
 #print axioms AnalyticNumberTheory.Sieve.PanTypeIICharacterMeanValue.of_sieveBound
+#print axioms AnalyticNumberTheory.Sieve.mainTermInnerSum_nonneg
+#print axioms AnalyticNumberTheory.Sieve.mainTermInnerSumMax_nonneg
+#print axioms AnalyticNumberTheory.Sieve.panMain_weight_nonneg
+#print axioms AnalyticNumberTheory.Sieve.panMainPieceSum_abs_le
+#print axioms AnalyticNumberTheory.Sieve.panMainPieceMaxL_le
+#print axioms AnalyticNumberTheory.Sieve.panMainPieceMaxY_le
+#print axioms AnalyticNumberTheory.Sieve.panMainWeightedSum_le
+#print axioms AnalyticNumberTheory.Sieve.PanMainTermSieveBound
+#print axioms AnalyticNumberTheory.Sieve.PanMainTermBound.of_sieveBound
+#print axioms AnalyticNumberTheory.Sieve.logIntegral_nat_abs_le
+#print axioms AnalyticNumberTheory.Sieve.mainTermInnerSum_le
+#print axioms AnalyticNumberTheory.Sieve.mainTermInnerSumMax_le
