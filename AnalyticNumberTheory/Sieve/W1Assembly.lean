@@ -230,7 +230,7 @@ private lemma sqfreeDoubleSum_le (Q : ℕ) (g : ℕ → ℝ) (hg : ∀ d, 0 ≤ 
             calc
               (((Finset.range (Q + 1)).filter Squarefree).filter
                   (fun q => d ∈ q.divisors.filter Squarefree)).card
-                  ≤ ((Finset.Icc 1 Q).filter (fun q => d ∣ q)).card := by
+                  ≤ (((Finset.Icc 1 Q).filter (fun q => d ∣ q)).card : ℝ) := by
                     exact_mod_cast (le_trans hcnt1 hcnt2)
               _ ≤ (Q : ℝ) / (d : ℝ) := by
                     calc
