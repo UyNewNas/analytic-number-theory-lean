@@ -349,4 +349,36 @@ theorem PanMeanValueUniform.of_vaughanSplit
     PanMeanValueUniform x f := by
   simpa [PanMeanValueUniform, PanVaughanSplit] using hV
 
+/-! ## 解析台阶 (a) 的实例化: `PanLogEventuallyLarge` (ant #15)
+
+`PanLogEventuallyLarge x` 声称 `log (x X) ≥ 1` 最终成立. 对任何趋向无穷的
+`x : ℕ → ℝ` (`Tendsto x atTop atTop`) 这是标准的最终性:
+`Real.tendsto_log_atTop.comp htend` 给出 `Tendsto (log ∘ x) atTop atTop`,
+由 `Filter.Tendsto.eventually` 与 `eventually_ge_atTop` 把 atTop 处
+`∀ᶠ y, 1 ≤ y` 拉回 `∀ᶠ X, 1 ≤ log (x X)`, 最后用 `eventually_atTop`
+(ℕ 上 atTop 过滤器与逐点 `∃ x₀, ∀ X ≥ x₀` 的对应) 转成定义形式. -/
+
+section PanLogEventuallyLarge_instances
+
+open Filter
+
+/-- **解析台阶 (a) 的通用实例化**: `x : ℕ → ℝ` 趋向无穷 ⇒
+`PanLogEventuallyLarge x`. 即 `log (x X) ≥ 1` 最终成立
+(经典分析中 x X → ∞ 时 log(x X) → ∞ 的标准最终性). -/
+theorem panLogEventuallyLarge_of_tendsto_atTop {x : ℕ → ℝ}
+    (htend : Tendsto x atTop atTop) : PanLogEventuallyLarge x := by
+  have hlog : Tendsto (fun X : ℕ => Real.log (x X)) atTop atTop :=
+    Real.tendsto_log_atTop.comp htend
+  have hev : ∀ᶠ X : ℕ in atTop, 1 ≤ Real.log (x X) :=
+    hlog (eventually_ge_atTop 1)
+  exact (eventually_atTop.mp hev)
+
+/-- **典型实例**: `x X = (X : ℝ)` (X 的实数嵌入) 趋向无穷
+(`tendsto_natCast_atTop_atTop`), 故 `PanLogEventuallyLarge (fun N => (N : ℝ))`. -/
+theorem panLogEventuallyLarge_natCast :
+    PanLogEventuallyLarge (fun N : ℕ => (N : ℝ)) := by
+  exact panLogEventuallyLarge_of_tendsto_atTop tendsto_natCast_atTop_atTop
+
+end PanLogEventuallyLarge_instances
+
 end AnalyticNumberTheory.Sieve
