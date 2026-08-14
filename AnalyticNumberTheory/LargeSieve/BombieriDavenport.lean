@@ -1014,3 +1014,255 @@ Sub-steps to the corrected type-I mean value:
        large-sieve constant N + delta^{-1} (the repo's largeSieveBound has
        N + O(Q^2 log Q); open dependency, listed in the repo notes).
 -/
+
+/-! ## 8. The per-q assembly analysis: regrouping by reduced fractions -/
+
+/-- gcd multiplication: gcd(a*c, b*c) = c * gcd(a, b). -/
+lemma gcd_mul_right' (a b c : ℕ) : (a * c).gcd (b * c) = c * (a.gcd b) := by
+  exact Nat.gcd_mul_right a b c
+
+/-- Dividing by the gcd gives a coprime pair. -/
+lemma coprime_div_gcd {q r : ℕ} (hq : 0 < q) : (q / q.gcd r).Coprime (r / q.gcd r) := by
+  rw [Nat.coprime_iff_gcd_eq_one]
+  have hg : 0 < q.gcd r := Nat.gcd_pos_of_pos_left r hq
+  have hdiv : q.gcd r ∣ q := Nat.gcd_dvd_left q r
+  have hdiv2 : q.gcd r ∣ r := Nat.gcd_dvd_right q r
+  -- gcd(q, r) = gcd((q/g)·g, (r/g)·g) = g·gcd(q/g, r/g)
+  have hcalc : (q / q.gcd r * (q.gcd r)).gcd (r / q.gcd r * (q.gcd r)) = q.gcd r := by
+    rw [gcd_mul_right']
+    rw [Nat.div_mul_cancel hdiv, Nat.div_mul_cancel hdiv2]
+  -- g·gcd(q/g, r/g) = g ⟹ gcd(q/g, r/g) = 1
+  have hcalc' : (q / q.gcd r).gcd (r / q.gcd r) = 1 := by
+    -- from hcalc: (q/g).gcd (r/g) * g = g — cancel g
+    have hmain : ((q / q.gcd r).gcd (r / q.gcd r)) * (q.gcd r) = (q.gcd r) := by
+      simpa [mul_comm] using hcalc
+    exact (mul_right_cancel₀ (Nat.ne_of_gt hg) hmain)
+  exact hcalc'
+
+/-- **Per-modulus regrouping (逐 q 装配的精确内容)**: for weights w(q),
+    sum_{q <= Q} w(q) * sum_{r < q} f(r/q) = sum_{q' <= Q} W(q') * sum_{red r'} f(r'/q')
+  with W(q') = sum_{d <= Q/q'} w(q'*d); the reduced fractions r'/q' (coprime) carry
+  the regrouped weight. For w(q) = mu^2 3^omega phi(q)/q, W(1) ~ (log Q)^3 is
+  unbounded — the per-q stacking cannot produce the (m + Q^2) shape. -/
+lemma perModulus_regroup {Q : ℕ} (w : ℕ → ℝ) (f : ℝ → ℂ) :
+    (∑ q ∈ Finset.Icc 1 Q, w q * ∑ r ∈ Finset.range q, f ((r : ℝ) / (q : ℝ))) =
+      ∑ q' ∈ Finset.Icc 1 Q,
+        (∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d)) *
+        ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'), f ((r' : ℝ) / (q' : ℝ)) := by
+  -- both sides are the triple sum over (q', r', d) of w(q'*d) * f(r'/q'), grouped differently
+  have hLeft : (∑ q ∈ Finset.Icc 1 Q, w q * ∑ r ∈ Finset.range q, f ((r : ℝ) / (q : ℝ))) =
+      ∑ q' ∈ Finset.Icc 1 Q, ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'),
+        ∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d) * f ((r' : ℝ) / (q' : ℝ)) := by
+    -- bijection between (q, r) and (q', r', d)
+    let s : Finset (Σ q : ℕ, ℕ) := (Finset.Icc 1 Q).sigma (fun q => Finset.range q)
+    let t : Finset (Σ q' : ℕ, ℕ × ℕ) := (Finset.Icc 1 Q).sigma (fun q' =>
+      ((Finset.range q').filter (fun r' => r'.Coprime q')).product (Finset.Icc 1 (Q / q')))
+    have hbij : (∑ p ∈ s, w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ))) =
+        (∑ p ∈ t, w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ))) := by
+      rw [Finset.sum_bij (s := s) (t := t)
+        (f := fun p : Σ q : ℕ, ℕ => w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ)))
+        (g := fun p : Σ q' : ℕ, ℕ × ℕ => w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ)))
+        (i := fun p _ => (⟨p.1 / p.1.gcd p.2, (p.2 / p.1.gcd p.2, p.1.gcd p.2)⟩ : Σ q' : ℕ, ℕ × ℕ))]
+      · -- i p ∈ t
+        intro p hp
+        rw [Finset.mem_sigma] at hp
+        rcases hp with ⟨hq, hr⟩
+        rw [Finset.mem_sigma]
+        -- q' = p.1 / g >= 1, <= Q; r' = p.2 / g < q'; d = g in Icc 1 (Q / q'); coprime
+        let g := p.1.gcd p.2
+        have hgpos : 0 < g := Nat.gcd_pos_of_pos_left p.2 (Finset.mem_Icc.mp hq).1
+        have hgdiv1 : g ∣ p.1 := Nat.gcd_dvd_left p.1 p.2
+        have hgdiv2 : g ∣ p.2 := Nat.gcd_dvd_right p.1 p.2
+        have hq' : p.1 / g ∈ Finset.Icc 1 Q := by
+          rw [Finset.mem_Icc]
+          constructor
+          · exact Nat.succ_le_of_lt (Nat.div_pos hgpos (le_of_lt (Finset.mem_Icc.mp hq).1))  -- hmm
+          · exact le_trans (Nat.div_le_self p.1 g) (Finset.mem_Icc.mp hq).2
+        have hd : g ∈ Finset.Icc 1 (Q / (p.1 / g)) := by
+          rw [Finset.mem_Icc]
+          constructor
+          · exact hgpos
+          · -- g <= Q / (p.1/g) ⟺ g·(p.1/g) <= Q ⟺ p.1 <= Q ✓
+            have hgm : g * (p.1 / g) = p.1 := (Nat.mul_div_cancel' hgdiv1).symm
+            rw [Nat.le_div_iff_mul_le (Nat.div_pos hgpos (le_of_lt (Finset.mem_Icc.mp hq).1))]
+            rw [← hgm]
+            exact (Finset.mem_Icc.mp hq).2
+        have hr' : p.2 / g ∈ (Finset.range (p.1 / g)).filter (fun r' => r'.Coprime (p.1 / g)) := by
+          rw [Finset.mem_filter, Finset.mem_range]
+          constructor
+          · -- p.2 / g < p.1 / g ⟸ p.2 < p.1
+            exact Nat.div_lt_div_of_lt_of_dvd hr hgdiv2 hgdiv1  -- hmm — check
+          · exact coprime_div_gcd (Finset.mem_Icc.mp hq).1
+        exact ⟨hq', Finset.mem_product.mpr ⟨hr', hd⟩⟩
+      · -- i_inj: reduced fractions unique
+        intro p₁ hp₁ p₂ hp₂ h
+        rw [Finset.mem_sigma] at hp₁ hp₂
+        have hfst : p₁.1 / p₁.1.gcd p₁.2 = p₂.1 / p₂.1.gcd p₂.2 := congrArg Sigma.fst h
+        have hsnd : (p₁.2 / p₁.1.gcd p₁.2, p₁.1.gcd p₁.2) = (p₂.2 / p₂.1.gcd p₂.2, p₂.1.gcd p₂.2) := congrArg Sigma.snd h
+        have hg : p₁.1.gcd p₁.2 = p₂.1.gcd p₂.2 := congrArg Prod.snd hsnd
+        have hr : p₁.2 / p₁.1.gcd p₁.2 = p₂.2 / p₂.1.gcd p₂.2 := congrArg Prod.fst hsnd
+        have h1 : p₁.1 = p₂.1 := by
+          calc
+            p₁.1 = (p₁.1 / p₁.1.gcd p₁.2) * p₁.1.gcd p₁.2 := (Nat.div_mul_cancel (Nat.gcd_dvd_left p₁.1 p₁.2)).symm
+            _ = (p₂.1 / p₂.1.gcd p₂.2) * p₂.1.gcd p₂.2 := by rw [hfst, hg]
+            _ = p₂.1 := Nat.div_mul_cancel (Nat.gcd_dvd_left p₂.1 p₂.2)
+        have h2 : p₁.2 = p₂.2 := by
+          calc
+            p₁.2 = (p₁.2 / p₁.1.gcd p₁.2) * p₁.1.gcd p₁.2 := (Nat.div_mul_cancel (Nat.gcd_dvd_right p₁.1 p₁.2)).symm
+            _ = (p₂.2 / p₂.1.gcd p₂.2) * p₂.1.gcd p₂.2 := by rw [hr, hg]
+            _ = p₂.2 := Nat.div_mul_cancel (Nat.gcd_dvd_right p₂.1 p₂.2)
+        apply Sigma.ext h1
+        simpa [h1] using h2
+      · -- i_surj
+        intro p hp
+        rw [Finset.mem_sigma] at hp
+        rcases hp with ⟨hq', hp2⟩
+        rcases (Finset.mem_product.mp hp2) with ⟨hr', hd⟩
+        rw [Finset.mem_filter] at hr'
+        -- preimage: (p.1 * p.2.2, p.2.1 * p.2.2)
+        refine ⟨⟨p.1 * p.2.2, p.2.1 * p.2.2⟩, ?_, ?_⟩
+        · rw [Finset.mem_sigma]
+          constructor
+          · rw [Finset.mem_Icc]
+            constructor
+            · exact Nat.succ_le_of_lt (lt_of_lt_of_le (Finset.mem_Icc.mp hq').1 (Nat.le_mul_of_pos_right _ (Finset.mem_Icc.mp hd).1))
+            · -- p.1·p.2.2 <= Q: from d <= Q / q'
+              have hle := (Finset.mem_Icc.mp hd).2
+              rw [Nat.le_div_iff_mul_le (Finset.mem_Icc.mp hq').1] at hle
+              simpa [mul_comm, mul_left_comm, mul_assoc] using hle
+          · rw [Finset.mem_range]
+            -- p.2.1·p.2.2 < p.1·p.2.2 ⟸ p.2.1 < p.1
+            exact Nat.mul_lt_mul_of_pos_right (Finset.mem_range.mp hr'.1) (Finset.mem_Icc.mp hd).1
+        · -- i (q'·d, r'·d) = ⟨q', (r', d)⟩ — since gcd(q'd, r'd) = d (coprime)
+          have hcop : p.2.1.Coprime p.1 := hr'.2
+          have hgcd : (p.1 * p.2.2).gcd (p.2.1 * p.2.2) = p.2.2 := by
+            rw [gcd_mul_right' p.1 p.2.1 p.2.2]
+            have hg : p.1.gcd p.2.1 = 1 := by
+              rw [Nat.coprime_iff_gcd_eq_one]
+              exact hcop.symm
+            simp [hg]
+          have hfst : (p.1 * p.2.2) / (p.1 * p.2.2).gcd (p.2.1 * p.2.2) = p.1 := by
+            rw [hgcd, Nat.div_mul_cancel (dvd_mul_right p.1 p.2.2)]
+          have hsnd1 : (p.2.1 * p.2.2) / (p.1 * p.2.2).gcd (p.2.1 * p.2.2) = p.2.1 := by
+            rw [hgcd, Nat.div_mul_cancel (dvd_mul_right p.2.1 p.2.2)]
+          apply Sigma.ext hfst
+          simp [hsnd1, hgcd]
+      · -- h: f p = g (i p)
+        intro p hp
+        -- w p.1 * f (p.2/p.1) = w ((p.1/g)*g) * f ((p.2/g)/(p.1/g))
+        have hg : p.1 = (p.1 / p.1.gcd p.2) * p.1.gcd p.2 := by
+          exact (Nat.div_mul_cancel (Nat.gcd_dvd_left p.1 p.2)).symm
+        have hg2 : p.2 = (p.2 / p.1.gcd p.2) * p.1.gcd p.2 := by
+          exact (Nat.div_mul_cancel (Nat.gcd_dvd_right p.1 p.2)).symm
+        -- the ℕ identities for the first factor
+        have hw : p.1 = (p.1 / p.1.gcd p.2) * p.1.gcd p.2 := hg
+        congr 1
+        · -- w p.1 = w ((p.1/g)·g)
+          rw [hw]
+        · -- f (p.2/p.1) = f (p.2/g / (p.1/g))
+          congr 1
+          -- p.2/p.1 = (p.2/g)/(p.1/g) — from the ℕ factorizations
+          have hq1 : (p.1 : ℝ) ≠ 0 := by
+            exact_mod_cast (Nat.pos_of_ne_zero (by
+              have hq' : 1 ≤ p.1 := (Finset.mem_Icc.mp (Finset.mem_sigma.mp hp).1).1
+              exact Nat.ne_of_gt (lt_of_lt_of_le (by norm_num : (0 : ℕ) < 1) hq')))
+          have hg0 : (p.1.gcd p.2 : ℝ) ≠ 0 := by
+            exact_mod_cast (Nat.ne_of_gt (Nat.gcd_pos_of_pos_left p.2 (by
+              have hq' : 1 ≤ p.1 := (Finset.mem_Icc.mp (Finset.mem_sigma.mp hp).1).1
+              exact lt_of_lt_of_le (by norm_num : (0 : ℕ) < 1) hq')))
+          have hgR : (p.1 : ℝ) = (p.1 / p.1.gcd p.2 : ℝ) * (p.1.gcd p.2 : ℝ) := by exact_mod_cast hg
+          have hg2R : (p.2 : ℝ) = (p.2 / p.1.gcd p.2 : ℝ) * (p.1.gcd p.2 : ℝ) := by exact_mod_cast hg2
+          calc
+            (p.2 : ℝ) / (p.1 : ℝ)
+                = ((p.2 / p.1.gcd p.2 : ℝ) * (p.1.gcd p.2 : ℝ)) /
+                    ((p.1 / p.1.gcd p.2 : ℝ) * (p.1.gcd p.2 : ℝ)) := by
+                  rw [← hg2R, ← hgR]
+            _ = (p.2 / p.1.gcd p.2 : ℝ) / (p.1 / p.1.gcd p.2 : ℝ) := by
+                  field_simp [hg0]
+                  ring
+    -- the LHS double sum = the sigma sum over s
+    calc
+      (∑ q ∈ Finset.Icc 1 Q, w q * ∑ r ∈ Finset.range q, f ((r : ℝ) / (q : ℝ)))
+          = ∑ q ∈ Finset.Icc 1 Q, ∑ r ∈ Finset.range q, w q * f ((r : ℝ) / (q : ℝ)) := by
+            apply Finset.sum_congr rfl
+            intro q hq
+            rw [Finset.mul_sum]
+      _ = ∑ p ∈ s, w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ)) := by
+            rw [Finset.sum_sigma (s := Finset.Icc 1 Q) (t := fun q => Finset.range q)
+              (f := fun p : Σ q : ℕ, ℕ => w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ)))]
+      _ = ∑ p ∈ t, w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ)) := hbij
+      _ = ∑ q' ∈ Finset.Icc 1 Q, ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'),
+            ∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d) * f ((r' : ℝ) / (q' : ℝ)) := by
+            rw [Finset.sum_sigma (s := Finset.Icc 1 Q)
+              (t := fun q' => ((Finset.range q').filter (fun r' => r'.Coprime q')).product (Finset.Icc 1 (Q / q')))
+              (f := fun p : Σ q' : ℕ, ℕ × ℕ => w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ)))]
+            apply Finset.sum_congr rfl
+            intro q' hq'
+            rw [Finset.sum_product]
+  -- RHS factorization
+  have hRight : (∑ q' ∈ Finset.Icc 1 Q,
+        (∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d)) *
+        ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'), f ((r' : ℝ) / (q' : ℝ))) =
+      ∑ q' ∈ Finset.Icc 1 Q, ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'),
+        ∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d) * f ((r' : ℝ) / (q' : ℝ)) := by
+    apply Finset.sum_congr rfl
+    intro q' hq'
+    -- (Σ_d w)·(Σ_r' f) = Σ_{r',d} w·f — expand
+    rw [Finset.sum_mul]
+    apply Finset.sum_congr rfl
+    intro r' hr'
+    rw [Finset.mul_sum]
+  calc
+    (∑ q ∈ Finset.Icc 1 Q, w q * ∑ r ∈ Finset.range q, f ((r : ℝ) / (q : ℝ)))
+        = ∑ q' ∈ Finset.Icc 1 Q, ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'),
+            ∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d) * f ((r' : ℝ) / (q' : ℝ)) := hLeft
+    _ = ∑ q' ∈ Finset.Icc 1 Q,
+          (∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d)) *
+          ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'), f ((r' : ℝ) / (q' : ℝ)) := hRight.symm
+
+/-! ## 9. The type-I assembly analysis (ant #15, question (a)/(b)/(c))
+
+**Setup.** The actual consumer of the mean-value input is
+`panTypeICharMeanSieveBound` (PanMeanValueBody.lean:871), via
+`PanTypeICharacterMeanValue.of_sieveBound` (:903). Its L^2 intermediate
+`panTypeICharSquareMeanBound` (:892) asks for
+  sum_{q<=Q} mu^2 3^omega * sum_{chi mod q} ||V_chi(m)||^2 <= C (m + Q^2) S(m).
+The per-modulus material already proved is `characterSieveModulus_le`
+  sum_chi ||S_chi||^2 <= (phi(q)/q) * sum_{r<q} |T(r/q)|^2   (one q at a time)
+together with the additive sieve `largeSieveBound(m+1, 1/q^2) = m + O(q^2 log q)`.
+
+**(a) Can the q-summation be done from the per-q material + polylog? NO.**
+The per-q bound gives the q-sum with weight mu^2 3^omega (phi(q)/q) times (m + q^2 log q).
+The regrouping lemma `perModulus_regroup` shows this is exactly
+  sum_{q'<=Q} W(q') * sum_{red r'} |T(r'/q')|^2,  W(q') = sum_{d<=Q/q'} mu^2 3^omega phi(q'd)/(q'd),
+and the effective weight W(1) = sum_{d<=Q} mu^2 3^omega phi(d)/d ~ (log Q)^3 is UNBOUNDED
+(numerics in check_perq.py: W(1) = 94, 211, 473, 1098 at Q = 40, 80, 160, 320). Equivalently,
+  sum_{q<=Q} mu^2 3^omega (phi/q) (m + q^2 log q) ~ m Q (log Q)^2 + Q^3 (log Q)^3,
+which is ~ Q (log Q)^3 times bigger than (m + Q^2) at m = Q^2 (ratio 704, 1664, 3844, 9777).
+So the per-q stacking cannot produce the (m + Q^2) shape; moreover
+`panTypeICharSquareMeanBound` itself is false (u = 1, m = Q^2; see section 7).
+
+**(b) The real Bombieri-Davenport (all q simultaneously) is needed — and proved.**
+`characterSieveModulus_le` is per-modulus (fixed q). The all-q version must
+apply the additive sieve to the WHOLE Farey set X_Q = {r/q : 1 <= q <= Q, 0 <= r < q}
+(which is 1/Q^2-well-spaced) with `largeSieveRationalPoints` — that is exactly
+`bombieriDavenport_le` / `bombieriDavenport_vaughanFirst`
+(sum over primitive chi with the (q/phi(q)) weight; the Gauss-sum inversion converts the
+weighted primitive sum to the UNWEIGHTED reduced-fraction sum, and the additive sieve is
+applied once, on X_Q). This gives the m + Q^2 shape (up to the weak sieve constant).
+
+**(c) The direct-Parseval-stacking counterexample is avoided.**
+The red-team note (PanMeanValueBody.lean:699-701) shows that stacking the per-q Parseval
+over ALL characters (or with multiplicities on the rational points) fails. The BD proof
+never does that: it (i) restricts to primitive characters, (ii) uses the Gauss-sum
+inversion |S_chi|^2 = (1/q) |sum_a star(chi a) T(a/q)|^2, (iii) applies the unit-group
+Parseval to get the sum over REDUCED fractions with weight 1, and (iv) applies the
+additive sieve once on the Farey set. No per-q Parseval stacking occurs.
+
+**Remaining gap to the assembly.** The proved BD lemma carries the (q/phi(q)) weight over
+primitive characters; the target carries mu^2 3^omega over all characters. Bridging the
+two needs the conductor decomposition (each chi mod q lifts a unique primitive chi' mod
+q' | q) with the non-coprime part controlled by density estimates, and then the
+mu^2 3^omega weight assembly (sub-steps S2-S3 of section 7). The sharp (m + Q^2)
+constant additionally needs the N + delta^{-1} additive-sieve constant (sub-step S4).
+-/
