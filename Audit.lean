@@ -422,9 +422,12 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.panDistributionSum_abs_le_logPieces_mainBlock
 #print axioms AnalyticNumberTheory.Sieve.PanChebyshevApproxCorrected
 #print axioms AnalyticNumberTheory.Sieve.PanMainTermAbsorbedBound
+<<<<<<< HEAD
 #print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_le
 #print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_vaughanFirst
 #print axioms AnalyticNumberTheory.Sieve.vaughanThird_one_one
 #print axioms AnalyticNumberTheory.Sieve.panTypeIICharSqSum_ge_trivial
 #print axioms AnalyticNumberTheory.Sieve.v3_one_one_sq_sum_le
 #print axioms AnalyticNumberTheory.Sieve.vCharAbs_lower
+=======
+>>>>>>> origin/main
