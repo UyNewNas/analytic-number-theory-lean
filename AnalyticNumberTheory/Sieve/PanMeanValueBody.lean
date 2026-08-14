@@ -357,10 +357,20 @@ def PanTypeIIWeightedBound (x f : ℕ → ℝ) (u v : ℕ) : Prop :=
             (fun y q l => apV3 y q l u v / Real.log (y : ℝ)) ≤
         C * x X / (log (x X)) ^ A
 
-/-- **开放引理 T3 (主项界)**: `li` 主项部分的加权和 (`Σ_{(a,q)=1} f(a)·li(y/a)/φ(q)`)
-在装配中被筛主项吸收后余下的界; 依赖 PNT 级主项估计
-(`PrimeDistribution.primeCounting_asymptotic_real` 等) 与
-`li(x) = x/log x + O(x/log²x)` (Liu §III; ROADMAP BRG 节点). -/
+/-- **开放引理 T3 (主项界, 多对数形式)**: `li` 主项部分的加权和
+(`Σ_{(a,q)=1} f(a)·li(y/a)/φ(q)`) 的**多对数界**
+
+  Σ_{q ≤ Q} μ²(q)·3^{ω(q)}·max |li 主项| ≤ C·xX·(log xX)^{A+7}.
+
+经典证明中 `li` 主项被筛主项 (`x/log x·∏(1-ν(p))`) **相减吸收**, 只余
+`O(x/log^A x)` (Liu 2022 §III; HR 1974 Ch.10) — 那需要筛积对象与 PNT 级
+主项估计 (`PrimeDistribution.primeCounting_asymptotic_real` 等, ROADMAP BRG
+节点), 超出本仓库当前初等链. 本陈述是**红队修正后的可证版本**: 固定多对数
+因子只能被更大的 log 幂次压制 (总度数 7, 见 `PanMainTerm.lean` §6 红队注记);
+把 RHS 的 `C·xX/log^A(xX)` 换成 `C·xX·(log xX)^{A+7}` 后, 本台阶可由
+`PanMainTermSieveBound` 经纯有限代数归约 (`PanMainTermBound.of_sieveBound`)
+得出, 而 `PanMainTermSieveBound` 由 `PanMainSieveAbsorption` (已证明) 给出.
+经典 `x/log^A x` 形式保留为 BRG 节点的开放目标. -/
 def PanMainTermBound (x f : ℕ → ℝ) : Prop :=
   ∀ A : ℝ, 0 < A → ∃ C : ℝ, 0 < C ∧ ∃ B : ℝ, ∃ x₀ : ℕ,
     ∀ X : ℕ, x₀ ≤ X →
@@ -368,7 +378,7 @@ def PanMainTermBound (x f : ℕ → ℝ) : Prop :=
         ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
           panPieceMaxY X q (Nat.floor (x X)) f
             (fun y q l => logarithmicIntegral (y : ℝ) / Nat.totient q) ≤
-        C * x X / (log (x X)) ^ A
+        C * x X * (log (x X)) ^ (A + 7)
 
 
 /-! ## 5. T1: type I 加权界的有限代数归约 (character-mean-value 归约)

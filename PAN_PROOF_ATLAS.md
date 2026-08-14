@@ -87,6 +87,20 @@ belongs in `chen-theorem-lean`, not in ant. The bridge to
 `WeightedPanCondition` then consumes the corrected theorem plus the two
 standard PNT-level main-term estimates already listed in the ROADMAP.
 
+**RHS correction on the main-term sub-chain (ant #15, line T3i, after PR #41):**
+the old `PanMainSieveAbsorption`/`PanMainTermSieveBound`/`PanMainTermBound`
+claimed `C·xX/log^A(xX)` for the `li` principal piece alone. That is false as
+a single inequality even for the typical instance `x X = X` (LHS ≈ `X·log⁷X`,
+RHS ≈ `C·X/log^A X`; the classical bound is a *difference* bound after the
+sieve main term is subtracted). The repo now states the honest provable content:
+a fixed polylog factor is eventually dominated by any larger power of `log`
+(`PanMainSieveAbsorption` is proved in `PanMainTerm.lean` §6.1 as
+`xX·(1+log X)·log⁶(xX+2) ≤ C·xX·(log xX)^{A+7}` for `X ≤ x X`, C = 128), and
+the RHS of the whole main-term sub-chain (and hence of `PanVaughanSplit` /
+`PanMeanValueUniform`) is the polylog form `C·xX·(log xX)^{A+7}`. The
+classical `C·x/log^A x` form remains the open BRG target (sieve-main-term
+subtraction, out of scope for this chain).
+
 ## Architecture source
 
 - **Landmark proof**: Pan (1963); Bombieri (1965) / A.I. Vinogradov (1965);

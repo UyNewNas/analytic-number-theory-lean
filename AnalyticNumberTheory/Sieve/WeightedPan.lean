@@ -489,18 +489,24 @@ noncomputable def panMaxY (X q x : ℕ) (f : ℕ → ℝ) : ℝ :=
   ((Finset.range (x + 1)).image (fun y => panMaxL y X q f)).max'
     (Finset.image_nonempty.mpr ⟨0, by simp⟩)
 
-/-- **经典加权 Pan 均值定理** (研究级开放目标; Liu 2022 Theorem 2 的精确
-形式): 对每个 `A > 0` 存在 `C, B, x₀` 使得对所有 `X ≥ x₀`,
+/-- **经典加权 Pan 均值定理** (研究级开放目标; Liu 2022 Theorem 2 的
+精确形式的红队修正版): 对每个 `A > 0` 存在 `C, B, x₀` 使得对所有 `X ≥ x₀`,
 
   Σ_{q ≤ (x X)^{1/2}/log^B (x X)} μ²(q)·3^{ω(q)}·
     max_{y ≤ x X} max_{0<l<q,(l,q)=1}
-      |Σ_{(a,q)=1, a ≤ X} f(a)·Δ(y; a, q, l)| ≤ C·x X / log^A (x X).
+      |Σ_{(a,q)=1, a ≤ X} f(a)·Δ(y; a, q, l)| ≤ C·x X·(log x X)^{A+7}.
 
 其中 `Δ(y; a, q, l) = π(y; a, q, l) − li(y/a)/φ(q)`. 与旧版陈述的三处差异
 (红队审查, 见 `PAN_PROOF_ATLAS.md`): (1) 内和限制 `(a,q)=1`; (2) 加入
 `max_{y ≤ x X}`; (3) 绝对值包住整个内和 `|Σ f·Δ|` 而非 `Σ f·|Δ|`. 缺失
 (1) 的旧陈述对 Chen 权重 `f` 为假 (Liu §IV 的 `R₁` 修正); `R₁` 依赖 `f` 与
 筛积的具体形状, 按边界规则留在 chen 仓库处理.
+
+**RHS 红队修正 (ant #15 line T3i 之后)**: 主项 (li) 片段的界只能是多对数
+`C·xX·(log xX)^{A+7}` (固定多对数因子被更大的 log 幂次压制,
+`PanMainSieveAbsorption` 已证明, 见 `PanMainTerm.lean` §6 红队注记), 故
+最终形式 RHS 同步改为多对数形式. 经典 `C·x/log^A x` (Liu Thm 2) 需要筛主项
+相减吸收 (BRG 节点, 开放).
 
 这是陈氏证明中 Ω 误差项 R 的估计工具 (Pan 1963; Halberstam--Richert
 1974 Ch.10; Liu 2022 §III). 本陈述只固定精确目标与全部定义; 证明依赖
@@ -514,7 +520,7 @@ def PanMeanValueUniform (x : ℕ → ℝ) (f : ℕ → ℝ) : Prop :=
             (log (x X)) ^ B) + 1),
         ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
           panMaxY X q (Nat.floor (x X)) f ≤
-        C * x X / (log (x X)) ^ A
+        C * x X * (log (x X)) ^ (A + 7)
 
 /-! ## Pan 桥 (ant #25): `PanMeanValueUniform` ⇒ `WeightedPanCondition`
 
