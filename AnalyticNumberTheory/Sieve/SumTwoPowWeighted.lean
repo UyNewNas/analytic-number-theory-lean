@@ -28,6 +28,24 @@ noncomputable def sumTwoPowWeighted (Q : ℕ) : ℝ :=
   ∑ d ∈ Finset.range (Q + 1),
     ((μ d : ℤ) : ℝ) ^ 2 * (2 : ℝ) ^ d.primeFactors.card / (d : ℝ)
 
+/-- 平方自由 n 等于其素因子之积 (`n = ∏_{p | n} p`). -/
+private lemma squarefree_eq_prod_primeFactors {n : ℕ} (hn : Squarefree n) :
+    n = ∏ p ∈ n.primeFactors, p := by
+  have hn0 : n ≠ 0 := by
+    rintro rfl
+    exact not_squarefree_zero hn
+  have hprod : n = ∏ p ∈ n.primeFactors, p ^ n.factorization p :=
+    Nat.prod_primeFactors_pow_factorization hn0
+  have hsq : ∀ p ∈ n.primeFactors, n.factorization p = 1 := by
+    intro p hp
+    exact Nat.factorization_eq_one_of_squarefree hn (Nat.prime_of_mem_primeFactors hp)
+      (Nat.dvd_of_mem_primeFactors hp)
+  have hpow : (∏ p ∈ n.primeFactors, p ^ n.factorization p) = ∏ p ∈ n.primeFactors, p := by
+    apply Finset.prod_congr rfl
+    intro p hp
+    rw [hsq p hp, pow_one]
+  exact hprod.trans hpow
+
 /-- 平方自由 d 的主项权重: `μ²(d) = 1`, `2^{ω(d)} = ∏_{p|d} 2`, `d = ∏_{p|d} p`,
 故单项 = `∏_{p | d} 2/p`. -/
 theorem sumTwoPowWeighted_term_squarefree (d : ℕ) (hd : Squarefree d) :
