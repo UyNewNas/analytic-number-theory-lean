@@ -1109,6 +1109,7 @@ private lemma two_mul_log_two_ne_zero : 2 * Real.log 2 ≠ 0 :=
 /-- `log 4 = 2·log 2`. -/
 private lemma log_four_eq_two_log_two : Real.log 4 = 2 * Real.log 2 := by
   rw [show (4 : ℝ) = (2 : ℝ) ^ 2 by norm_num, Real.log_pow]
+  norm_num
 
 /-- `Λ 0 = 0` (镜像 PanTypeIIBoundAudit, 避免新增 import). -/
 private lemma vonMangoldt_zero : Λ 0 = 0 := by
@@ -1117,10 +1118,10 @@ private lemma vonMangoldt_zero : Λ 0 = 0 := by
 
 /-- `Λ 4 = log 2` (4 = 2², `vonMangoldt_apply_pow`). -/
 private lemma vonMangoldt_four : Λ 4 = Real.log 2 := by
-  have h := vonMangoldt_apply_pow (n := 2) (k := 2) (by norm_num : (2 : ℕ) ≠ 0)
+  have h := ArithmeticFunction.vonMangoldt_apply_pow (n := 2) (k := 2) (by norm_num : (2 : ℕ) ≠ 0)
   norm_num at h
   rw [h]
-  exact vonMangoldt_apply_prime (by norm_num : (2 : ℕ).Prime)
+  exact ArithmeticFunction.vonMangoldt_apply_prime (by norm_num : (2 : ℕ).Prime)
 
 /-- `vaughanFirst n u = Λ n` 当 `u ≥ n` (Vaughan 三段恒等式 + 空项). -/
 private lemma vaughanFirst_eq_vonMangoldt_of_ge {n u : ℕ} (hu : n ≤ u) :
@@ -1177,16 +1178,15 @@ private lemma logIntegral_two : logarithmicIntegral (2 : ℝ) = (2 : ℝ) / Real
 private lemma logIntegral_four : logarithmicIntegral (4 : ℝ) = (2 : ℝ) / Real.log 2 := by
   simp [logarithmicIntegral]
   rw [log_four_eq_two_log_two]
-  field_simp [log_two_ne_zero, two_mul_log_two_ne_zero]
-  ring
+  field_simp [log_two_ne_zero, two_mul_log_two_ne_zero] <;> ring
 
 /-- 小常数: `apLogVonMangoldt 2 1 0 = 1` (素数 2 贡献 1). -/
 private lemma apLogVonMangoldt_two : apLogVonMangoldt 2 1 0 = 1 := by
   unfold apLogVonMangoldt
   rw [Finset.sum_range_succ, Finset.sum_range_succ]
-  simp [vonMangoldt_zero, vonMangoldt_apply_one,
-    vonMangoldt_apply_prime (by norm_num : (2 : ℕ).Prime), log_two_ne_zero]
-  norm_num
+  simp [vonMangoldt_zero, ArithmeticFunction.vonMangoldt_apply_one,
+    ArithmeticFunction.vonMangoldt_apply_prime (by norm_num : (2 : ℕ).Prime),
+    log_two_ne_zero] <;> norm_num
 
 /-- 小常数: `apLogVonMangoldt 4 1 0 = 5/2` (素数 2,3 各 1, 4 贡献 1/2). -/
 private lemma apLogVonMangoldt_four : apLogVonMangoldt 4 1 0 = (5 : ℝ) / 2 := by
@@ -1194,20 +1194,18 @@ private lemma apLogVonMangoldt_four : apLogVonMangoldt 4 1 0 = (5 : ℝ) / 2 := 
   rw [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_succ,
     Finset.sum_range_succ, Finset.sum_range_succ]
   have hdiv : Real.log 2 / (2 * Real.log 2) = (1 : ℝ) / 2 := by
-    field_simp [log_two_ne_zero, two_mul_log_two_ne_zero]
-    ring
-  simp [vonMangoldt_zero, vonMangoldt_apply_one,
-    vonMangoldt_apply_prime (by norm_num : (2 : ℕ).Prime),
-    vonMangoldt_apply_prime (by norm_num : (3 : ℕ).Prime),
-    vonMangoldt_four, log_four_eq_two_log_two, log_two_ne_zero, hdiv]
-  norm_num
+    field_simp [log_two_ne_zero, two_mul_log_two_ne_zero] <;> ring
+  simp [vonMangoldt_zero, ArithmeticFunction.vonMangoldt_apply_one,
+    ArithmeticFunction.vonMangoldt_apply_prime (by norm_num : (2 : ℕ).Prime),
+    ArithmeticFunction.vonMangoldt_apply_prime (by norm_num : (3 : ℕ).Prime),
+    vonMangoldt_four, log_four_eq_two_log_two, log_two_ne_zero, hdiv] <;> norm_num
 
 /-- 小常数: `apPrimePowerCorrection 2 1 0 = 0`. -/
 private lemma apPrimePowerCorrection_two : apPrimePowerCorrection 2 1 0 = 0 := by
   unfold apPrimePowerCorrection
   rw [Finset.sum_range_succ, Finset.sum_range_succ]
-  simp [vonMangoldt_zero, vonMangoldt_apply_one, log_two_ne_zero]
-  norm_num
+  simp [vonMangoldt_zero, ArithmeticFunction.vonMangoldt_apply_one, log_two_ne_zero]
+    <;> norm_num
 
 /-- 小常数: `apPrimePowerCorrection 4 1 0 = 1/2` (4 = 2²). -/
 private lemma apPrimePowerCorrection_four : apPrimePowerCorrection 4 1 0 = (1 : ℝ) / 2 := by
@@ -1215,11 +1213,9 @@ private lemma apPrimePowerCorrection_four : apPrimePowerCorrection 4 1 0 = (1 : 
   rw [Finset.sum_range_succ, Finset.sum_range_succ, Finset.sum_range_succ,
     Finset.sum_range_succ, Finset.sum_range_succ]
   have hdiv : Real.log 2 / (2 * Real.log 2) = (1 : ℝ) / 2 := by
-    field_simp [log_two_ne_zero, two_mul_log_two_ne_zero]
-    ring
-  simp [vonMangoldt_zero, vonMangoldt_apply_one, vonMangoldt_four,
-    log_four_eq_two_log_two, log_two_ne_zero, hdiv]
-  norm_num
+    field_simp [log_two_ne_zero, two_mul_log_two_ne_zero] <;> ring
+  simp [vonMangoldt_zero, ArithmeticFunction.vonMangoldt_apply_one, vonMangoldt_four,
+    log_four_eq_two_log_two, log_two_ne_zero, hdiv] <;> norm_num
 
 /-- 小常数: `apV1 2 1 0 4 = log 2` (u = 4 ≥ n 时 vaughanFirst = Λ). -/
 private lemma apV1_two : apV1 2 1 0 4 = Real.log 2 := by
@@ -1228,9 +1224,8 @@ private lemma apV1_two : apV1 2 1 0 4 = Real.log 2 := by
   have h0 : vaughanFirst 0 4 = Λ 0 := vaughanFirst_eq_vonMangoldt_of_ge (by norm_num : (0 : ℕ) ≤ 4)
   have h1 : vaughanFirst 1 4 = Λ 1 := vaughanFirst_eq_vonMangoldt_of_ge (by norm_num : (1 : ℕ) ≤ 4)
   have h2 : vaughanFirst 2 4 = Λ 2 := vaughanFirst_eq_vonMangoldt_of_ge (by norm_num : (2 : ℕ) ≤ 4)
-  simp [h0, h1, h2, vonMangoldt_zero, vonMangoldt_apply_one,
-    vonMangoldt_apply_prime (by norm_num : (2 : ℕ).Prime)]
-  norm_num
+  simp [h0, h1, h2, vonMangoldt_zero, ArithmeticFunction.vonMangoldt_apply_one,
+    ArithmeticFunction.vonMangoldt_apply_prime (by norm_num : (2 : ℕ).Prime)] <;> norm_num
 
 /-- 小常数: `apV1 4 1 0 4 = 2·log 2 + log 3` (= ψ(4)). -/
 private lemma apV1_four : apV1 4 1 0 4 = 2 * Real.log 2 + Real.log 3 := by
@@ -1242,11 +1237,10 @@ private lemma apV1_four : apV1 4 1 0 4 = 2 * Real.log 2 + Real.log 3 := by
   have h2 : vaughanFirst 2 4 = Λ 2 := vaughanFirst_eq_vonMangoldt_of_ge (by norm_num : (2 : ℕ) ≤ 4)
   have h3 : vaughanFirst 3 4 = Λ 3 := vaughanFirst_eq_vonMangoldt_of_ge (by norm_num : (3 : ℕ) ≤ 4)
   have h4 : vaughanFirst 4 4 = Λ 4 := vaughanFirst_eq_vonMangoldt_of_ge (by norm_num : (4 : ℕ) ≤ 4)
-  simp [h0, h1, h2, h3, h4, vonMangoldt_zero, vonMangoldt_apply_one,
-    vonMangoldt_apply_prime (by norm_num : (2 : ℕ).Prime),
-    vonMangoldt_apply_prime (by norm_num : (3 : ℕ).Prime), vonMangoldt_four]
-  norm_num
-  ring_nf
+  simp [h0, h1, h2, h3, h4, vonMangoldt_zero, ArithmeticFunction.vonMangoldt_apply_one,
+    ArithmeticFunction.vonMangoldt_apply_prime (by norm_num : (2 : ℕ).Prime),
+    ArithmeticFunction.vonMangoldt_apply_prime (by norm_num : (3 : ℕ).Prime),
+    vonMangoldt_four] <;> norm_num <;> ring_nf
 
 /-- 小常数: `apV3 2 1 0 4 0 = 0` (u = 4 ≥ n). -/
 private lemma apV3_two : apV3 2 1 0 4 0 = 0 := by
@@ -1255,8 +1249,7 @@ private lemma apV3_two : apV3 2 1 0 4 0 = 0 := by
   have h0 : vaughanThird 0 4 0 = 0 := vaughanThird_zero_of_u_ge (by norm_num : (0 : ℕ) ≤ 4)
   have h1 : vaughanThird 1 4 0 = 0 := vaughanThird_zero_of_u_ge (by norm_num : (1 : ℕ) ≤ 4)
   have h2 : vaughanThird 2 4 0 = 0 := vaughanThird_zero_of_u_ge (by norm_num : (2 : ℕ) ≤ 4)
-  simp [h0, h1, h2]
-  norm_num
+  simp [h0, h1, h2] <;> norm_num
 
 /-- 小常数: `apV3 4 1 0 4 0 = 0`. -/
 private lemma apV3_four : apV3 4 1 0 4 0 = 0 := by
@@ -1268,15 +1261,13 @@ private lemma apV3_four : apV3 4 1 0 4 0 = 0 := by
   have h2 : vaughanThird 2 4 0 = 0 := vaughanThird_zero_of_u_ge (by norm_num : (2 : ℕ) ≤ 4)
   have h3 : vaughanThird 3 4 0 = 0 := vaughanThird_zero_of_u_ge (by norm_num : (3 : ℕ) ≤ 4)
   have h4 : vaughanThird 4 4 0 = 0 := vaughanThird_zero_of_u_ge (by norm_num : (4 : ℕ) ≤ 4)
-  simp [h0, h1, h2, h3, h4]
-  norm_num
+  simp [h0, h1, h2, h3, h4] <;> norm_num
 
 /-- 有限集 `Icc 1 2` 上的和退化为两点和. -/
 private lemma sum_Icc_1_2 (g : ℕ → ℝ) :
     (∑ a ∈ Finset.Icc 1 2, g a) = g 1 + g 2 := by
   rw [show Finset.Icc (1 : ℕ) 2 = ({1, 2} : Finset ℕ) by decide]
-  norm_num [Finset.sum_insert, Finset.sum_singleton]
-  ring
+  norm_num [Finset.sum_insert, Finset.sum_singleton] <;> ring
 
 /-- **主项台阶 LHS 的精确拆解 (零 sorry, 正确形态)**: 对任意 `f u v`,
 `PanChebyshevMainStep` 的 LHS 被 type I + type III + 主项吸收块
@@ -1366,6 +1357,14 @@ theorem not_PanChebyshevMainStep :
     dsimp [c]
     exact div_pos (by norm_num) log_two_pos
   have hinst := h 2 1 4 0 (by norm_num) (by rw [Nat.coprime_zero_left])
+  change (|∑ a ∈ Finset.Icc 1 2, if a.Coprime 1 then
+        f a * (apLogVonMangoldt (4 / a) 1 (natInvMod 1 a * 0 % 1) -
+          logarithmicIntegral ((4 : ℝ) / a) / Nat.totient 1) else 0| +
+      ∑ a ∈ Finset.Icc 1 2, if a.Coprime 1 then
+        |f a| * apPrimePowerCorrection (4 / a) 1 (natInvMod 1 a * 0 % 1) else 0) ≤
+      |panPieceSum 4 2 1 0 f (fun y q l => apV1 y q l 4 / Real.log (y : ℝ))| +
+      |panPieceSum 4 2 1 0 f (fun y q l => apV3 y q l 4 0 / Real.log (y : ℝ))| +
+      |panPieceSum 4 2 1 0 f (fun y q l => logarithmicIntegral (y : ℝ) / Nat.totient q)| at hinst
   have hS1 : (∑ a ∈ Finset.Icc 1 2, if a.Coprime 1 then
         f a * (apLogVonMangoldt (4 / a) 1 (natInvMod 1 a * 0 % 1) -
           logarithmicIntegral ((4 : ℝ) / a) / Nat.totient 1) else 0) =
@@ -1375,8 +1374,7 @@ theorem not_PanChebyshevMainStep :
           logarithmicIntegral ((4 : ℝ) / a) / Nat.totient 1) else 0)]
     norm_num [f, Nat.totient_one]
     rw [apLogVonMangoldt_four, apLogVonMangoldt_two, logIntegral_four, logIntegral_two]
-    simp [div_one]
-    ring_nf
+    simp [div_one] <;> ring_nf
   have hS1abs : |∑ a ∈ Finset.Icc 1 2, if a.Coprime 1 then
         f a * (apLogVonMangoldt (4 / a) 1 (natInvMod 1 a * 0 % 1) -
           logarithmicIntegral ((4 : ℝ) / a) / Nat.totient 1) else 0| =
@@ -1390,8 +1388,7 @@ theorem not_PanChebyshevMainStep :
         |f a| * apPrimePowerCorrection (4 / a) 1 (natInvMod 1 a * 0 % 1) else 0)]
     norm_num [f, Nat.totient_one]
     rw [apPrimePowerCorrection_four, apPrimePowerCorrection_two]
-    simp [abs_of_pos hcpos, abs_neg]
-    ring_nf
+    simp [abs_of_pos hcpos, abs_neg] <;> ring_nf
   have hT1 : panPieceSum 4 2 1 0 f (fun y q l => apV1 y q l 4 / Real.log (y : ℝ)) =
       c * Real.log 3 / (2 * Real.log 2) := by
     unfold panPieceSum
@@ -1402,8 +1399,7 @@ theorem not_PanChebyshevMainStep :
     have hdiv1 : Real.log 2 / Real.log 2 = 1 := div_self log_two_ne_zero
     have hsplit : (2 * Real.log 2 + Real.log 3) / (2 * Real.log 2) =
         1 + Real.log 3 / (2 * Real.log 2) := by
-      field_simp [two_mul_log_two_ne_zero]
-      ring
+      field_simp [two_mul_log_two_ne_zero] <;> ring
     rw [hdiv1, hsplit]
     ring
   have hT1pos : 0 < c * Real.log 3 / (2 * Real.log 2) := by
@@ -1426,8 +1422,7 @@ theorem not_PanChebyshevMainStep :
         f a * (logarithmicIntegral ((4 / a : ℕ) : ℝ) / Nat.totient 1) else 0)]
     norm_num [f, Nat.totient_one]
     rw [logIntegral_four, logIntegral_two]
-    simp [div_one]
-    ring
+    simp [div_one] <;> ring
   have hLHS : (|∑ a ∈ Finset.Icc 1 2, if a.Coprime 1 then
         f a * (apLogVonMangoldt (4 / a) 1 (natInvMod 1 a * 0 % 1) -
           logarithmicIntegral ((4 : ℝ) / a) / Nat.totient 1) else 0| +
@@ -1452,8 +1447,7 @@ theorem not_PanChebyshevMainStep :
     have hfrac : Real.log 3 / (2 * Real.log 2) < (2 : ℝ) := by
       have hd := div_lt_div_of_pos_right h2log h34
       have hcancel : (4 * Real.log 2) / (2 * Real.log 2) = (2 : ℝ) := by
-        field_simp [log_two_ne_zero, two_mul_log_two_ne_zero]
-        ring
+        field_simp [log_two_ne_zero, two_mul_log_two_ne_zero] <;> ring
       linarith
     calc
       c * Real.log 3 / (2 * Real.log 2) = c * (Real.log 3 / (2 * Real.log 2)) := by ring
