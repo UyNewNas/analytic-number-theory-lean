@@ -36,6 +36,7 @@ import AnalyticNumberTheory.LargeSieve.PanTypeIAssembly
 import AnalyticNumberTheory.LargeSieve.CharacterIndicators
 import AnalyticNumberTheory.LargeSieve.WellSpaced
 import AnalyticNumberTheory.LargeSieve.Duality
+import AnalyticNumberTheory.Sieve.W1LemmaB
 
 /-!
 # Analytic Number Theory
