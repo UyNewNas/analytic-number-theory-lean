@@ -1374,7 +1374,7 @@ theorem not_PanChebyshevMainStep :
           logarithmicIntegral ((4 : ℝ) / a) / Nat.totient 1) else 0)]
     norm_num [f, Nat.totient_one]
     rw [apLogVonMangoldt_four, apLogVonMangoldt_two, logIntegral_four, logIntegral_two]
-    simp [div_one] <;> ring_nf
+    ring_nf
   have hS1abs : |∑ a ∈ Finset.Icc 1 2, if a.Coprime 1 then
         f a * (apLogVonMangoldt (4 / a) 1 (natInvMod 1 a * 0 % 1) -
           logarithmicIntegral ((4 : ℝ) / a) / Nat.totient 1) else 0| =
@@ -1422,7 +1422,7 @@ theorem not_PanChebyshevMainStep :
         f a * (logarithmicIntegral ((4 / a : ℕ) : ℝ) / Nat.totient 1) else 0)]
     norm_num [f, Nat.totient_one]
     rw [logIntegral_four, logIntegral_two]
-    simp [div_one] <;> ring
+    simp <;> ring
   have hLHS : (|∑ a ∈ Finset.Icc 1 2, if a.Coprime 1 then
         f a * (apLogVonMangoldt (4 / a) 1 (natInvMod 1 a * 0 % 1) -
           logarithmicIntegral ((4 : ℝ) / a) / Nat.totient 1) else 0| +
@@ -1440,12 +1440,14 @@ theorem not_PanChebyshevMainStep :
   have hlt : c * Real.log 3 / (2 * Real.log 2) < c * 2 := by
     have hlog16 : Real.log (16 : ℝ) = (4 : ℝ) * Real.log 2 := by
       rw [show (16 : ℝ) = (2 : ℝ) ^ 4 by norm_num, Real.log_pow]
+      norm_num
     have h34 : Real.log 3 < (4 : ℝ) * Real.log 2 := by
       have hltl := Real.log_lt_log (by norm_num : (0 : ℝ) < 3) (by norm_num : (3 : ℝ) < 16)
-      rwa [hlog16]
+      rw [hlog16] at hltl
+      exact hltl
     have h2log : 0 < 2 * Real.log 2 := mul_pos (by norm_num) log_two_pos
     have hfrac : Real.log 3 / (2 * Real.log 2) < (2 : ℝ) := by
-      have hd := div_lt_div_of_pos_right h2log h34
+      have hd := div_lt_div_of_pos_right h34 h2log
       have hcancel : (4 * Real.log 2) / (2 * Real.log 2) = (2 : ℝ) := by
         field_simp [log_two_ne_zero, two_mul_log_two_ne_zero] <;> ring
       linarith
