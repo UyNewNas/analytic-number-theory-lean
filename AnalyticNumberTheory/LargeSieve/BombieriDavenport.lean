@@ -981,6 +981,141 @@ theorem bombieriDavenport_vaughanFirst (Q m u : ℕ) (hQ : 0 < Q) :
     _ ≤ largeSieveBound (m + 1) (1 / (Q : ℝ) ^ 2) * (∑ n ∈ Finset.range (m + 1), (vaughanFirst n u) ^ 2) := by
           rw [hR]
 
+/-! ## 7b. Application to the type-II assembly (panTypeIIV3CharSum)
+
+The mirror of section 7 for the type-II coefficients: Bombieri-Davenport for
+`vaughanThird(n,u,v)` with the (q/phi(q)) primitive-character weight,
+`bombieriDavenport_vaughanThird`, the corrected analytic input for the type-II
+mean value (atlas LS2). -/
+
+/-- The Icc (0 : ℤ) (m : ℤ) sum of the vaughanThird coefficients equals the
+  character sum over range (m + 1) (bridge between the BD lemma and
+  panTypeIIV3CharSum). -/
+lemma vaughanThird_Icc_charSum {q m u v : ℕ} (χ : DirichletCharacter ℂ q) :
+    (∑ n ∈ Finset.Icc (0 : ℤ) (m : ℤ),
+      (if 0 ≤ n then (vaughanThird n.toNat u v : ℂ) else 0) * χ (n : ZMod q)) =
+      ∑ n ∈ Finset.range (m + 1), (vaughanThird n u v : ℂ) * χ (n : ZMod q) := by
+  refine Finset.sum_bij (s := Finset.Icc (0 : ℤ) (m : ℤ)) (t := Finset.range (m + 1))
+    (fun n _ => n.toNat) ?_ ?_ ?_ ?_
+  · intro n hn
+    rw [Finset.mem_Icc] at hn
+    rw [Finset.mem_range]
+    -- 0 ≤ n and n ≤ m → n.toNat ≤ m
+    have hto : n.toNat ≤ m := by
+      have hz : (n.toNat : ℤ) = n := Int.toNat_of_nonneg hn.1
+      exact_mod_cast (by simpa [hz] using hn.2)
+    omega
+  · intro n₁ hn₁ n₂ hn₂ h
+    -- n₁.toNat = n₂.toNat → n₁ = n₂ (both in Icc, so nonneg)
+    have h₁ : 0 ≤ n₁ := (Finset.mem_Icc.mp hn₁).1
+    have h₂ : 0 ≤ n₂ := (Finset.mem_Icc.mp hn₂).1
+    calc
+      n₁ = (n₁.toNat : ℤ) := (Int.toNat_of_nonneg h₁).symm
+      _ = (n₂.toNat : ℤ) := by rw [h]
+      _ = n₂ := Int.toNat_of_nonneg h₂
+  · intro n hn
+    rw [Finset.mem_range] at hn
+    refine ⟨(n : ℤ), ?_, ?_⟩
+    · rw [Finset.mem_Icc]
+      exact ⟨by exact_mod_cast (Nat.zero_le n), by exact_mod_cast (Nat.le_of_lt_succ hn)⟩
+    · -- (n : ℤ).toNat = n
+      exact Int.toNat_natCast n
+  · intro n hn
+    -- the summands match: (if 0 ≤ (n : ℤ) then vaughanThird (n : ℤ).toNat u v else 0) = vaughanThird n u v
+    have hnon : 0 ≤ (n : ℤ) := (Finset.mem_Icc.mp hn).1
+    have hto : (n.toNat : ZMod q) = (n : ZMod q) := by
+      rw [← Int.cast_natCast (R := ZMod q) n.toNat]
+      exact congrArg (fun z : ℤ => (z : ZMod q)) (Int.toNat_of_nonneg hnon)
+    simp [hnon, hto]
+
+/-- The norm-square of the interval coefficients equals the range sum of
+  vaughanThird(n,u,v)^2. -/
+lemma vaughanThird_Icc_normSq (m u v : ℕ) :
+    (∑ n ∈ Finset.Icc (0 : ℤ) (m : ℤ),
+      ‖(if 0 ≤ n then (vaughanThird n.toNat u v : ℂ) else 0)‖ ^ 2) =
+      ∑ n ∈ Finset.range (m + 1), (vaughanThird n u v) ^ 2 := by
+  refine Finset.sum_bij (s := Finset.Icc (0 : ℤ) (m : ℤ)) (t := Finset.range (m + 1))
+    (fun n _ => n.toNat) ?_ ?_ ?_ ?_
+  · intro n hn
+    rw [Finset.mem_Icc] at hn
+    rw [Finset.mem_range]
+    have hz : (n.toNat : ℤ) = n := Int.toNat_of_nonneg hn.1
+    have hto : n.toNat ≤ m := by
+      exact_mod_cast (by simpa [hz] using hn.2)
+    omega
+  · intro n₁ hn₁ n₂ hn₂ h
+    have h₁ : 0 ≤ n₁ := (Finset.mem_Icc.mp hn₁).1
+    have h₂ : 0 ≤ n₂ := (Finset.mem_Icc.mp hn₂).1
+    calc
+      n₁ = (n₁.toNat : ℤ) := (Int.toNat_of_nonneg h₁).symm
+      _ = (n₂.toNat : ℤ) := by rw [h]
+      _ = n₂ := Int.toNat_of_nonneg h₂
+  · intro n hn
+    rw [Finset.mem_range] at hn
+    refine ⟨(n : ℤ), ?_, ?_⟩
+    · rw [Finset.mem_Icc]
+      exact ⟨by exact_mod_cast (Nat.zero_le n), by exact_mod_cast (Nat.le_of_lt_succ hn)⟩
+    · exact Int.toNat_natCast n
+  · intro n hn
+    have hnon : 0 ≤ (n : ℤ) := (Finset.mem_Icc.mp hn).1
+    -- ‖(vaughanThird n u v : ℂ)‖² = (vaughanThird n u v)²
+    have hnorm : ‖(vaughanThird n.toNat u v : ℂ)‖ ^ 2 = (vaughanThird n.toNat u v) ^ 2 := by
+      rw [← Complex.normSq_eq_norm_sq]
+      simpa [pow_two] using Complex.normSq_ofReal (vaughanThird n.toNat u v)
+    simp [hnon, hnorm]
+
+/-- **Bombieri-Davenport for the type-II coefficients**: the primitive-character
+  (q/phi(q))-weighted mean bound for vaughanThird(n,u,v), i.e. the corrected
+  analytic input for the type-II mean value (mirror of
+  bombieriDavenport_vaughanFirst; atlas LS2). -/
+theorem bombieriDavenport_vaughanThird (Q m u v : ℕ) (hQ : 0 < Q) :
+    (∑ q ∈ Finset.Icc 1 Q,
+        ((q : ℝ) / (q.totient : ℝ)) *
+        (∑ χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ q)).filter (fun χ => χ.IsPrimitive),
+          ‖panTypeIIV3CharSum q m u v χ‖ ^ 2))
+      ≤ largeSieveBound (m + 1) (1 / (Q : ℝ) ^ 2) * (∑ n ∈ Finset.range (m + 1), (vaughanThird n u v) ^ 2) := by
+  let a : ℤ → ℂ := fun n => if 0 ≤ n then (vaughanThird n.toNat u v : ℂ) else 0
+  have hbd := bombieriDavenport_le Q hQ a (-1) (m + 1)
+  -- rewrite the character sums: Σ_{Icc 0 (m:ℤ)} a n·chi(n) = panTypeIIV3CharSum q m u chi
+  have hL : ∀ q ∈ Finset.Icc 1 Q, ∀ χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ q)).filter (fun χ => χ.IsPrimitive),
+      ‖∑ n ∈ Finset.Icc (0 : ℤ) (m : ℤ), a n * χ (n : ZMod q)‖ ^ 2 = ‖panTypeIIV3CharSum q m u v χ‖ ^ 2 := by
+    intro q hq χ hχ
+    congr 1
+    unfold panTypeIIV3CharSum
+    rw [← vaughanThird_Icc_charSum χ]
+  -- rewrite the norm-square: Σ_{Icc}‖a n‖² = Σ_{range}(vaughanThird n u v)²
+  have hR : (∑ n ∈ Finset.Icc (0 : ℤ) (m : ℤ), ‖a n‖ ^ 2) =
+      ∑ n ∈ Finset.range (m + 1), (vaughanThird n u v) ^ 2 := by
+    simpa [a] using vaughanThird_Icc_normSq m u v
+  -- now convert hbd
+  calc
+    (∑ q ∈ Finset.Icc 1 Q,
+        ((q : ℝ) / (q.totient : ℝ)) *
+        (∑ χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ q)).filter (fun χ => χ.IsPrimitive),
+          ‖panTypeIIV3CharSum q m u v χ‖ ^ 2))
+        ≤ largeSieveBound (m + 1) (1 / (Q : ℝ) ^ 2) *
+            (∑ n ∈ Finset.Icc (0 : ℤ) (m : ℤ), ‖a n‖ ^ 2) := by
+          -- rewrite the character sums in hbd's LHS
+          rw [show (∑ q ∈ Finset.Icc 1 Q,
+              ((q : ℝ) / (q.totient : ℝ)) *
+              (∑ χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ q)).filter (fun χ => χ.IsPrimitive),
+                ‖panTypeIIV3CharSum q m u v χ‖ ^ 2)) =
+              (∑ q ∈ Finset.Icc 1 Q,
+                ((q : ℝ) / (q.totient : ℝ)) *
+                (∑ χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ q)).filter (fun χ => χ.IsPrimitive),
+                  ‖∑ n ∈ Finset.Icc (0 : ℤ) (m : ℤ), a n * χ (n : ZMod q)‖ ^ 2)) by
+            apply Finset.sum_congr rfl
+            intro q hq
+            congr 1
+            apply Finset.sum_congr rfl
+            intro χ hχ
+            exact (hL q hq χ hχ).symm]
+          have hn1 : (-1 + 1 : ℤ) = 0 := by norm_num
+          have hn2 : (-1 + ((m : ℤ) + 1) : ℤ) = (m : ℤ) := by omega
+          simpa [hn1, hn2] using hbd
+    _ ≤ largeSieveBound (m + 1) (1 / (Q : ℝ) ^ 2) * (∑ n ∈ Finset.range (m + 1), (vaughanThird n u v) ^ 2) := by
+          rw [hR]
+
 /-
 ## Honest status report (panTypeICharSquareMeanBound)
 

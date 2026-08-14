@@ -430,3 +430,4 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.not_PanChebyshevMainStep
 #print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_le
 #print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_vaughanFirst
+#print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_vaughanThird
