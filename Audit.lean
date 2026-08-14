@@ -380,6 +380,7 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.panMainSieve_polylog_le
 #print axioms AnalyticNumberTheory.Sieve.panMainSieveAbsorption_of_dom
 #print axioms AnalyticNumberTheory.Sieve.panMainSieveAbsorption_natCast
+#print axioms AnalyticNumberTheory.Sieve.not_panMainSieveAbsorption_old_natCast
 #print axioms AnalyticNumberTheory.Sieve.PanMainTermSieveBound.of_innerSumBound
 #print axioms AnalyticNumberTheory.Sieve.PanVaughanSplit
 #print axioms AnalyticNumberTheory.Sieve.PanMeanValueUniform.of_vaughanSplit
@@ -418,3 +419,6 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.panDistributionSum_eq_mainStep
 #print axioms AnalyticNumberTheory.Sieve.PanChebyshevApprox
 #print axioms AnalyticNumberTheory.Sieve.not_PanChebyshevApprox_of_f0
+#print axioms AnalyticNumberTheory.Sieve.panDistributionSum_abs_le_logPieces_mainBlock
+#print axioms AnalyticNumberTheory.Sieve.PanChebyshevApproxCorrected
+#print axioms AnalyticNumberTheory.Sieve.PanMainTermAbsorbedBound

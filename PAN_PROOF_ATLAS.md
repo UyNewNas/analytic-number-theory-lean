@@ -101,6 +101,47 @@ the RHS of the whole main-term sub-chain (and hence of `PanVaughanSplit` /
 classical `C·x/log^A x` form remains the open BRG target (sieve-main-term
 subtraction, out of scope for this chain).
 
+**Why the polylog form is the correct level for the crude chain (T3i follow-up
+analysis, ant #15)**: the failure is not an artifact of the crude bounds.
+(a) Even sharpening the y,a factor to li's true decay
+(`|li(m)| = m/log m` for m ≥ 2, giving `Σ_{a ≤ X} |li(⌊y/a⌋)| ≪ y·(1 + log log y)`
+by the standard `Σ 1/(a log(y/a)) ≍ log log y` estimate — the §3 comment's
+"classical sharper estimate") leaves the main piece ≍
+`xX·(log log xX)·(log xX)^6` (q-factor `Σ μ²3^ω/φ ≪ log⁶Q` alone is polylog⁶),
+which is ≫ `xX/log^A(xX)` for every fixed A. (b) Even classically — with the
+(a,q)=1 restriction and the Chen weight making the a-harmonic sum converge to
+`∏(1-ν(p)/p)` — the `3^{ω(q)}`-weighted q-sum still contributes ≍ `log³Q`, so
+the li main term is ≍ `xX·(log xX)^3/log(xX)`, not O(`xX/log^A(xX)`). The
+classical `x/log^A x` bound is a *difference* bound: `|li-main − sieve-main| ≪
+x/log^A x` with the sieve main term `x·∏(1-ν(p)/p)`-type object (Halberstam–
+Richert Ch.10). Hence within ant's current single-inequality chain the polylog RHS
+`C·xX·(log xX)^{A+7}` (implemented and proved in `PanMainTerm.lean` §6.1) is the
+honest maximum; the classical form requires (1) the (a,q)=1 + Chen-weight a-sum
+(chen repo) and (2) the sieve-main-term difference (BRG). Formal counterexample
+(A = 1, `x X = X`): `not_panMainSieveAbsorption_old_natCast` in
+`PanMainTerm.lean` — the old asymptotic claim is refuted by
+`(1+log X)·log⁶(X+2)·log X ≥ log X → ∞`.
+
+**Assembly and consumer constraints (T3i follow-up, ant #15)**:
+- *of_analyticInputs* (PanAssembly.lean): the final bound of the three-block sum is
+  the max-scale of the blocks. The main (li) block cannot be `C·xX/log^A(xX)`: it
+  bounds the li *absolute* sum, which is ≍ `xX·(1+log log xX)` (sharp li decay) or
+  `(xX/log 2)·(1+log X)` (crude), times the q-factor `log⁶` — never
+  `O(xX/log^A(xX))`. Hence, in the current single-inequality chain, the assembly's
+  final form is polylog (`C·xX·(log xX)^{A+7}`, implemented). The classical
+  `x/log^A x` assembly requires the main block to be a *difference* with the sieve
+  main term (see below) — a structural redesign, not a constant tweak.
+- *Chen-side consumer* (`WeightedPanCondition`, WeightedPan.lean:453): requires
+  `C·xN/log^A(xN)` for *arbitrary* A > 0 (Chen's switching sieve needs arbitrary
+  log-power savings). The polylog `PanMeanValueUniform` does NOT discharge it, so
+  the bridge (ant #25) is genuinely blocked on the classical form. Note the classical
+  form needs more than the sieve-main-term difference: even with (a,q)=1 and
+  |f| ≤ 1, taking f = 1 gives `Σ_{(a,q)=1} li(y/a) ≍ (y/log y)·log X ≫ y/log^A y`;
+  the Chen weight's convergent a-harmonic sum (`Σ f(a)/a < ∞`) is essential. Both
+  the weight structure (chen repo) and the sieve-main-term difference (BRG) are
+  out of the ant generic chain's reach; the polylog closure is the honest maximum
+  there (implemented and proved, zero sorry).
+
 ## Architecture source
 
 - **Landmark proof**: Pan (1963); Bombieri (1965) / A.I. Vinogradov (1965);
@@ -291,3 +332,29 @@ PAN: Σ_q μ²(q)3^ω(q)·panMaxY ≤ C·x/log^A x      (assembly of T1+T2+T3 wi
   statement cannot be discharged by this route, the bridge to
   `WeightedPanCondition` must be re-audited (issue #7).
 
+
+**Joint redesign of the split and the main sub-chain (T3i follow-up, ant #15)**:
+the root cause is not `PanMainSieveAbsorption` alone — it is the *split shape*.
+`PanVaughanPointwise.lean`'s own finite algebra (`panWeightedVonMangoldt_abs_le`)
+splits the Λ-count exactly as
+`|Σ f(a)Λ| ≤ |Σ f(a)apV1| + |Σ f(a)apV3| + |Σ f(a)(apSmall − apMiddle)|` —
+a *signed* third block. But the analytic step `PanChebyshevApprox` /
+`PanVaughanPointwiseSplit` replaces it with the *pure* absolute
+`|Σ f(a)·li/φ(q)|`, absorbing middle/small into li "by Möbius inversion". Even
+though the middle is relatively small (tail `Σ_{d>u} μ(d)/d = O(1/log u)`), the
+pure-|li| block is ≍ `(x/log x)·(1+log X)·log³Q` (absolute value, no weight
+cancellation) — ≫ `x/log^A x` for every fixed A, even with the Chen weight.
+The correct classical shape (Liu §III) is the *signed* third block
+`|Σ f(a)·((apSmall − apMiddle)/log(y/a) − li(y/a)/φ(q))|` — the PNT-level main
+term (≍ `x/log x·∏(1−ν(p)/p)` with the Chen weight; difference with the sieve
+main term ≪ `x/log^A x`). Joint redesign: (1) restate
+`PanChebyshevApprox`/`PanVaughanPointwiseSplit` third block as the signed
+difference (matches the finite algebra; of_chebyshevApprox application reworked);
+(2) restate `PanMainTermSieveBound`/`PanMainTermBound` to the signed main-block
+object — its `x/log^A` bound is PNT-level (chen weight a-sum + sieve-main-term
+difference, BRG), replacing the current pure-li polylog absorption (which remains
+the honest closure of the *current* wrong-shape split, implemented and proved);
+(3) `of_analyticInputs`'s final scale = max of the block scales — with the signed
+main block at `x/log^A` (classical) the assembly reaches `x/log^A`, otherwise
+polylog. Formal counterexample and current-state closure are in `PanMainTerm.lean`
+§6.1.

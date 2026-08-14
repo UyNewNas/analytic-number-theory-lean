@@ -527,7 +527,21 @@ def PanMeanValueUniform (x : ℕ → ℝ) (f : ℕ → ℝ) : Prop :=
 第一步 (a = 1 恒等式): Pan 对象 `primesInAPBelow y a q l` 在 `a = 1` 时
 正是普通素数等差计数 `#{p ≤ y : p 素数, p ≡ l [MOD q]}` — 陈氏筛余项
 `#{p ∈ support : p ≡ N [MOD d]}` 的分布误差来源. 后续桥引理将把
-`WeightedPanCondition` 的筛余项和按此归约到 `panMaxY` 的 `3^{ω(q)}` 加权和. -/
+`WeightedPanCondition` 的筛余项和按此归约到 `panMaxY` 的 `3^{ω(q)}` 加权和.
+
+**消费容差分析 (ant #15, T3i 红队后续)**: 桥的消费端 `WeightedPanCondition`
+要求对**任意** `A > 0` 有 `C·xN/log^A(xN)` 界 (陈氏定理的切换筛/误差吸收
+需要任意大的 log 幂次节省). 因此当前的多对数形式 `PanMeanValueUniform`
+(RHS `C·xX·(log xX)^{A+7}`, 见 `PanMainTerm.lean` §6 红队修正) **不满足**
+消费端 — 桥只有在经典形式 (`C·xX/log^A(xX)`, 任意 A) 达成后才可接通. 而经典
+形式在 ant 的通用 `|f| ≤ 1` 链内**不可达**: (i) `li` 主项片段的绝对值
+`Σ_{a ≤ X} |li(⌊y/a⌋)|` 量级 ≍ `y·(1+log log y)` (li 真实衰减) 或
+`(y/log 2)·(1+log X)` (粗界), 乘 q 因子 `log⁶` 后 ≫ `x/log^A x`; (ii) 即使
+(a,q)=1 与 |f| ≤ 1, 取 `f = 1` 时 `Σ_{(a,q)=1} li(y/a) ≍ (y/log y)·log X`,
+仍 ≫ `x/log^A x` — 经典定理要求**具体 Chen 权重** `f` (a-调和和
+`Σ f(a)/a` 收敛) 使主项 ≈ `x/log x·∏(1-ν(p)/p)`, 再与筛主项**相减吸收**
+(`|主项 − 筛主项| ≪ x/log^A x`). 这两层都是 chen 仓库/BG 节点内容 (见
+`PAN_PROOF_ATLAS.md` 深析), 桥 (ant #25) 在其达成前保持开放. -/
 
 /-- `a = 1` 时缩放计数退化为普通素数等差计数. -/
 theorem primesInAPBelow_one (y q l : ℕ) :
