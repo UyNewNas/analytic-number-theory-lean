@@ -31,4 +31,17 @@ theorem totient_div_q_mul_q_div_totient_eq_one {q : ℕ} (hq : 1 ≤ q) :
   field_simp [hqR, hφR]
   ring
 
+/-- **W2b** (issue #42, S4b): 传递权重对消的对称版
+
+  `((q:ℝ)/φ(q) · φ(q)) / q = 1` 对 `q ≥ 1`.
+
+与 W2a 相同: 用 `field_simp` 消去分母 (`q ≠ 0`, `φ(q) ≠ 0`). -/
+theorem q_div_totient_mul_totient_div_q_eq_one {q : ℕ} (hq : 1 ≤ q) :
+    ((q : ℝ) / (Nat.totient q : ℝ) * (Nat.totient q : ℝ) / (q : ℝ)) = 1 := by
+  have hqpos : 0 < q := lt_of_lt_of_le Nat.zero_lt_one hq
+  have hqR : (q : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hqpos)
+  have hφR : (Nat.totient q : ℝ) ≠ 0 := by exact_mod_cast (Nat.totient_pos.mpr hqpos).ne'
+  field_simp [hqR, hφR]
+  ring
+
 end AnalyticNumberTheory.Sieve
