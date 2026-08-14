@@ -29,7 +29,6 @@ theorem totient_div_q_mul_q_div_totient_eq_one {q : ℕ} (hq : 1 ≤ q) :
   have hqR : (q : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hqpos)
   have hφR : (Nat.totient q : ℝ) ≠ 0 := by exact_mod_cast (Nat.totient_pos.mpr hqpos).ne'
   field_simp [hqR, hφR]
-  ring
 
 /-- **W2b** (issue #42, S4b): 传递权重对消的对称版
 
@@ -42,8 +41,6 @@ theorem q_div_totient_mul_totient_div_q_eq_one {q : ℕ} (hq : 1 ≤ q) :
   have hqR : (q : ℝ) ≠ 0 := by exact_mod_cast (Nat.ne_of_gt hqpos)
   have hφR : (Nat.totient q : ℝ) ≠ 0 := by exact_mod_cast (Nat.totient_pos.mpr hqpos).ne'
   field_simp [hqR, hφR]
-  ring
-
 
 /-- **W2c** (issue #42, S4b): 权重 `w` 乘 `φ(q)/q` 再乘 `q/φ(q)` 后还原为 `w`
 
@@ -57,7 +54,7 @@ theorem mul_totient_div_q_mul_q_div_totient {q : ℕ} (hq : 1 ≤ q) (w : ℝ) :
       ((Nat.totient q : ℝ) / (q : ℝ)) * ((q : ℝ) / (Nat.totient q : ℝ)) = 1 := by
     rw [← mul_div_assoc]
     exact totient_div_q_mul_q_div_totient_eq_one hq
-  rw [← mul_assoc, hinner]
+  rw [mul_assoc, hinner]
   ring
 
 end AnalyticNumberTheory.Sieve
