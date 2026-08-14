@@ -191,7 +191,6 @@ private lemma sqfreeDoubleSum_le (Q : ℕ) (g : ℕ → ℝ) (hg : ∀ d, 0 ≤ 
     _ ≤ ∑ d ∈ (Finset.range (Q + 1)).filter Squarefree, g d * ((Q : ℝ) / (d : ℝ)) := by
           apply Finset.sum_le_sum
           intro d hd
-          apply mul_le_mul_of_nonneg_left (hg d)
           have hsqd : Squarefree d := (Finset.mem_filter.mp hd).2
           have hd_ne0 : d ≠ 0 := by
             intro hd0
@@ -226,16 +225,19 @@ private lemma sqfreeDoubleSum_le (Q : ℕ) (g : ℕ → ℝ) (hg : ∀ d, 0 ≤ 
               · exact hdq)
           have hcnt3 : ((Finset.Icc 1 Q).filter (fun q => d ∣ q)).card = Q / d :=
             v3_card_multiples_Icc Q d hd1
-          calc
-            (((Finset.range (Q + 1)).filter Squarefree).filter
-                (fun q => d ∈ q.divisors.filter Squarefree)).card
-                ≤ ((Finset.Icc 1 Q).filter (fun q => d ∣ q)).card :=
-                  exact_mod_cast (le_trans hcnt1 hcnt2)
-            _ ≤ (Q : ℝ) / (d : ℝ) := by
-                  calc
-                    (((Finset.Icc 1 Q).filter (fun q => d ∣ q)).card : ℝ) = (Q / d : ℝ) := by
-                      rw [hcnt3]
-                    _ ≤ (Q : ℝ) / (d : ℝ) := Nat.cast_div_le
+          have hcount : (((Finset.range (Q + 1)).filter Squarefree).filter
+                (fun q => d ∈ q.divisors.filter Squarefree)).card ≤ (Q : ℝ) / (d : ℝ) := by
+            calc
+              (((Finset.range (Q + 1)).filter Squarefree).filter
+                  (fun q => d ∈ q.divisors.filter Squarefree)).card
+                  ≤ ((Finset.Icc 1 Q).filter (fun q => d ∣ q)).card :=
+                    exact_mod_cast (le_trans hcnt1 hcnt2)
+              _ ≤ (Q : ℝ) / (d : ℝ) := by
+                    calc
+                      (((Finset.Icc 1 Q).filter (fun q => d ∣ q)).card : ℝ) = (Q / d : ℝ) := by
+                        rw [hcnt3]
+                      _ ≤ (Q : ℝ) / (d : ℝ) := Nat.cast_div_le
+          exact mul_le_mul_of_nonneg_left hcount (hg d)
 
 /-- μ² 恢复: `Σ_{d ≤ Q, sqfree} 2^{ω(d)}/d = Σ_{d ≤ Q} μ²(d)·2^{ω(d)}/d
 = sumTwoPowWeighted Q` (非平方自由项权重为零, 平方自由项 μ² = 1). -/
@@ -291,7 +293,7 @@ theorem panTypeIWeight3_le_Q_mul_sumTwoPowWeighted (Q : ℕ) :
             (fun d => pow_nonneg (by norm_num : (0 : ℝ) ≤ 2) d.primeFactors.card)
     _ = (Q : ℝ) * ∑ d ∈ (Finset.range (Q + 1)).filter Squarefree,
           (2 : ℝ) ^ d.primeFactors.card / (d : ℝ) := by
-          rw [← Finset.mul_sum]
+          rw [Finset.mul_sum]
           apply Finset.sum_congr rfl
           intro d hd
           exact mul_div_mul_comm ((2 : ℝ) ^ d.primeFactors.card) (Q : ℝ) (d : ℝ)
