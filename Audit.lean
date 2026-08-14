@@ -428,3 +428,5 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.vCharAbs_lower
 #print axioms AnalyticNumberTheory.Sieve.panChebyshevMainStepLHS_abs_le_corrected
 #print axioms AnalyticNumberTheory.Sieve.not_PanChebyshevMainStep
+#print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_le
+#print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_vaughanFirst
