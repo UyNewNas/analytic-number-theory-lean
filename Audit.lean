@@ -362,3 +362,5 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.PanLogEventuallyLarge
 #print axioms AnalyticNumberTheory.Sieve.PanVaughanPointwiseSplit
 #print axioms AnalyticNumberTheory.Sieve.PanVaughanSplit.of_analyticInputs
+#print axioms AnalyticNumberTheory.Sieve.panLogEventuallyLarge_of_tendsto_atTop
+#print axioms AnalyticNumberTheory.Sieve.panLogEventuallyLarge_natCast
