@@ -49,6 +49,9 @@ import AnalyticNumberTheory.Sieve.WeightedPan
 import AnalyticNumberTheory.Sieve.VaughanIdentity
 import Mathlib.Data.ZMod.Basic
 import AnalyticNumberTheory.LargeSieve.CharacterIndicators
+import Mathlib.Algebra.Order.Chebyshev
+import Mathlib.GroupTheory.Exponent
+import Mathlib.Data.ZMod.Units
 import Mathlib.Tactic
 
 namespace AnalyticNumberTheory.Sieve
@@ -668,6 +671,254 @@ theorem PanTypeIWeightedBound.of_characterMeanValue {x : ℕ → ℝ} {f : ℕ �
           exact mul_le_mul_of_nonneg_left
             (panPieceMaxY_le_typeIMeanValueMaxY X q (Nat.floor (x X)) f u) hw
     _ ≤ C * x X / (log (x X)) ^ A := hMain X hX
+
+/-! ## 5.1 T1': 特征均值界的归约链 (Cauchy--Schwarz 块 + 乘法大筛均值输入)
+
+经典证明 (Liu 2022 §III Lemma 1; HR 1974 Ch.10) 中 type I 特征均值界的剩余
+解析台阶是:
+
+```text
+Σ_{q ≤ Q} μ²(q)·3^{ω(q)}·max_{y ≤ xX} Σ_{a ≤ X} |f(a)|/|log(y/a)|·Σ_χ ‖V_χ(y/a)‖
+  --[Cauchy--Schwarz, 特征个数 = φ(q)]-->
+  Σ_{q ≤ Q} μ²(q)·3^{ω(q)}·φ(q)^{1/2}·max_{y ≤ xX} Σ_{a ≤ X} |f(a)|/|log(y/a)|·(Σ_χ ‖V_χ(y/a)‖²)^{1/2}
+  --[乘法大筛均值 (Bombieri--Davenport) + vaughanFirst 平方和 + 权重 φ-和 + 外层 (y,a) 权重和]-->
+  C·xX/log^A(xX)
+```
+
+本小节落地**全部有限代数**: Cauchy--Schwarz 块 (`panTypeI_charAbsSum_le_cs`,
+特征个数 = φ(q), `DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity`),
+逐 a 加权 CS (`panTypeIDistributionSum_le_csWeighted`), y-max 归约
+(`panTypeIMeanValueMaxY_le_charSqrtMeanMaxY`), 权重单调
+(`panTypeI_weight_nonneg`), |f| ≤ 1 简化
+(`panTypeICharSqrtMeanMaxY_le_of_abs_le_one`), 以及最终归约定理
+`PanTypeICharacterMeanValue.of_sieveBound` (零 sorry).
+
+乘法大筛均值本身 (求和到 `q ≤ Q` 的**全体**特征版本) 需要原特征分解与 Gauss 和
+(见 `Multiplicative.lean` 模块头红队注记), 降级为辅助 Prop
+`panTypeICharMeanSieveBound` (经典 Bombieri--Davenport 装配形式), 另附文档化
+核心 `panTypeICharSquareMeanBound`. 红队注记: 直接对全体特征叠加 Parseval
+路线不成立 (反例: `a_n ≡ 1`, `Q = 2`, `N` 充分大: 左边
+`Σ_q (q/φ(q))Σ_χ|S(χ)|² ≈ 3N²/2` 而 `C(N,1/4)·N = (N+64)·N`).
+-/
+
+/-- 特征和的 L² 对象: t_q(m) = Σ_χ ‖V_χ(m)‖² (乘法大筛均值的自然对象). -/
+noncomputable def panTypeICharSqSum (q m u : ℕ) : ℝ :=
+  ∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q m u χ‖ ^ 2
+
+/-- **Cauchy--Schwarz 块**: Σ_χ ‖V_χ(m)‖ ≤ φ(q)^{1/2}·(Σ_χ ‖V_χ(m)‖²)^{1/2},
+  由特征个数 = φ(q) 与标准 `(Σa_i)² ≤ n·Σa_i²` 给出. -/
+theorem panTypeI_charAbsSum_le_cs (q m u : ℕ) (hq : 0 < q) :
+    (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q m u χ‖) ≤
+      Real.sqrt (Nat.totient q : ℝ) * Real.sqrt (panTypeICharSqSum q m u) := by
+  haveI : NeZero q := ⟨Nat.ne_of_gt hq⟩
+  haveI : HasEnoughRootsOfUnity ℂ (Monoid.exponent (ZMod q)ˣ) :=
+    AnalyticNumberTheory.LargeSieve.complexHasEnoughRootsOfUnity (Monoid.exponent (ZMod q)ˣ)
+      (Monoid.exponent_ne_zero_of_finite (G := (ZMod q)ˣ))
+  have hcard : Fintype.card (DirichletCharacter ℂ q) = Nat.totient q := by
+    rw [← Nat.card_eq_fintype_card]
+    exact DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity ℂ q
+  have hcs : (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q m u χ‖) ^ 2 ≤
+      (Nat.totient q : ℝ) * panTypeICharSqSum q m u := by
+    calc
+      (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q m u χ‖) ^ 2
+          ≤ (Fintype.card (DirichletCharacter ℂ q) : ℝ) *
+              (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q m u χ‖ ^ 2) := by
+            simpa using (sq_sum_le_card_mul_sum_sq
+              (s := (Finset.univ : Finset (DirichletCharacter ℂ q)))
+              (f := fun χ : DirichletCharacter ℂ q => ‖panTypeIV1CharSum q m u χ‖))
+      _ = (Nat.totient q : ℝ) * panTypeICharSqSum q m u := by
+            rw [hcard, panTypeICharSqSum]
+  have hS : 0 ≤ panTypeICharSqSum q m u := by
+    unfold panTypeICharSqSum
+    exact Finset.sum_nonneg (fun _ _ => sq_nonneg _)
+  have hφ : 0 ≤ (Nat.totient q : ℝ) := by positivity
+  have hsq : (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q m u χ‖) ^ 2 ≤
+      (Real.sqrt (Nat.totient q : ℝ) * Real.sqrt (panTypeICharSqSum q m u)) ^ 2 := by
+    rw [mul_pow, Real.sq_sqrt hφ, Real.sq_sqrt hS]
+    exact hcs
+  exact le_of_sq_le_sq hsq (mul_nonneg (Real.sqrt_nonneg _) (Real.sqrt_nonneg _))
+
+/-- 分布和的逐 a 加权 CS 归约:
+  panTypeIDistributionSum y X q f u ≤ φ(q)^{1/2}·Σ_{a ≤ X} |f(a)|/|log(y/a)|·t_q(y/a)^{1/2}. -/
+theorem panTypeIDistributionSum_le_csWeighted (y X q : ℕ) (f : ℕ → ℝ) (u : ℕ) (hq : 0 < q) :
+    panTypeIDistributionSum y X q f u ≤
+      Real.sqrt (Nat.totient q : ℝ) *
+        (∑ a ∈ Finset.Icc 1 X,
+          |f a| / |Real.log ((y / a : ℕ) : ℝ)| * Real.sqrt (panTypeICharSqSum q (y / a) u)) := by
+  unfold panTypeIDistributionSum
+  calc
+    (∑ a ∈ Finset.Icc 1 X,
+        |f a| / |Real.log ((y / a : ℕ) : ℝ)| *
+          ∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q (y / a) u χ‖)
+        ≤ ∑ a ∈ Finset.Icc 1 X,
+            |f a| / |Real.log ((y / a : ℕ) : ℝ)| *
+              (Real.sqrt (Nat.totient q : ℝ) * Real.sqrt (panTypeICharSqSum q (y / a) u)) := by
+          apply Finset.sum_le_sum
+          intro a ha
+          exact mul_le_mul_of_nonneg_left (panTypeI_charAbsSum_le_cs q (y / a) u hq)
+            (div_nonneg (abs_nonneg _) (abs_nonneg _))
+    _ = Real.sqrt (Nat.totient q : ℝ) *
+          (∑ a ∈ Finset.Icc 1 X,
+            |f a| / |Real.log ((y / a : ℕ) : ℝ)| * Real.sqrt (panTypeICharSqSum q (y / a) u)) := by
+          rw [Finset.mul_sum]
+          apply Finset.sum_congr rfl
+          intro a ha
+          ring
+
+/-- 特征平方和加权对象的逐 y 切片 (乘法大筛均值输入的 y 分量):
+  W(y) = Σ_{a ≤ X} |f(a)|/|log(y/a)|·t_q(y/a)^{1/2}. -/
+noncomputable def panTypeICharSqrtMean (y X q : ℕ) (f : ℕ → ℝ) (u : ℕ) : ℝ :=
+  ∑ a ∈ Finset.Icc 1 X,
+    |f a| / |Real.log ((y / a : ℕ) : ℝ)| * Real.sqrt (panTypeICharSqSum q (y / a) u)
+
+/-- 特征平方和加权对象的 y-max (乘法大筛均值输入): 镜像 panTypeIMeanValueMaxY. -/
+noncomputable def panTypeICharSqrtMeanMaxY (X q x : ℕ) (f : ℕ → ℝ) (u : ℕ) : ℝ :=
+  ((Finset.range (x + 1)).image (fun y => panTypeICharSqrtMean y X q f u)).max'
+    (Finset.image_nonempty.mpr ⟨0, by simp⟩)
+
+/-- **y-max 归约**: panTypeIMeanValueMaxY ≤ φ(q)^{1/2}·panTypeICharSqrtMeanMaxY
+  (逐 y 的加权 CS 后取 max). -/
+theorem panTypeIMeanValueMaxY_le_charSqrtMeanMaxY (X q x : ℕ) (f : ℕ → ℝ) (u : ℕ) (hq : 0 < q) :
+    panTypeIMeanValueMaxY X q x f u ≤
+      Real.sqrt (Nat.totient q : ℝ) * panTypeICharSqrtMeanMaxY X q x f u := by
+  unfold panTypeIMeanValueMaxY panTypeICharSqrtMeanMaxY
+  apply Finset.max'_le
+  intro z hz
+  rcases Finset.mem_image.mp hz with ⟨y, hy, rfl⟩
+  calc
+    panTypeIDistributionSum y X q f u
+        ≤ Real.sqrt (Nat.totient q : ℝ) * panTypeICharSqrtMean y X q f u :=
+          panTypeIDistributionSum_le_csWeighted y X q f u hq
+    _ ≤ Real.sqrt (Nat.totient q : ℝ) * panTypeICharSqrtMeanMaxY X q x f u := by
+          exact mul_le_mul_of_nonneg_left
+            (Finset.le_max'
+              (s := (Finset.range (x + 1)).image (fun y => panTypeICharSqrtMean y X q f u))
+              (x := panTypeICharSqrtMean y X q f u)
+              (Finset.mem_image.mpr ⟨y, hy, rfl⟩))
+            (Real.sqrt_nonneg _)
+
+/-- 权重非负: μ²(q)·3^{ω(q)} ≥ 0. -/
+theorem panTypeI_weight_nonneg (q : ℕ) :
+    0 ≤ ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card := by
+  exact mul_nonneg (sq_nonneg _) (pow_nonneg (by norm_num) _)
+
+/-- 带权重的逐 q 归约: w_q·M_q ≤ w_q·φ(q)^{1/2}·W_q (q = 0 时权重为 0, 平凡). -/
+private lemma panTypeI_weighted_maxY_le_weighted_sqrtMean (X q x : ℕ) (f : ℕ → ℝ) (u : ℕ) :
+    ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card * panTypeIMeanValueMaxY X q x f u ≤
+      ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+        Real.sqrt (Nat.totient q : ℝ) * panTypeICharSqrtMeanMaxY X q x f u := by
+  by_cases hq0 : q = 0
+  · subst q
+    have hμ : (μ 0 : ℤ) = 0 := by
+      exact ArithmeticFunction.moebius_eq_zero_of_not_squarefree (not_squarefree_zero)
+    simp [hμ, Nat.totient_zero]
+  · have hq : 0 < q := Nat.pos_of_ne_zero hq0
+    calc
+      ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card * panTypeIMeanValueMaxY X q x f u
+          ≤ ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+              (Real.sqrt (Nat.totient q : ℝ) * panTypeICharSqrtMeanMaxY X q x f u) := by
+            exact mul_le_mul_of_nonneg_left
+              (panTypeIMeanValueMaxY_le_charSqrtMeanMaxY X q x f u hq)
+              (panTypeI_weight_nonneg q)
+      _ = ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+            Real.sqrt (Nat.totient q : ℝ) * panTypeICharSqrtMeanMaxY X q x f u := by
+            ring
+
+/-- **|f| ≤ 1 简化**: |f(a)| ≤ 1 时, 特征平方和加权对象的 y-max 被
+  f ≡ 1 的版本一致控制. -/
+theorem panTypeICharSqrtMeanMaxY_le_of_abs_le_one (X q x : ℕ) (u : ℕ) {f : ℕ → ℝ}
+    (hfb : ∀ a : ℕ, |f a| ≤ 1) :
+    panTypeICharSqrtMeanMaxY X q x f u ≤ panTypeICharSqrtMeanMaxY X q x (fun _ : ℕ => 1) u := by
+  unfold panTypeICharSqrtMeanMaxY
+  apply Finset.max'_le
+  intro z hz
+  rcases Finset.mem_image.mp hz with ⟨y, hy, rfl⟩
+  calc
+    panTypeICharSqrtMean y X q f u
+        ≤ panTypeICharSqrtMean y X q (fun _ : ℕ => 1) u := by
+          unfold panTypeICharSqrtMean
+          apply Finset.sum_le_sum
+          intro a ha
+          have hdiv : |f a| / |Real.log ((y / a : ℕ) : ℝ)| ≤
+              (1 : ℝ) / |Real.log ((y / a : ℕ) : ℝ)| :=
+            div_le_div_of_nonneg_right (hfb a) (abs_nonneg _)
+          have hsqrt : 0 ≤ Real.sqrt (panTypeICharSqSum q (y / a) u) := Real.sqrt_nonneg _
+          calc
+            |f a| / |Real.log ((y / a : ℕ) : ℝ)| * Real.sqrt (panTypeICharSqSum q (y / a) u)
+                ≤ (1 : ℝ) / |Real.log ((y / a : ℕ) : ℝ)| *
+                    Real.sqrt (panTypeICharSqSum q (y / a) u) :=
+                  mul_le_mul_of_nonneg_right hdiv hsqrt
+            _ = |(1 : ℝ)| / |Real.log ((y / a : ℕ) : ℝ)| *
+                  Real.sqrt (panTypeICharSqSum q (y / a) u) := by norm_num
+    _ ≤ panTypeICharSqrtMeanMaxY X q x (fun _ : ℕ => 1) u := by
+          exact Finset.le_max'
+            (s := (Finset.range (x + 1)).image (fun y => panTypeICharSqrtMean y X q (fun _ : ℕ => 1) u))
+            (x := panTypeICharSqrtMean y X q (fun _ : ℕ => 1) u)
+            (Finset.mem_image.mpr ⟨y, hy, rfl⟩)
+
+/-- **乘法大筛特征均值输入 (Bombieri--Davenport 装配形式, 开放)**: 对每个
+  `A > 0` 存在 `C > 0, B, x₀`, 使对所有 `X ≥ x₀` 与
+  `Q := (xX)^{1/2}/log^B(xX)`,
+
+  `Σ_{q ≤ Q} μ²(q)·3^{ω(q)}·φ(q)^{1/2}·max_{y ≤ xX} Σ_{a ≤ X} |f(a)|/|log(y/a)|·(Σ_χ ‖V_χ(y/a)‖²)^{1/2}
+     ≤ C·xX/log^A(xX)`.
+
+  这是 `PanTypeICharacterMeanValue` 归约后剩下的唯一解析输入 (经典证明:
+  乘法大筛均值定理 + Cauchy--Schwarz 在 q 上的装配 + vaughanFirst 平方和 +
+  权重 φ-和 + 外层 (y,a) 权重和; 见 Liu 2022 §III Lemma 1; HR 1974 Ch.10).
+  求和到 `q ≤ Q` 的全体特征版本需要原特征分解与 Gauss 和 (见
+  `Multiplicative.lean` 模块头红队注记), 保留为开放目标; 对 `|f| ≤ 1` 一致. -/
+def panTypeICharMeanSieveBound (x : ℕ → ℝ) (f : ℕ → ℝ) (u : ℕ) : Prop :=
+  (∀ a : ℕ, |f a| ≤ 1) ∧
+    ∀ A : ℝ, 0 < A → ∃ C : ℝ, 0 < C ∧ ∃ B : ℝ, ∃ x₀ : ℕ,
+      ∀ X : ℕ, x₀ ≤ X →
+        ∑ q ∈ Finset.range (Nat.floor ((x X) ^ (1 / 2 : ℝ) / (log (x X)) ^ B) + 1),
+          ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+            Real.sqrt (Nat.totient q : ℝ) * panTypeICharSqrtMeanMaxY X q (Nat.floor (x X)) f u ≤
+          C * x X / (log (x X)) ^ A
+
+/-- **乘法大筛均值核心 (Bombieri--Davenport, 文档化, 开放)**:
+
+  `Σ_{q ≤ Q} μ²(q)·3^{ω(q)}·Σ_χ ‖V_χ(m)‖² ≤ C·(m + Q²)·Σ_{n ≤ m} vaughanFirst(n,u)²`.
+
+  经典 Bombieri--Davenport 定理 (Montgomery 1971 Ch.1; Iwaniec--Kowalski 2004
+  Ch.7) 需要原特征分解与 Gauss 和 (`|τ(χ)|² = q`), 本仓库 `Multiplicative.lean`
+  的红队注记已说明直接叠加 Parseval 路线不成立; 保留为开放目标. 类此地加上
+  vaughanFirst 平方和 (初等界 `Σ_{n≤m} vaughanFirst(n,u)² ≪ m·log³(m+2)`),
+  权重 φ-和 (`Σ_{q≤Q} μ²(q)3^{ω(q)}φ(q) ≪ Q²·log³(Q+2)`) 与外层 (y,a) 权重和
+  (对 `y ≤ xX` 一致的 `Σ_{a≤X} |f(a)|/|log(y/a)|·(y/a)^{1/2}·(y/a+Q²)^{1/2}·log³`
+  界), 经 Cauchy--Schwarz 在 q 上的装配 (max 保持在外层, 见 §5.1 头部) 即得
+  `panTypeICharMeanSieveBound`. -/
+def panTypeICharSquareMeanBound (u : ℕ) : Prop :=
+  ∃ C : ℝ, 0 < C ∧ ∀ Q : ℕ, ∀ m : ℕ,
+    (∑ q ∈ Finset.range (Q + 1),
+      ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card * panTypeICharSqSum q m u) ≤
+      C * ((m : ℝ) + (Q : ℝ) ^ 2) *
+        (∑ n ∈ Finset.range (m + 1), (vaughanFirst n u) ^ 2)
+
+/-- **T1' 归约定理**: 乘法大筛特征均值输入 (panTypeICharMeanSieveBound) ⇒
+  PanTypeICharacterMeanValue. 全部有限代数 (CS 块, y-max 归约, 权重单调,
+  q = 0 零权重) 在此证明; 唯一解析输入是特征均值界本身. -/
+theorem PanTypeICharacterMeanValue.of_sieveBound {x : ℕ → ℝ} {f : ℕ → ℝ} {u : ℕ}
+    (hS : panTypeICharMeanSieveBound x f u) : PanTypeICharacterMeanValue x f u := by
+  rcases hS with ⟨hfb, hBound⟩
+  refine ⟨hfb, ?_⟩
+  intro A hA
+  rcases hBound A hA with ⟨C, hC, B, x₀, hMain⟩
+  refine ⟨C, hC, B, x₀, ?_⟩
+  intro X hX
+  calc
+    (∑ q ∈ Finset.range (Nat.floor ((x X) ^ (1 / 2 : ℝ) / (log (x X)) ^ B) + 1),
+        ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+          panTypeIMeanValueMaxY X q (Nat.floor (x X)) f u)
+        ≤ ∑ q ∈ Finset.range (Nat.floor ((x X) ^ (1 / 2 : ℝ) / (log (x X)) ^ B) + 1),
+            ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+              Real.sqrt (Nat.totient q : ℝ) * panTypeICharSqrtMeanMaxY X q (Nat.floor (x X)) f u := by
+          apply Finset.sum_le_sum
+          intro q hq
+          exact panTypeI_weighted_maxY_le_weighted_sqrtMean X q (Nat.floor (x X)) f u
+    _ ≤ C * x X / (log (x X)) ^ A := hMain X hX
+
 
 end
 
