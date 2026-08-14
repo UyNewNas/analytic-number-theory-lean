@@ -138,6 +138,7 @@ open Finset
 open scoped BigOperators
 open Classical
 open AnalyticNumberTheory.Sieve
+open DirichletCharacter
 open scoped ArithmeticFunction
 open scoped ArithmeticFunction.Moebius
 
@@ -145,7 +146,7 @@ noncomputable section
 
 set_option linter.unusedVariables false
 set_option linter.style.haveILetI false
-set_option maxHeartbeats 4000000
+set_option maxHeartbeats 8000000
 
 /-! ## S3 锚点: 已证的权重 φ-和 -/
 
@@ -179,7 +180,6 @@ lemma dirichletChar_eq_primitiveCharacter_of_coprime {q : ℕ} [NeZero q]
 lemma dirichletChar_norm_le_one (q : ℕ) (χ : DirichletCharacter ℂ q) (a : ZMod q) : ‖χ a‖ ≤ 1 := by
   by_cases ha : IsUnit a
   · rw [dirichletChar_norm_unit χ ha]
-    norm_num
   · have hz : χ a = 0 := MulChar.map_nonunit χ ha
     rw [hz]
     norm_num
@@ -212,6 +212,10 @@ lemma panTypeIV1CharSum_eq_coprimePart {q m u : ℕ} [NeZero q] (χ : DirichletC
   · have hnu : ¬ IsUnit (n : ZMod q) := (ZMod.isUnit_iff_coprime n q).not.mpr hc
     have hz : χ (n : ZMod q) = 0 := MulChar.map_nonunit χ hnu
     simp [hc, hz]
+
+/-- 非互素密度项: `D_q(m) = Σ_{n ≤ m, (n,q) > 1} |vaughanFirst(n,u)|`. -/
+noncomputable def panTypeI_nonCoprimeDensity (q m u : ℕ) : ℝ :=
+  ∑ n ∈ Finset.range (m + 1), if (n.gcd q) ≠ 1 then |vaughanFirst n u| else 0
 
 /-- 非互素密度项非负. -/
 lemma panTypeI_nonCoprimeDensity_nonneg (q m u : ℕ) : 0 ≤ panTypeI_nonCoprimeDensity q m u := by
