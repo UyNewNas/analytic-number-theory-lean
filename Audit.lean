@@ -431,3 +431,5 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_le
 #print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_vaughanFirst
 #print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_vaughanThird
+#print axioms AnalyticNumberTheory.LargeSieve.csSqrtSum_le_card_mul_sum
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeI_totientWeightSum_polylog
