@@ -45,22 +45,30 @@
 
 ## 红队注记 (对装配的真实约束)
 
-两个因子都是**多对数**增长 (乘积 ≈ `xX·polylog(xX)`), 而 `PanMainTermBound`
-与 `PanMainTermSieveBound` 声称 `C·xX/log^A(xX)` — 单靠 §3--§4 的初等估计
-**无法**把 `xX·polylog` 吸收进 `xX/log^A(xX)` (a = 1, q = 2, y = xX 项单独就有
-`li(xX)/φ(2) ≈ xX/log(xX)`). 经典证明中 li 主项被**筛主项** (正主项
-`x/log x·∏(1-ν(p))`) 吸收, 只余 `O(x/log^A x)`; 这个吸收机制是
-`PanMainTermSieveBound` 的解析内容 (Liu §III; HR 1974 Ch.10), 与
-`PAN_PROOF_ATLAS.md` 红队注记一致. §5 给出归约链的诚实多对数版本
-`panMainWeightedSum_polylog` 作为中间证据, 供装配期与红队审查使用.
+两个因子都是**多对数**增长 (乘积 ≈ `xX·polylog(xX)`). 旧陈述声称
+`PanMainTermBound` 与 `PanMainTermSieveBound` 有 `C·xX/log^A(xX)` 界 —
+单靠 §3--§4 的初等估计**无法**把 `xX·polylog` 吸收进 `xX/log^A(xX)`
+(a = 1, q = 2, y = xX 项单独就有 `li(xX)/φ(2) ≈ xX/log(xX)`); 事实上该陈述
+对典型实例 `x X = X` 即**为假** (§6 红队注记给出反例). 经典证明中 li 主项被
+**筛主项** (正主项 `x/log x·∏(1-ν(p))`) **相减吸收**, 只余 `O(x/log^A x)`;
+这个吸收机制需要筛积对象 (Liu §III; HR 1974 Ch.10; ROADMAP BRG 节点), 与
+`PAN_PROOF_ATLAS.md` 红队注记一致. 本文件 (PR #41 之后) 把三个台阶的 RHS
+修正为**可证的多对数形式** `C·xX·(log xX)^{A+7}` (`PanMainSieveAbsorption`
+§6 已证明: 固定多对数因子被更大的 log 幂次最终压制), §5 的
+`panMainWeightedSum_polylog` 作为中间证据供装配期与红队审查使用.
 
 ## 状态 (线 T3i)
 
 - §4 已实现: `panMainTotientWeightedSum_le_polylog` (q 因子 `C·log⁶(Q+2)`, 全证).
 - §5 已实现: `panMainWeightedSum_polylog` (诚实多对数版主项界, 全证).
-- §6 已实现: 解析吸收台阶 `PanMainSieveAbsorption` (开放, 筛主项吸收) 与
+- §6 已实现 (**红队修正, PR #41 之后**): 解析吸收台阶 `PanMainSieveAbsorption`
+  改为可证的多对数形式 (`≤ C·xX·(log xX)^{A+7}`, 假设 `X ≤ x X`; 旧
+  `C·xX/log^A(xX)` 形式对 `1 < x X` 为假, 见 §6 红队注记) 并由
+  `panMainSieveAbsorption_of_dom` **证明** (log 最终压制, §6.1, 零 sorry);
+  `PanMainTermSieveBound` 同步改为多对数 RHS,
   `PanMainTermSieveBound.of_innerSumBound` (`PanMainSieveAbsorption` ⇒
-  `PanMainTermSieveBound`; 全部有限部分在此证明).
+  `PanMainTermSieveBound`; 全部有限部分在此证明). 经典 `C·xX/log^A(xX)`
+  形式保留为 BRG 节点 (筛主项相减吸收) 的开放目标.
 -/
 
 import AnalyticNumberTheory.Sieve.PanMeanValueBody
@@ -246,19 +254,22 @@ theorem panMainWeightedSum_le (X Q x : ℕ) (f : ℕ → ℝ) (hfb : ∀ a : ℕ
 
 /-! ## 2. 解析台阶与归约定理 -/
 
-/-- **解析台阶 (li 主项界, 开放)**: 对每个 `A > 0` 存在 `C > 0, B, x₀`,
+/-- **解析台阶 (li 主项界, 多对数形式)**: 对每个 `A > 0` 存在 `C > 0, B, x₀`,
 使对所有 `X ≥ x₀` 与 `Q := (xX)^{1/2}/log^B(xX)`,
 
-  `innerSumMax(X, ⌊xX⌋) · Σ_{q ≤ Q} μ²(q)·3^{ω(q)}/φ(q) ≤ C·xX/log^A(xX)`,
+  `innerSumMax(X, ⌊xX⌋) · Σ_{q ≤ Q} μ²(q)·3^{ω(q)}/φ(q) ≤ C·xX·(log xX)^{A+7}`,
 
 其中 `innerSumMax(X, x) = max_{y ≤ x} Σ_{a ≤ X} |li(⌊y/a⌋)|`.
 
-这是 `PanMainTermBound` 归约后剩下的唯一解析输入. 经典证明 (Liu 2022 §III;
-HR 1974 Ch.10) 中 li 主项被筛主项 (`x/log x·∏(1-ν(p))`) 吸收, 余项给出
-`x/log^A x` 的界; 本仓库的初等材料 (§3--§4) 提供两个因子的多对数估计
-(`innerSumMax ≪ x·log X`, `Σ μ²3^ω/φ(q) ≪ log⁶Q`), 但多对数乘积累积后
-不能直接吸收进 `x/log^A x` (见模块头红队注记) — 吸收机制本身是经典解析
-内容, 保留为本台阶. 对 `|f| ≤ 1` 一致. -/
+**红队修正 (相对 PR #34/#41 的旧陈述)**: 旧陈述 RHS 为 `C·xX/log^A(xX)` —
+对 `li` 主项片段本身为假 (e.g. `x X = X`, A = 2 时左侧 ≥ `li(X)·1 ~ X/log X`
+而右侧 ~ `C·X/log²X`; 更一般地 `x·polylog` 不能被 `x/log^A x` 吸收, 见 §6
+红队注记). 经典证明中 li 主项被筛主项 (`x/log x·∏(1-ν(p))`, Liu 2022 §III;
+HR 1974 Ch.10) **相减吸收**, 只余 `O(x/log^A x)` — 那需要筛积对象, 是
+`PanMainTermBound` 级别的解析内容 (见 `PAN_PROOF_ATLAS.md` 红队注记与
+ROADMAP BRG 节点). 本台阶的正确可证形式: 两个初等因子 (§3--§4) 的多对数积
+`xX·(1+log X)·log⁶(xX+2)` 只能被**更大的** log 幂次压制 (总度数 7):
+`≤ C·xX·(log xX)^{A+7}` (`PanMainSieveAbsorption`, §6, 已证明). -/
 def PanMainTermSieveBound (x : ℕ → ℝ) (f : ℕ → ℝ) : Prop :=
   (∀ a : ℕ, |f a| ≤ 1) ∧
     ∀ A : ℝ, 0 < A → ∃ C : ℝ, 0 < C ∧ ∃ B : ℝ, ∃ x₀ : ℕ,
@@ -266,7 +277,7 @@ def PanMainTermSieveBound (x : ℕ → ℝ) (f : ℕ → ℝ) : Prop :=
         mainTermInnerSumMax X (Nat.floor (x X)) *
           (∑ q ∈ Finset.range (Nat.floor ((x X) ^ (1 / 2 : ℝ) / (log (x X)) ^ B) + 1),
             ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ)) ≤
-          C * x X / (log (x X)) ^ A
+          C * x X * (log (x X)) ^ (A + 7)
 
 /-- **T3 归约定理**: `PanMainTermSieveBound` (开放解析台阶) ⇒
   `PanMainTermBound` (主项界). 全部有限代数 (三角不等式, |f| ≤ 1, l-max/y-max
@@ -288,7 +299,7 @@ theorem PanMainTermBound.of_sieveBound {x : ℕ → ℝ} {f : ℕ → ℝ}
               ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ)) :=
           panMainWeightedSum_le X (Nat.floor ((x X) ^ (1 / 2 : ℝ) / (log (x X)) ^ B))
             (Nat.floor (x X)) f hfb
-    _ ≤ C * x X / (log (x X)) ^ A := hMain X hX
+    _ ≤ C * x X * (log (x X)) ^ (A + 7) := hMain X hX
 
 /-! ## 3. li 的初等界与 y,a 因子的多对数界
 
@@ -742,8 +753,9 @@ theorem panMainTotientWeightedSum_le_polylog :
 
 对 `|f| ≤ 1`, 主项带权和 ≤ `C·|xX|·(1 + log X)·log⁶(Q+2)` — 全部来自
 初等材料 (li 初等界 `|li(m)| ≤ m/log 2`, 调和级数, q 因子多对数界).
-这是 `PanMainTermSieveBound` 中 `C·xX/log^A(xX)` 目标的多对数中间证据;
-吸收进 `xX/log^A(xX)` 是 `PanMainSieveAbsorption` (§6) 的解析内容. -/
+这是 `PanMainTermSieveBound` 目标的多对数中间证据; 吸收进
+`C·xX·(log xX)^{A+7}` (固定多对数因子被更大的 log 幂次压制) 是
+`PanMainSieveAbsorption` (§6, 已证明) 的解析内容. -/
 theorem panMainWeightedSum_polylog (x : ℕ → ℝ) (f : ℕ → ℝ) (hfb : ∀ a : ℕ, |f a| ≤ 1) :
     ∃ C : ℝ, 0 < C ∧ ∀ X Q : ℕ,
       (∑ q ∈ Finset.range (Q + 1),
@@ -805,30 +817,170 @@ theorem panMainWeightedSum_polylog (x : ℕ → ℝ) (f : ℕ → ℝ) (hfb : �
 
 /-! ## 6. 解析吸收台阶与 `PanMainTermSieveBound` 归约 -/
 
-/-- **解析吸收台阶 (li 主项界, 开放)**: `x` 是筛尺度 (最终 `1 < x X`), 且对每个
-`A > 0` 存在 `C > 0, x₀`, 使对所有 `X ≥ x₀`,
+/-- **解析吸收台阶 (红队修正版, 已证明)**: `x` 是筛尺度, 假设筛尺度不小于
+求和范围 (`X ≤ x X`; 典型实例 `x X = (X : ℝ)` 满足). 对该类 `x`, 固定多对数
+因子 `(1 + log X)·log⁶(xX + 2)` 最终被任意更大的 log 幂次压制:
 
-  `xX·(1 + log X)·log⁶(xX + 2) ≤ C·xX/log^A(xX)`.
+  `∀ A > 0, ∃ C > 0, x₀, ∀ X ≥ x₀:
+     xX·(1 + log X)·log⁶(xX + 2) ≤ C·xX·(log xX)^{A+7}`.
 
-这是 `PanMainTermSieveBound` 的两个因子 (y,a 因子 `innerSumMax ≪ x·log X`,
-§3; q 因子 `Σ μ²3^ω/φ ≪ log⁶Q`, §4) 装配后剩下的唯一解析输入: 初等多对数积
-`xX·polylog` 被吸收进 `xX/log^A(xX)` 的机制正是经典证明中的筛主项吸收
-(`x/log x·∏(1-ν(p))` 吸收 li 主项, 只余 `O(x/log^A x)`; Liu 2022 §III;
-HR 1974 Ch.10). 模块头红队注记: 仅靠 §3--§4 的初等估计无法完成此吸收. -/
+**红队修正 (相对 line T3i / PR #41 的旧陈述)**: 旧陈述声称同样的多对数因子被
+`C·xX/log^A(xX)` 压制 — 对任意满足 `1 < x X` 的 `x` **为假**:
+
+  - `x X ≡ 2` (常数): 左侧含无界因子 `(1 + log X)`, 右侧为常数 — 假;
+  - `x X = X` (典型实例): `(1 + log X)·log⁶(X+2) ≤ C/log^A(X)` 左侧
+    ~ `log⁷X → ∞` 而右侧 `→ 0` — 对任意固定 `A, C` 最终假.
+
+经典证明中 `li` 主项被筛主项 (`x/log x·∏(1-ν(p))`) **相减吸收**, 只余
+`O(x/log^A x)` (Liu 2022 §III; HR 1974 Ch.10) — 那是 `PanMainTermBound`
+级别的解析内容 (依赖筛积对象, 见 `PAN_PROOF_ATLAS.md` 红队注记与模块头),
+不是单个不等式. 单个不等式能证明的只是: 固定多对数因子被**更大的** log 幂次
+压制 (`≤ C·log^{A+7}`, 总度数 7). 定理 `panMainSieveAbsorption_of_dom`
+(§6.1) 证明本陈述. -/
 def PanMainSieveAbsorption (x : ℕ → ℝ) : Prop :=
-  (∀ X : ℕ, 1 < x X) ∧
+  (∀ X : ℕ, (X : ℝ) ≤ x X) ∧
     ∀ A : ℝ, 0 < A → ∃ C : ℝ, 0 < C ∧ ∃ x₀ : ℕ,
       ∀ X : ℕ, x₀ ≤ X →
         x X * (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ (6 : ℝ) ≤
-          C * x X / (Real.log (x X)) ^ A
+          C * x X * (Real.log (x X)) ^ (A + 7)
 
-/-- **`PanMainTermSieveBound` 的归约**: 解析吸收台阶 (`PanMainSieveAbsorption`)
-⇒ `PanMainTermSieveBound`. 全部有限部分 (li 初等界, 调和级数, q 因子多对数界,
-floor/√ 归约, 权重非负) 在此证明; 唯一的解析输入是吸收本身. -/
+/-! ## 6.1 解析吸收台阶的证明 (log 最终压制)
+
+本节的解析内容: 对 `(X : ℝ) ≤ x X` 的筛尺度, 固定多对数因子
+`(1 + log X)·log⁶(xX + 2)` 被任意更大的 log 幂次最终压制. 三步:
+
+1. **log 最终下界** (`panMainSieve_log_ge_one`): `X ≤ xX` ⇒ `log X ≤ log(xX)`
+   (log 单调), 而 `log X → ∞` (`Real.tendsto_log_atTop.comp`
+   `tendsto_natCast_atTop_atTop`), 故最终 `1 ≤ log (x X)`;
+2. **多对数乘积界** (`panMainSieve_polylog_le`, 自然幂): 对 `X ≥ 2` 与
+   `1 ≤ log(xX)`: `log(xX+2) ≤ log(2·xX) = log 2 + log(xX) ≤ 2·log(xX)`
+   (单调性 + `log 2 ≤ log(xX)`) 且 `1 + log X ≤ 1 + log(xX) ≤ 2·log(xX)`,
+   故 `(1+log X)·log⁶(xX+2) ≤ (2L)·(2L)^6 = 128·log⁷(xX)` (总度数 7);
+3. **更大幂次压制** (`panMainSieveAbsorption_of_dom`): 最终 `1 ≤ log(xX)` 时
+   rpow 在底数 ≥ 1 处关于指数单调 (`Real.rpow_le_rpow_of_exponent_le`),
+   `log⁷(xX) ≤ (log xX)^{A+7}` (`7 ≤ A+7` 来自 `0 < A`), 乘 `xX ≥ 0` 得目标.
+
+全部是 mathlib 初等分析 (tendsto / rpow / log 单调), 零 sorry. -/
+
+section PanMainSieveAbsorption_proof
+
+open Filter
+
+/-- **log 最终下界**: `(X : ℝ) ≤ x X` 时最终 `1 ≤ log (x X)`.
+由 `log X → ∞` 与 `log X ≤ log(xX)` (log 单调 + `X ≤ xX`) 传递. -/
+theorem panMainSieve_log_ge_one {x : ℕ → ℝ} (hdom : ∀ X : ℕ, (X : ℝ) ≤ x X) :
+    ∀ᶠ X : ℕ in atTop, 1 ≤ Real.log (x X) := by
+  have hlogX : Tendsto (fun X : ℕ => Real.log (X : ℝ)) atTop atTop :=
+    Real.tendsto_log_atTop.comp tendsto_natCast_atTop_atTop
+  have hge : ∀ᶠ X : ℕ in atTop, 1 ≤ Real.log (X : ℝ) := hlogX (eventually_ge_atTop 1)
+  filter_upwards [hge, eventually_ge_atTop (1 : ℕ)] with X h1 hX1
+  have hX1r : (1 : ℝ) ≤ (X : ℝ) := by exact_mod_cast hX1
+  have hXpos : (0 : ℝ) < (X : ℝ) := lt_of_lt_of_le (by norm_num) hX1r
+  exact le_trans h1 (Real.log_le_log hXpos (hdom X))
+
+/-- **多对数乘积界 (核心, 自然幂)**: 对 `(X : ℝ) ≤ x X` 的筛尺度, 最终
+`(1 + log X)·log⁶(xX+2) ≤ 128·log⁷(xX)`. 总度数 7: `1 + log X` 经
+`1 ≤ log(xX)` 吸收进一个 log 因子 (≤ `2·log(xX)`), `log⁶(xX+2) ≤ (2·log(xX))^6`
+(单调性 + `log(2·xX) = log 2 + log(xX)` + `log 2 ≤ log(xX)`). -/
+theorem panMainSieve_polylog_le {x : ℕ → ℝ} (hdom : ∀ X : ℕ, (X : ℝ) ≤ x X) :
+    ∀ᶠ X : ℕ in atTop,
+      (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ 6 ≤
+        128 * (Real.log (x X)) ^ 7 := by
+  filter_upwards [panMainSieve_log_ge_one hdom, eventually_ge_atTop (1 : ℕ),
+    eventually_ge_atTop (2 : ℕ)] with X hL hX1 hX2
+  have hxXgeX : (X : ℝ) ≤ x X := hdom X
+  have hX1r : (1 : ℝ) ≤ (X : ℝ) := by exact_mod_cast hX1
+  have hXpos : (0 : ℝ) < (X : ℝ) := lt_of_lt_of_le (by norm_num) hX1r
+  have hxXpos : (0 : ℝ) < x X := lt_of_lt_of_le hXpos hxXgeX
+  have hlogXle : Real.log (X : ℝ) ≤ Real.log (x X) := Real.log_le_log hXpos hxXgeX
+  have h1add : 1 + Real.log (X : ℝ) ≤ 2 * Real.log (x X) := by nlinarith [hL, hlogXle]
+  have hX2r : (2 : ℝ) ≤ (X : ℝ) := by exact_mod_cast hX2
+  have hxX2 : (2 : ℝ) ≤ x X := le_trans hX2r hxXgeX
+  have hlogadd_le2 : Real.log (x X + 2) ≤ 2 * Real.log (x X) := by
+    calc
+      Real.log (x X + 2) ≤ Real.log (2 * x X) :=
+        Real.log_le_log (by positivity : (0 : ℝ) < x X + 2) (by nlinarith [hxX2])
+      _ = Real.log 2 + Real.log (x X) :=
+        Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) (ne_of_gt hxXpos)
+      _ ≤ Real.log (x X) + Real.log (x X) := by
+        have hlog2le : Real.log 2 ≤ Real.log (x X) :=
+          Real.log_le_log (by norm_num : (0 : ℝ) < 2) hxX2
+        linarith
+      _ = 2 * Real.log (x X) := by ring
+  have hlogadd_nn : (0 : ℝ) ≤ Real.log (x X + 2) := by
+    have hlogadd_ge : Real.log (x X) ≤ Real.log (x X + 2) :=
+      Real.log_le_log hxXpos (by nlinarith)
+    linarith
+  have hpow6 : (Real.log (x X + 2)) ^ 6 ≤ (2 * Real.log (x X)) ^ 6 :=
+    pow_le_pow_left₀ hlogadd_nn hlogadd_le2 6
+  have hb : (0 : ℝ) ≤ 2 * Real.log (x X) := by nlinarith [hL]
+  calc
+    (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ 6
+        ≤ (2 * Real.log (x X)) * (2 * Real.log (x X)) ^ 6 := by
+      exact mul_le_mul h1add hpow6 (pow_nonneg hlogadd_nn 6) hb
+    _ = 128 * (Real.log (x X)) ^ 7 := by ring
+
+/-- **`PanMainSieveAbsorption` 的证明**: 对满足 `X ≤ x X` 的筛尺度, 固定
+多对数因子被任意更大的 log 幂次最终压制. 常数 `C = 128`; `x₀` 由最终性给出
+(覆盖 `1 ≤ log(xX)` 与 `X ≥ 1`). 最后用 `eventually_atTop.mp` 把最终性
+转成 `∃ x₀` 的显式形式. -/
+theorem panMainSieveAbsorption_of_dom {x : ℕ → ℝ} (hdom : ∀ X : ℕ, (X : ℝ) ≤ x X) :
+    PanMainSieveAbsorption x := by
+  refine ⟨hdom, ?_⟩
+  intro A hA
+  refine ⟨128, by norm_num, ?_⟩
+  have hpow7 : ∀ᶠ X : ℕ in atTop,
+      (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ (6 : ℝ) ≤
+        128 * (Real.log (x X)) ^ (A + 7) := by
+    filter_upwards [panMainSieve_polylog_le hdom, panMainSieve_log_ge_one hdom] with X hprod hL
+    calc
+      (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ (6 : ℝ)
+          ≤ (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ 6 := by
+        have heq : (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ (6 : ℝ) =
+            (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ 6 := by
+          simpa using congrArg (fun t => (1 + Real.log (X : ℝ)) * t)
+            (Real.rpow_natCast (Real.log (x X + 2)) 6)
+        exact le_of_eq heq
+      _ ≤ 128 * (Real.log (x X)) ^ 7 := hprod
+      _ ≤ 128 * (Real.log (x X)) ^ (A + 7) := by
+        have h7 : (Real.log (x X)) ^ 7 = (Real.log (x X)) ^ (7 : ℝ) := by
+          simpa using (Real.rpow_natCast (Real.log (x X)) 7)
+        have hle : (Real.log (x X)) ^ (7 : ℝ) ≤ (Real.log (x X)) ^ (A + 7) :=
+          Real.rpow_le_rpow_of_exponent_le hL (by linarith : (7 : ℝ) ≤ A + 7)
+        rw [h7]
+        exact mul_le_mul_of_nonneg_left hle (by norm_num : (0 : ℝ) ≤ 128)
+  have hev : ∀ᶠ X : ℕ in atTop,
+      x X * (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ (6 : ℝ) ≤
+        128 * x X * (Real.log (x X)) ^ (A + 7) := by
+    filter_upwards [hpow7, eventually_ge_atTop (1 : ℕ)] with X hpowX hX1
+    have hX0r : (0 : ℝ) ≤ (X : ℝ) := by exact_mod_cast (by omega : 0 ≤ X)
+    have hxXnn : (0 : ℝ) ≤ x X := le_trans hX0r (hdom X)
+    calc
+      x X * (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ (6 : ℝ)
+          = x X * ((1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ (6 : ℝ)) := by ring
+      _ ≤ x X * (128 * (Real.log (x X)) ^ (A + 7)) := by
+        exact mul_le_mul_of_nonneg_left hpowX hxXnn
+      _ = 128 * x X * (Real.log (x X)) ^ (A + 7) := by ring
+  exact eventually_atTop.mp hev
+
+/-- **典型实例**: `x X = (X : ℝ)` 满足 `X ≤ x X` (定义性), 故
+`PanMainSieveAbsorption (fun N : ℕ => (N : ℝ))`. -/
+theorem panMainSieveAbsorption_natCast :
+    PanMainSieveAbsorption (fun N : ℕ => (N : ℝ)) := by
+  apply panMainSieveAbsorption_of_dom
+  intro X
+  rfl
+
+end PanMainSieveAbsorption_proof
+
+/-- **`PanMainTermSieveBound` 的归约**: 多对数吸收台阶 (`PanMainSieveAbsorption`,
+已证明) ⇒ `PanMainTermSieveBound`. 全部有限部分 (li 初等界, 调和级数, q 因子
+多对数界, floor/√ 归约, 权重非负) 在此证明; 解析输入是吸收本身. 注意 RHS 是
+多对数形式 `C·xX·(log xX)^{A+7}` (红队修正, 见 §6 注记). -/
 theorem PanMainTermSieveBound.of_innerSumBound {x : ℕ → ℝ} {f : ℕ → ℝ}
     (hfb : ∀ a : ℕ, |f a| ≤ 1) (hAbs : PanMainSieveAbsorption x) :
     PanMainTermSieveBound x f := by
-  rcases hAbs with ⟨hx, hAbs'⟩
+  rcases hAbs with ⟨hdom, hAbs'⟩
   obtain ⟨C₁, hC₁, hQ⟩ := panMainTotientWeightedSum_le_polylog
   refine ⟨hfb, fun A hA => ?_⟩
   obtain ⟨C₂, hC₂, x₀, hAbsX⟩ := hAbs' A hA
@@ -836,25 +988,28 @@ theorem PanMainTermSieveBound.of_innerSumBound {x : ℕ → ℝ} {f : ℕ → �
   have hCpos : 0 < C := by
     dsimp [C]
     exact div_pos (mul_pos hC₁ hC₂) (Real.log_pos (by norm_num : (1 : ℝ) < 2))
-  refine ⟨C, hCpos, (0 : ℝ), x₀, ?_⟩
+  -- 吸收给出的 x₀ 之外再要求 X ≥ 1 (保证 xX ≥ X ≥ 1 > 0, 筛尺度正性).
+  refine ⟨C, hCpos, (0 : ℝ), max x₀ 1, ?_⟩
   intro X hX
+  have hX₀ : x₀ ≤ X := by omega
+  have hX1 : 1 ≤ X := by omega
   let Q : ℕ := Nat.floor ((x X) ^ (1 / 2 : ℝ))
   have hQdef : Nat.floor ((x X) ^ (1 / 2 : ℝ) / (log (x X)) ^ (0 : ℝ)) = Q := by
     simp [Q, Real.rpow_zero]
   have hlog2 : (0 : ℝ) < log 2 := Real.log_pos (by norm_num : (1 : ℝ) < 2)
   have hlogX : (0 : ℝ) ≤ 1 + Real.log (X : ℝ) := by
-    by_cases hX0 : X = 0
-    · subst X
-      simp [Real.log_zero]
-    · have hX1 : 1 ≤ X := Nat.succ_le_of_lt (Nat.pos_of_ne_zero hX0)
-      have hlog : (0 : ℝ) ≤ Real.log (X : ℝ) := Real.log_nonneg (by exact_mod_cast hX1)
-      linarith
-  have hxXpos : (0 : ℝ) < x X := lt_trans (by norm_num : (0 : ℝ) < 1) (hx X)
+    have hlog : (0 : ℝ) ≤ Real.log (X : ℝ) := Real.log_nonneg (by exact_mod_cast hX1)
+    linarith
+  have hxXgeX : (X : ℝ) ≤ x X := hdom X
+  have hX1r : (1 : ℝ) ≤ (X : ℝ) := by exact_mod_cast hX1
+  have hxXpos : (0 : ℝ) < x X :=
+    lt_of_lt_of_le (lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) hX1r) hxXgeX
+  have hxXone : (1 : ℝ) ≤ x X := le_trans hX1r hxXgeX
   have hfloor : (Nat.floor (x X) : ℝ) ≤ x X := Nat.floor_le (le_of_lt hxXpos)
   have hsqrt : (x X) ^ (1 / 2 : ℝ) ≤ x X := by
     rw [← Real.sqrt_eq_rpow]
     calc
-      √(x X) ≤ √((x X) ^ 2) := Real.sqrt_le_sqrt (by nlinarith [hx X] : (x X : ℝ) ≤ (x X) ^ 2)
+      √(x X) ≤ √((x X) ^ 2) := Real.sqrt_le_sqrt (by nlinarith [hxXone] : (x X : ℝ) ≤ (x X) ^ 2)
       _ = x X := Real.sqrt_sq (le_of_lt hxXpos)
   have hQle : (Q : ℝ) ≤ x X := by
     dsimp [Q]
@@ -903,9 +1058,9 @@ theorem PanMainTermSieveBound.of_innerSumBound {x : ℕ → ℝ} {f : ℕ → �
             exact hnn)
     _ = (C₁ / log 2) * (x X * (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ (6 : ℝ)) := by
           ring
-    _ ≤ (C₁ / log 2) * (C₂ * x X / (Real.log (x X)) ^ A) := by
-          exact mul_le_mul_of_nonneg_left (hAbsX X hX) (le_of_lt (div_pos hC₁ hlog2))
-    _ = C * x X / (Real.log (x X)) ^ A := by
+    _ ≤ (C₁ / log 2) * (C₂ * x X * (Real.log (x X)) ^ (A + 7)) := by
+          exact mul_le_mul_of_nonneg_left (hAbsX X hX₀) (le_of_lt (div_pos hC₁ hlog2))
+    _ = C * x X * (Real.log (x X)) ^ (A + 7) := by
           dsimp [C]
           ring
 

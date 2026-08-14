@@ -30,7 +30,16 @@ import AnalyticNumberTheory.Sieve.PanMainTerm
   2. 求和拆分 (`sum_add_distrib`) 成三部分;
   3. q 范围对账 (`panAssembly_floor_le`): B = max B₁ (max B₂ B₃), log(xX) ≥ 1 时
      Q_B ≤ Q_{B_i}, 三个 Bound 的求和范围均包含 Σ_{q ≤ Q_B} (权重非负 ⇒ 子集和 ≤ 全和);
-  4. 三部分分别 ≤ C_i·xX/log^A X, 求和 ring 得 (C₁+C₂+C₃)·xX/log^A X.
+  4. 三部分分别 ≤ 各自的 RHS (type I/II: `C_i·xX/log^A X`, 主项:
+      `C₃·xX·(log xX)^{A+7}`), 求和: `log(xX) ≥ 1` 时
+      `C_i·xX/log^A X ≤ C_i·xX·(log xX)^{A+7}`, ring 得
+      `(C₁+C₂+C₃)·xX·(log xX)^{A+7}`.
+
+**RHS 红队修正 (ant #15 line T3i 之后)**: 主项 (`li`) 片段的界只能是多对数
+(`C·xX·(log xX)^{A+7}`; 固定多对数因子被更大的 log 幂次压制,
+`PanMainSieveAbsorption` 已证明, 见 `PanMainTerm.lean` §6 红队注记), 故
+最终形式 `PanVaughanSplit`/`PanMeanValueUniform` 的 RHS 同步改为多对数形式.
+经典 `C·xX/log^A(xX)` (Liu Thm 2) 需要筛主项相减吸收 (BRG 节点, 开放).
 
 两个解析台阶 (经典解析内容, 不以公理引入, 以辅助 Prop 封装, 见各自定义):
   (a) `PanLogEventuallyLarge`: log(xX) ≥ 1 最终成立 (经典 xX → ∞ 的标准最终性);
@@ -49,10 +58,16 @@ set_option maxHeartbeats 6000000
 -- li 主项片段不依赖剩余类参数 l', 抑制相应告警 (同 PanMainTerm.lean).
 set_option linter.unusedVariables false
 
-/-- **Vaughan 拆分 (解析台阶, 最终形式)**: 对每个 A > 0 存在 C > 0, B, x₀,
-使对所有 X ≥ x₀, Q := (xX)^{1/2}/log^B(xX),
+/-- **Vaughan 拆分 (解析台阶, 最终形式, 多对数 RHS)**: 对每个 A > 0 存在
+C > 0, B, x₀, 使对所有 X ≥ x₀, Q := (xX)^{1/2}/log^B(xX),
 
-  Σ_{q ≤ Q} μ²(q)·3^{ω(q)}·panMaxY X q ⌊xX⌋ f ≤ C·xX/log^A(xX).
+  Σ_{q ≤ Q} μ²(q)·3^{ω(q)}·panMaxY X q ⌊xX⌋ f ≤ C·xX·(log xX)^{A+7}.
+
+**RHS 红队修正 (ant #15 line T3i 之后)**: 主项 (li) 片段的界只能是多对数
+(`C·xX·(log xX)^{A+7}`; 固定多对数因子被更大的 log 幂次压制,
+`PanMainSieveAbsorption` 已证明, 见 `PanMainTerm.lean` §6 红队注记), 故
+最终形式同步改为多对数 RHS. 经典 `C·xX/log^A(xX)` (Liu Thm 2) 需要筛主项
+相减吸收 (BRG 节点, 开放).
 
 该陈述与 `PanMeanValueUniform` 逐字相同 (定义性相等); 它是装配的最终
 解析输入, 由 `PanVaughanSplit.of_analyticInputs` 从三个 Bound 的辅助 Prop
@@ -65,7 +80,7 @@ def PanVaughanSplit (x : ℕ → ℝ) (f : ℕ → ℝ) (u v : ℕ) : Prop :=
             (log (x X)) ^ B) + 1),
         ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
           panMaxY X q (Nat.floor (x X)) f ≤
-        C * x X / (log (x X)) ^ A
+        C * x X * (log (x X)) ^ (A + 7)
 
 /-- **解析台阶 (log 最终性)**: `log(x X) ≥ 1` 对足够大的 X 成立.
 经典解析中 x X → ∞ 时自动成立 (Liu 2022 §III); 装配的 q 范围对账
@@ -286,7 +301,7 @@ theorem PanVaughanSplit.of_analyticInputs
           ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
             panPieceMaxY X q (Nat.floor (x X)) f
               (fun y q l => logarithmicIntegral (y : ℝ) / Nat.totient q))
-        ≤ C3 * x X / (Real.log (x X)) ^ A := by
+        ≤ C3 * x X * (Real.log (x X)) ^ (A + 7) := by
     calc
       (∑ q ∈ Finset.range (Q + 1),
           ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
@@ -304,7 +319,7 @@ theorem PanVaughanSplit.of_analyticInputs
               hQ3 (fun q => mul_nonneg (panTypeI_weight_nonneg q)
                 (panPieceMaxY_nonneg X q (Nat.floor (x X)) f
                   (fun y q l => logarithmicIntegral (y : ℝ) / Nat.totient q)))
-      _ ≤ C3 * x X / (Real.log (x X)) ^ A := hM1 X hX₃
+      _ ≤ C3 * x X * (Real.log (x X)) ^ (A + 7) := hM1 X hX₃
   calc
     (∑ q ∈ Finset.range (Q + 1),
         ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card * panMaxY X q (Nat.floor (x X)) f)
@@ -331,14 +346,66 @@ theorem PanVaughanSplit.of_analyticInputs
                 (fun y q l => logarithmicIntegral (y : ℝ) / Nat.totient q)) := by
           rw [Finset.sum_add_distrib, Finset.sum_add_distrib]
     _ ≤ C1 * x X / (Real.log (x X)) ^ A + C2 * x X / (Real.log (x X)) ^ A +
-          C3 * x X / (Real.log (x X)) ^ A := by
+          C3 * x X * (Real.log (x X)) ^ (A + 7) := by
         apply add_le_add
         · apply add_le_add
           · exact hI2
           · exact hII2
         · exact hM2
-    _ = (C1 + C2 + C3) * x X / (Real.log (x X)) ^ A := by
-        ring
+    _ ≤ (C1 + C2 + C3) * x X * (Real.log (x X)) ^ (A + 7) := by
+        -- 逐项: Cᵢx/log^A ≤ Cᵢx·log^{A+7} (log(xX) ≥ 1, xX ≥ 0) 与
+        -- C₃x·log^{A+7} ≤ (C1+C2+C3)x·log^{A+7} (非负系数).
+        have hxXnn : 0 ≤ x X := by
+          -- hI1 的 RHS 非负 (Σ₁ ≥ 0) ⟹ xX ≥ 0
+          have hsum1nn : (0 : ℝ) ≤
+              (∑ q ∈ Finset.range (Nat.floor ((x X) ^ (1 / 2 : ℝ) / (Real.log (x X)) ^ B1) + 1),
+                ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+                  panPieceMaxY X q (Nat.floor (x X)) f
+                    (fun y q l => apV1 y q l u / Real.log (y : ℝ))) := by
+            exact Finset.sum_nonneg (fun q hq => mul_nonneg (panTypeI_weight_nonneg q)
+              (panPieceMaxY_nonneg X q (Nat.floor (x X)) f
+                (fun y q l => apV1 y q l u / Real.log (y : ℝ))))
+          have hle0 : (0 : ℝ) ≤ C1 * x X / (Real.log (x X)) ^ A := le_trans hsum1nn (hI1 X hX₁)
+          have hLpos : 0 < (Real.log (x X)) ^ A :=
+            lt_of_lt_of_le (by norm_num : (0 : ℝ) < 1) (Real.one_le_rpow hL (le_of_lt hA))
+          have hC1x : 0 ≤ C1 * x X := nonneg_of_mul_nonneg_left hle0 (inv_pos.mpr hLpos)
+          have hxC1 : 0 ≤ x X * C1 := by simpa [mul_comm] using hC1x
+          exact nonneg_of_mul_nonneg_left hxC1 hC1
+        have hlogAge1 : 1 ≤ (Real.log (x X)) ^ A := Real.one_le_rpow hL (le_of_lt hA)
+        have hlogA7ge1 : 1 ≤ (Real.log (x X)) ^ (A + 7) :=
+          Real.one_le_rpow hL (by positivity : 0 ≤ A + 7)
+        have hcoef1 : ((Real.log (x X)) ^ A)⁻¹ ≤ (Real.log (x X)) ^ (A + 7) := by
+          calc
+            ((Real.log (x X)) ^ A)⁻¹ ≤ 1 := inv_le_one_of_one_le₀ hlogAge1
+            _ ≤ (Real.log (x X)) ^ (A + 7) := hlogA7ge1
+        have hc1 : C1 * x X / (Real.log (x X)) ^ A ≤ C1 * x X * (Real.log (x X)) ^ (A + 7) := by
+          calc
+            C1 * x X / (Real.log (x X)) ^ A = C1 * x X * ((Real.log (x X)) ^ A)⁻¹ := by ring
+            _ ≤ C1 * x X * (Real.log (x X)) ^ (A + 7) := by
+              exact mul_le_mul_of_nonneg_left hcoef1 (mul_nonneg (le_of_lt hC1) hxXnn)
+        have hc2 : C2 * x X / (Real.log (x X)) ^ A ≤ C2 * x X * (Real.log (x X)) ^ (A + 7) := by
+          calc
+            C2 * x X / (Real.log (x X)) ^ A = C2 * x X * ((Real.log (x X)) ^ A)⁻¹ := by ring
+            _ ≤ C2 * x X * (Real.log (x X)) ^ (A + 7) := by
+              exact mul_le_mul_of_nonneg_left hcoef1 (mul_nonneg (le_of_lt hC2) hxXnn)
+        have hc3 : C3 * x X * (Real.log (x X)) ^ (A + 7) ≤
+            (C1 + C2 + C3) * x X * (Real.log (x X)) ^ (A + 7) := by
+          have hsum12 : 0 ≤ C1 + C2 := by linarith
+          have hLnn : 0 ≤ Real.log (x X) := by linarith
+          have hnonneg : 0 ≤ (C1 + C2) * x X * (Real.log (x X)) ^ (A + 7) := by
+            exact mul_nonneg (mul_nonneg hsum12 hxXnn) (Real.rpow_nonneg hLnn (A + 7))
+          calc
+            C3 * x X * (Real.log (x X)) ^ (A + 7)
+                ≤ C3 * x X * (Real.log (x X)) ^ (A + 7) +
+                    (C1 + C2) * x X * (Real.log (x X)) ^ (A + 7) := by linarith
+            _ = (C1 + C2 + C3) * x X * (Real.log (x X)) ^ (A + 7) := by ring
+        calc
+          C1 * x X / (Real.log (x X)) ^ A + C2 * x X / (Real.log (x X)) ^ A +
+              C3 * x X * (Real.log (x X)) ^ (A + 7)
+              ≤ C1 * x X * (Real.log (x X)) ^ (A + 7) + C2 * x X * (Real.log (x X)) ^ (A + 7) +
+                  C3 * x X * (Real.log (x X)) ^ (A + 7) := by
+                exact add_le_add (add_le_add hc1 hc2) (le_rfl)
+            _ = (C1 + C2 + C3) * x X * (Real.log (x X)) ^ (A + 7) := by ring
 
 /-- **装配定理**: Vaughan 拆分 (最终形式) ⇒ PanMeanValueUniform.
 `PanVaughanSplit` 与 `PanMeanValueUniform` 的陈述逐字相同, 故这是
