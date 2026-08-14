@@ -899,6 +899,19 @@ def panTypeICharMeanSieveBound (x : ℕ → ℝ) (f : ℕ → ℝ) (u : ℕ) : P
   (对 `y ≤ xX` 一致的 `Σ_{a≤X} |f(a)|/|log(y/a)|·(y/a)^{1/2}·(y/a+Q²)^{1/2}·log³`
   界), 经 Cauchy--Schwarz 在 q 上的装配 (max 保持在外层, 见 §5.1 头部) 即得
   `panTypeICharMeanSieveBound`. -/
+
+/- **Red-team correction (ant #15)**: the literal statement `panTypeICharSquareMeanBound`
+is FALSE as stated: take u = 1 (then vaughanFirst(n,1) = log n), m = Q^2; the
+smooth part of the character sums gives an unbounded sum
+  sum_{q <= Q} mu^2(q) 3^omega(q) phi(q)^2 / q^2  >=  sum_{p <= Q} 3 (p-1)^2 / p^2 ~ 3 Q / log Q
+while the RHS is C (m + Q^2) S(m) with S(m) ~ m (log m)^2; no constant C works
+(numerics: check_target.py). The correct analytic input is the Bombieri-Davenport
+lemma over PRIMITIVE characters with the (q/phi(q)) weight, fully proved in
+`AnalyticNumberTheory/LargeSieve/BombieriDavenport.lean`
+(bombieriDavenport_le / bombieriDavenport_vaughanFirst), including |tau(chi)|^2 = q
+(Gauss-sum magnitude for primitive chi), the primitive Fourier inversion, unit
+Parseval, and the Farey-point additive-sieve assembly; the all-character
+re-assembly is an open sub-step (see the explicit sub-steps in that file). -/
 def panTypeICharSquareMeanBound (u : ℕ) : Prop :=
   ∃ C : ℝ, 0 < C ∧ ∀ Q : ℕ, ∀ m : ℕ,
     (∑ q ∈ Finset.range (Q + 1),
