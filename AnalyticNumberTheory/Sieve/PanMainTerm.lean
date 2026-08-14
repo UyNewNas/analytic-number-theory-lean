@@ -53,6 +53,14 @@
 `PanMainTermSieveBound` 的解析内容 (Liu §III; HR 1974 Ch.10), 与
 `PAN_PROOF_ATLAS.md` 红队注记一致. §5 给出归约链的诚实多对数版本
 `panMainWeightedSum_polylog` 作为中间证据, 供装配期与红队审查使用.
+
+## 状态 (线 T3i, PR #38)
+
+- §4 已实现: `panMainTotientWeightedSum_le_polylog` (q 因子 `C·log⁶(Q+2)`, 全证).
+- §5 已实现: `panMainWeightedSum_polylog` (诚实多对数版主项界, 全证).
+- §6 已实现: 解析吸收台阶 `PanMainSieveAbsorption` (开放, 筛主项吸收) 与
+  `PanMainTermSieveBound.of_innerSumBound` (`PanMainSieveAbsorption` ⇒
+  `PanMainTermSieveBound`; 全部有限部分在此证明).
 -/
 
 import AnalyticNumberTheory.Sieve.PanMeanValueBody
@@ -64,6 +72,7 @@ import Mathlib.Tactic
 namespace AnalyticNumberTheory.Sieve
 
 open Finset Real
+open AnalyticNumberTheory.Mertens
 
 open scoped Classical
 open scoped ArithmeticFunction.Moebius
@@ -388,5 +397,516 @@ theorem mainTermInnerSumMax_le (X x : ℕ) :
           exact mul_le_mul_of_nonneg_right
             (div_le_div_of_nonneg_right (by exact_mod_cast hyx)
               (le_of_lt (Real.log_pos (by norm_num : (1 : ℝ) < 2)))) hlogX
+
+/-! ## 4. q 因子的多对数界 (加权 totient 倒数和)
+
+平方自由 q 的单项 `μ²(q)·3^{ω(q)}/φ(q) = ∏_{p | q} 3/(p-1)`, 子集展开
+`Σ_{q ≤ Q, sqfree} ∏_{p|q} c_p ≤ ∏_{p ≤ Q} (1 + c_p)`, 再经
+`∏(1+u) ≤ exp(Σu)` 与 Mertens 第二定理 (`mertensSecond_nat`):
+
+`Σ_{q ≤ Q} μ²(q)·3^{ω(q)}/φ(q) ≤ C·log⁶(Q+2)`.
+
+全部初等 (μ² 在平方自由 q 上 = 1, 非平方自由 = 0; 平方自由 q 与素因子集一一对应;
+调和级数 `Σ 1/(p-1) ≤ 2Σ 1/p`; Mertens 第二定理). -/
+
+private lemma squarefree_eq_prod_primeFactors {n : ℕ} (hn : Squarefree n) :
+    n = ∏ p ∈ n.primeFactors, p := by
+  have hn0 : n ≠ 0 := by
+    rintro rfl
+    exact not_squarefree_zero hn
+  have hprod : n = ∏ p ∈ n.primeFactors, p ^ n.factorization p :=
+    Nat.prod_primeFactors_pow_factorization hn0
+  have hsq : ∀ p ∈ n.primeFactors, n.factorization p = 1 := by
+    intro p hp
+    exact Nat.factorization_eq_one_of_squarefree hn (Nat.prime_of_mem_primeFactors hp)
+      (Nat.dvd_of_mem_primeFactors hp)
+  have hpow : (∏ p ∈ n.primeFactors, p ^ n.factorization p) = ∏ p ∈ n.primeFactors, p := by
+    apply Finset.prod_congr rfl
+    intro p hp
+    rw [hsq p hp, pow_one]
+  exact hprod.trans hpow
+
+/-- 子集和恒等式: `∏_{x ∈ s} (1 + g x)` 展开为所有子集上的积之和
+`Σ_{t ⊆ s} ∏_{x ∈ t} g x`. -/
+private lemma sum_powerset_prod {α : Type*} [DecidableEq α] (s : Finset α) (g : α → ℝ) :
+    (∑ t ∈ s.powerset, ∏ x ∈ t, g x) = ∏ x ∈ s, (1 + g x) := by
+  classical
+  induction s using Finset.induction_on with
+  | empty => simp
+  | insert a s ha ih =>
+      calc
+        (∑ t ∈ (insert a s).powerset, ∏ x ∈ t, g x)
+            = (∑ t ∈ s.powerset, ∏ x ∈ t, g x) + ∑ t ∈ s.powerset, ∏ x ∈ insert a t, g x := by
+              rw [Finset.sum_powerset_insert ha]
+        _ = (∑ t ∈ s.powerset, ∏ x ∈ t, g x) + ∑ t ∈ s.powerset, (g a * ∏ x ∈ t, g x) := by
+              congr 1
+              apply Finset.sum_congr rfl
+              intro t ht
+              have hat : a ∉ t := by
+                intro hat'
+                exact ha ((Finset.mem_powerset.mp ht) hat')
+              rw [Finset.prod_insert hat]
+        _ = (∑ t ∈ s.powerset, ∏ x ∈ t, g x) + g a * (∑ t ∈ s.powerset, ∏ x ∈ t, g x) := by
+              rw [← Finset.mul_sum]
+        _ = (1 + g a) * (∑ t ∈ s.powerset, ∏ x ∈ t, g x) := by ring
+        _ = (1 + g a) * (∏ x ∈ s, (1 + g x)) := by rw [ih]
+        _ = ∏ x ∈ insert a s, (1 + g x) := by rw [Finset.prod_insert ha]
+
+/-- 平方自由 q 的主项权重: `μ²(q)·3^{ω(q)}/φ(q) = ∏_{p | q} 3/(p-1)`. -/
+theorem panMainTotientWeight_term_squarefree (q : ℕ) (hq : Squarefree q) :
+    ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ) =
+      ∏ p ∈ q.primeFactors, (3 : ℝ) / ((p : ℝ) - 1) := by
+  have hmu : ((μ q : ℤ) : ℝ) ^ 2 = 1 := by
+    rw [← Int.cast_pow, ArithmeticFunction.moebius_sq_eq_one_of_squarefree hq]
+    norm_num
+  have hφ : (Nat.totient q : ℝ) = ∏ p ∈ q.primeFactors, ((p : ℝ) - 1) := by
+    rw [totient_eq_prod_primeFactors_of_squarefree hq, Nat.cast_prod]
+    apply Finset.prod_congr rfl
+    intro p hp
+    have hp1 : 1 ≤ p := (Nat.prime_of_mem_primeFactors hp).one_lt.le
+    rw [Nat.cast_sub hp1]
+    norm_num
+  calc
+    ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ)
+        = (3 : ℝ) ^ q.primeFactors.card / (∏ p ∈ q.primeFactors, ((p : ℝ) - 1)) := by
+          rw [hmu, hφ]
+          norm_num
+    _ = (∏ p ∈ q.primeFactors, (3 : ℝ)) / (∏ p ∈ q.primeFactors, ((p : ℝ) - 1)) := by
+          rw [← Finset.prod_const]
+    _ = ∏ p ∈ q.primeFactors, (3 : ℝ) / ((p : ℝ) - 1) := by
+          rw [← Finset.prod_div_distrib]
+
+/-- 非平方自由 q 的主项权重为零 (`μ(q) = 0`). -/
+theorem panMainTotientWeight_term_non_squarefree (q : ℕ) (hq : ¬ Squarefree q) :
+    ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ) = 0 := by
+  have hmu : (μ q : ℤ) = 0 := ArithmeticFunction.moebius_eq_zero_of_not_squarefree hq
+  simp [hmu]
+
+/-- 主项权重非负 (含 φ 分母). -/
+private lemma panMainTotientWeight_term_nonneg (q : ℕ) :
+    0 ≤ ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ) := by
+  exact div_nonneg (mul_nonneg (sq_nonneg _) (pow_nonneg (by norm_num : (0 : ℝ) ≤ 3) _))
+    (by positivity : (0 : ℝ) ≤ (Nat.totient q : ℝ))
+
+/-- **子集展开**: 非负系数下 `Σ_{q ≤ Q, sqfree} ∏_{p | q} c p ≤ ∏_{p ≤ Q} (1 + c p)`.
+平方自由 q 与其素因子集一一对应 (`q = ∏ p ∈ q.primeFactors, p`), 而
+`∏_{p ≤ Q} (1 + c p)` 展开为所有 `S ⊆ {p ≤ Q}` 的 `∏_{p ∈ S} c p` 之和. -/
+theorem sum_squarefree_prod_primeFactors_le_prod_one_add (Q : ℕ) (c : ℕ → ℝ)
+    (hc : ∀ p : ℕ, p.Prime → 0 ≤ c p) :
+    (∑ q ∈ (Finset.range (Q + 1)).filter Squarefree, ∏ p ∈ q.primeFactors, c p) ≤
+      ∏ p ∈ primesUpTo Q, (1 + c p) := by
+  classical
+  have hg : Set.InjOn (fun q : ℕ => q.primeFactors)
+      (↑((Finset.range (Q + 1)).filter Squarefree) : Set ℕ) := by
+    intro a ha b hb hgab
+    have haSq : Squarefree a := (Finset.mem_filter.mp ha).2
+    have hbSq : Squarefree b := (Finset.mem_filter.mp hb).2
+    calc
+      a = ∏ p ∈ a.primeFactors, p := squarefree_eq_prod_primeFactors haSq
+      _ = ∏ p ∈ b.primeFactors, p := by
+            have hgab' : a.primeFactors = b.primeFactors := by simpa using hgab
+            rw [← hgab']
+      _ = b := (squarefree_eq_prod_primeFactors hbSq).symm
+  have him : ((Finset.range (Q + 1)).filter Squarefree).image (fun q : ℕ => q.primeFactors) ⊆
+      (primesUpTo Q).powerset := by
+    intro S hS
+    rcases Finset.mem_image.mp hS with ⟨q, hq, rfl⟩
+    rw [Finset.mem_powerset]
+    intro p hp
+    have hqmem : q ∈ Finset.range (Q + 1) := (Finset.mem_filter.mp hq).1
+    have hqSq : Squarefree q := (Finset.mem_filter.mp hq).2
+    have hq_le : q ≤ Q := Nat.lt_succ_iff.mp (Finset.mem_range.mp hqmem)
+    have hq_ne : q ≠ 0 := by
+      intro hq0
+      rw [hq0] at hqSq
+      exact not_squarefree_zero (R := ℕ) hqSq
+    have hp_pr : p.Prime := Nat.prime_of_mem_primeFactors hp
+    have hp_dvd : p ∣ q := Nat.dvd_of_mem_primeFactors hp
+    have hp_le_q : p ≤ q := Nat.le_of_dvd (Nat.pos_of_ne_zero hq_ne) hp_dvd
+    exact (mem_primesUpTo).2 ⟨hp_pr, le_trans hp_le_q hq_le⟩
+  calc
+    (∑ q ∈ (Finset.range (Q + 1)).filter Squarefree, ∏ p ∈ q.primeFactors, c p)
+        = ∑ S ∈ ((Finset.range (Q + 1)).filter Squarefree).image (fun q : ℕ => q.primeFactors),
+            ∏ p ∈ S, c p := by
+          exact (Finset.sum_image (g := fun q : ℕ => q.primeFactors)
+            (f := fun S : Finset ℕ => ∏ p ∈ S, c p) hg).symm
+    _ ≤ ∑ S ∈ (primesUpTo Q).powerset, ∏ p ∈ S, c p := by
+          exact Finset.sum_le_sum_of_subset_of_nonneg him (fun S hSt hSn => by
+            exact Finset.prod_nonneg (fun p hp => hc p
+              ((mem_primesUpTo.mp ((Finset.mem_powerset.mp hSt) hp)).1)))
+    _ = ∏ p ∈ primesUpTo Q, (1 + c p) := by
+          rw [sum_powerset_prod (primesUpTo Q) c]
+
+/-- 加权 totient 倒数和 ≤ 素数 ≤ Q 上的乘积 `∏_{p ≤ Q} (1 + 3/(p-1))`. -/
+theorem panMainTotientWeightedSum_le_prod_one_add (Q : ℕ) :
+    panMainTotientWeightedSum Q ≤
+      ∏ p ∈ primesUpTo Q, (1 + (3 : ℝ) / ((p : ℝ) - 1)) := by
+  unfold panMainTotientWeightedSum
+  calc
+    (∑ q ∈ Finset.range (Q + 1),
+        ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ))
+        = ∑ q ∈ Finset.range (Q + 1),
+            if Squarefree q then
+              ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ)
+            else 0 := by
+          apply Finset.sum_congr rfl
+          intro q hq
+          by_cases h : Squarefree q
+          · rw [if_pos h]
+          · rw [if_neg h]
+            exact panMainTotientWeight_term_non_squarefree q h
+    _ = ∑ q ∈ (Finset.range (Q + 1)).filter Squarefree,
+          ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ) := by
+          rw [Finset.sum_filter]
+    _ = ∑ q ∈ (Finset.range (Q + 1)).filter Squarefree,
+          ∏ p ∈ q.primeFactors, (3 : ℝ) / ((p : ℝ) - 1) := by
+          apply Finset.sum_congr rfl
+          intro q hq
+          exact panMainTotientWeight_term_squarefree q (Finset.mem_filter.mp hq).2
+    _ ≤ ∏ p ∈ primesUpTo Q, (1 + (3 : ℝ) / ((p : ℝ) - 1)) := by
+          exact sum_squarefree_prod_primeFactors_le_prod_one_add Q
+            (fun p => (3 : ℝ) / ((p : ℝ) - 1)) (by
+              intro p hp
+              have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast hp.two_le
+              have hpm1 : (0 : ℝ) < (p : ℝ) - 1 := by linarith
+              exact div_nonneg (by norm_num : (0 : ℝ) ≤ 3) (le_of_lt hpm1))
+
+/-- 加权 totient 倒数和在 Q 上单调 (权重非负). -/
+theorem panMainTotientWeightedSum_mono : Monotone panMainTotientWeightedSum := by
+  intro Q₁ Q₂ hQ
+  unfold panMainTotientWeightedSum
+  apply Finset.sum_le_sum_of_subset_of_nonneg
+  · intro q hq
+    exact Finset.mem_range.mpr (lt_of_lt_of_le (Finset.mem_range.mp hq) (by omega : Q₁ + 1 ≤ Q₂ + 1))
+  · intro q hq hnq
+    exact panMainTotientWeight_term_nonneg q
+
+/-- **q 因子的多对数界**: `Σ_{q ≤ Q} μ²(q)·3^{ω(q)}/φ(q) ≤ C·log⁶(Q+2)`.
+子集展开 + `∏(1+u) ≤ exp(Σu)` + `Σ_{p ≤ Q} 3/(p-1) ≤ 6·Σ_{p ≤ Q} 1/p` +
+Mertens 第二定理; 有限初段 (Q ≤ 2) 吸收进常数. -/
+theorem panMainTotientWeightedSum_le_polylog :
+    ∃ C : ℝ, 0 < C ∧ ∀ Q : ℕ,
+      panMainTotientWeightedSum Q ≤ C * (Real.log (Q + 2)) ^ (6 : ℝ) := by
+  classical
+  obtain ⟨C₁, hC₁, hM⟩ := mertensSecond_nat
+  let K : ℝ := |mertensSecondConstant| + C₁ / log 2
+  let C : ℝ := max (4 / (log 2) ^ (6 : ℝ)) (rexp (6 * K))
+  have hlg2 : (0 : ℝ) < log 2 := Real.log_pos (by norm_num : (1 : ℝ) < 2)
+  have hCpos : 0 < C := by
+    dsimp [C]
+    exact lt_max_of_lt_left (div_pos (by norm_num : (0 : ℝ) < 4) (Real.rpow_pos_of_pos hlg2 (6 : ℝ)))
+  refine ⟨C, hCpos, ?_⟩
+  intro Q
+  by_cases hQ : Q ≤ 2
+  · have hbnd : panMainTotientWeightedSum Q ≤ 4 := by
+      calc
+        panMainTotientWeightedSum Q ≤ panMainTotientWeightedSum 2 := panMainTotientWeightedSum_mono hQ
+        _ ≤ ∏ p ∈ primesUpTo 2, (1 + (3 : ℝ) / ((p : ℝ) - 1)) := panMainTotientWeightedSum_le_prod_one_add 2
+        _ = 4 := by
+              have hP : primesUpTo 2 = ({2} : Finset ℕ) := by
+                ext p
+                constructor
+                · intro hp
+                  have hp_pr : p.Prime := (mem_primesUpTo.mp hp).1
+                  have hp_le : p ≤ 2 := (mem_primesUpTo.mp hp).2
+                  interval_cases p
+                  · norm_num at hp_pr
+                  · norm_num at hp_pr
+                  · simp
+                · intro hp
+                  have hp2 : p = 2 := by simpa using hp
+                  subst p
+                  exact mem_primesUpTo.2 ⟨by norm_num, by norm_num⟩
+              rw [hP]
+              norm_num
+    have hQ2 : (2 : ℕ) ≤ Q + 2 := by omega
+    have hlgQ2nn : (0 : ℝ) ≤ Real.log (Q + 2) :=
+      Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Q + 2))
+    have hlogle : (log 2) ^ (6 : ℝ) ≤ (Real.log (Q + 2)) ^ (6 : ℝ) := by
+      exact Real.rpow_le_rpow (le_of_lt hlg2)
+        (Real.log_le_log (by norm_num : (0 : ℝ) < 2) (by exact_mod_cast hQ2))
+        (by norm_num : (0 : ℝ) ≤ (6 : ℝ))
+    calc
+      panMainTotientWeightedSum Q ≤ 4 := hbnd
+      _ = 4 / (log 2) ^ (6 : ℝ) * (log 2) ^ (6 : ℝ) := by
+        have hx : (log 2) ^ (6 : ℝ) ≠ 0 := (Real.rpow_pos_of_pos hlg2 (6 : ℝ)).ne'
+        field_simp [hx]
+      _ ≤ 4 / (log 2) ^ (6 : ℝ) * (Real.log (Q + 2)) ^ (6 : ℝ) := by
+        exact mul_le_mul_of_nonneg_left hlogle
+          (div_nonneg (by norm_num : (0 : ℝ) ≤ 4) (le_of_lt (Real.rpow_pos_of_pos hlg2 (6 : ℝ))))
+      _ ≤ C * (Real.log (Q + 2)) ^ (6 : ℝ) := by
+        exact mul_le_mul_of_nonneg_right (le_max_left (4 / (log 2) ^ (6 : ℝ)) (rexp (6 * K)))
+          (Real.rpow_nonneg hlgQ2nn (6 : ℝ))
+  · have hQ3 : 3 ≤ Q := by omega
+    have hQ2 : 2 ≤ Q := by omega
+    have hQ1 : (1 : ℝ) < (Q : ℝ) := by exact_mod_cast (by omega : 1 < Q)
+    have hlogQ : (0 : ℝ) < log (Q : ℝ) := Real.log_pos hQ1
+    have hlogQnn : (0 : ℝ) ≤ log (Q : ℝ) := le_of_lt hlogQ
+    have hM' : |primeReciprocalSum Q - (log (log (Q : ℝ)) + mertensSecondConstant)| ≤
+        C₁ / log (Q : ℝ) := hM Q hQ2
+    have hpRS : primeReciprocalSum Q ≤ log (log (Q : ℝ)) + K := by
+      have hle1 : primeReciprocalSum Q ≤
+          log (log (Q : ℝ)) + mertensSecondConstant + C₁ / log (Q : ℝ) := by
+        linarith [(abs_le.mp hM').2]
+      have hc : mertensSecondConstant ≤ |mertensSecondConstant| := le_abs_self _
+      have hC : C₁ / log (Q : ℝ) ≤ C₁ / log 2 := by
+        exact div_le_div_of_nonneg_left (le_of_lt hC₁) hlg2
+          (Real.log_le_log (by norm_num : (0 : ℝ) < 2) (by exact_mod_cast hQ2))
+      dsimp [K]
+      linarith
+    have hsum : (∑ p ∈ primesUpTo Q, (3 : ℝ) / ((p : ℝ) - 1)) ≤ 6 * primeReciprocalSum Q := by
+      calc
+        (∑ p ∈ primesUpTo Q, (3 : ℝ) / ((p : ℝ) - 1))
+            ≤ ∑ p ∈ primesUpTo Q, (6 : ℝ) / (p : ℝ) := by
+              apply Finset.sum_le_sum
+              intro p hp
+              have hp_pr : p.Prime := (mem_primesUpTo.mp hp).1
+              have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast hp_pr.two_le
+              have hppos : (0 : ℝ) < p := by exact_mod_cast hp_pr.pos
+              have hpm1 : (0 : ℝ) < (p : ℝ) - 1 := by linarith
+              rw [div_le_div_iff₀ hpm1 hppos]
+              nlinarith
+        _ = 6 * (∑ p ∈ primesUpTo Q, 1 / (p : ℝ)) := by
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro p hp
+              ring
+        _ = 6 * primeReciprocalSum Q := by
+              unfold primeReciprocalSum
+              rfl
+    have hlgQ2nn : (0 : ℝ) ≤ Real.log (Q + 2) :=
+      Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Q + 2))
+    have hlogle : (log (Q : ℝ)) ^ (6 : ℝ) ≤ (Real.log (Q + 2)) ^ (6 : ℝ) := by
+      exact Real.rpow_le_rpow hlogQnn
+        (Real.log_le_log (by positivity : (0 : ℝ) < (Q : ℝ)) (by exact_mod_cast (by omega : Q ≤ Q + 2)))
+        (by norm_num : (0 : ℝ) ≤ (6 : ℝ))
+    let u : ℕ → ℝ := fun p => if 2 ≤ p then (3 : ℝ) / ((p : ℝ) - 1) else 0
+    have hu_nonneg : ∀ p : ℕ, 0 ≤ u p := by
+      intro p
+      by_cases h : 2 ≤ p
+      · have hp1 : (0 : ℝ) < (p : ℝ) - 1 := by
+          have hp2 : (2 : ℝ) ≤ p := by exact_mod_cast h
+          linarith
+        simp [u, h, div_nonneg (by norm_num : (0 : ℝ) ≤ 3) (le_of_lt hp1)]
+      · simp [u, h]
+    have hu_eq : ∀ p ∈ primesUpTo Q, u p = (3 : ℝ) / ((p : ℝ) - 1) := by
+      intro p hp
+      have hp2 : 2 ≤ p := (mem_primesUpTo.mp hp).1.two_le
+      simp [u, hp2]
+    have hsum_u : (∑ p ∈ primesUpTo Q, u p) = ∑ p ∈ primesUpTo Q, (3 : ℝ) / ((p : ℝ) - 1) := by
+      apply Finset.sum_congr rfl
+      intro p hp
+      exact hu_eq p hp
+    calc
+      panMainTotientWeightedSum Q ≤ ∏ p ∈ primesUpTo Q, (1 + (3 : ℝ) / ((p : ℝ) - 1)) :=
+            panMainTotientWeightedSum_le_prod_one_add Q
+      _ = ∏ p ∈ primesUpTo Q, (1 + u p) := by
+            apply Finset.prod_congr rfl
+            intro p hp
+            rw [hu_eq p hp]
+      _ ≤ rexp (∑ p ∈ primesUpTo Q, u p) := by
+            exact Real.prod_one_add_le_exp_sum (primesUpTo Q) hu_nonneg
+      _ = rexp (∑ p ∈ primesUpTo Q, (3 : ℝ) / ((p : ℝ) - 1)) := by
+            rw [hsum_u]
+      _ ≤ rexp (6 * primeReciprocalSum Q) := by
+            exact Real.exp_le_exp.mpr hsum
+      _ ≤ rexp (6 * (log (log (Q : ℝ)) + K)) := by
+            exact Real.exp_le_exp.mpr (by
+              have h6 : (0 : ℝ) ≤ 6 := by norm_num
+              exact mul_le_mul_of_nonneg_left hpRS h6)
+      _ = rexp (6 * K) * (log (Q : ℝ)) ^ (6 : ℝ) := by
+            have h1 : rexp (6 * (log (log (Q : ℝ)) + K)) =
+                rexp (6 * K) * (log (Q : ℝ)) ^ (6 : ℝ) := by
+              calc
+                rexp (6 * (log (log (Q : ℝ)) + K)) = rexp (6 * log (log (Q : ℝ)) + 6 * K) := by
+                  congr 1
+                  ring
+                _ = rexp (6 * log (log (Q : ℝ))) * rexp (6 * K) := by rw [Real.exp_add]
+                _ = (log (Q : ℝ)) ^ (6 : ℝ) * rexp (6 * K) := by
+                  have h2 : rexp (6 * log (log (Q : ℝ))) = (log (Q : ℝ)) ^ (6 : ℝ) := by
+                    calc
+                      rexp (6 * log (log (Q : ℝ))) = rexp (log (log (Q : ℝ)) * 6) := by
+                        congr 1
+                        ring
+                      _ = rexp (log (log (Q : ℝ))) ^ (6 : ℝ) := by rw [Real.exp_mul]
+                      _ = (log (Q : ℝ)) ^ (6 : ℝ) := by rw [Real.exp_log hlogQ]
+                  rw [h2]
+                _ = rexp (6 * K) * (log (Q : ℝ)) ^ (6 : ℝ) := by ring
+            exact h1
+      _ ≤ C * (Real.log (Q + 2)) ^ (6 : ℝ) := by
+            exact mul_le_mul (le_max_right (4 / (log 2) ^ (6 : ℝ)) (rexp (6 * K))) hlogle
+              (Real.rpow_nonneg hlogQnn (6 : ℝ)) (le_of_lt hCpos)
+
+
+/-! ## 5. 诚实多对数版主项界 (中间证据)
+
+对 `|f| ≤ 1`, 主项带权和 ≤ `C·|xX|·(1 + log X)·log⁶(Q+2)` — 全部来自
+初等材料 (li 初等界 `|li(m)| ≤ m/log 2`, 调和级数, q 因子多对数界).
+这是 `PanMainTermSieveBound` 中 `C·xX/log^A(xX)` 目标的多对数中间证据;
+吸收进 `xX/log^A(xX)` 是 `PanMainSieveAbsorption` (§6) 的解析内容. -/
+theorem panMainWeightedSum_polylog (x : ℕ → ℝ) (f : ℕ → ℝ) (hfb : ∀ a : ℕ, |f a| ≤ 1) :
+    ∃ C : ℝ, 0 < C ∧ ∀ X Q : ℕ,
+      (∑ q ∈ Finset.range (Q + 1),
+        ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+          panPieceMaxY X q (Nat.floor (x X)) f
+            (fun y q' l' => logarithmicIntegral (y : ℝ) / Nat.totient q')) ≤
+        C * |x X| * (1 + Real.log (X : ℝ)) * (Real.log (Q + 2)) ^ (6 : ℝ) := by
+  classical
+  obtain ⟨C₁, hC₁, hQ⟩ := panMainTotientWeightedSum_le_polylog
+  let C : ℝ := C₁ / log 2
+  have hCpos : 0 < C := by
+    dsimp [C]
+    exact div_pos hC₁ (Real.log_pos (by norm_num : (1 : ℝ) < 2))
+  refine ⟨C, hCpos, ?_⟩
+  intro X Q
+  have hlogX : (0 : ℝ) ≤ 1 + Real.log (X : ℝ) := by
+    by_cases hX : X = 0
+    · subst X
+      simp [Real.log_zero]
+    · have hX1 : 1 ≤ X := Nat.succ_le_of_lt (Nat.pos_of_ne_zero hX)
+      have hlog : (0 : ℝ) ≤ Real.log (X : ℝ) := Real.log_nonneg (by exact_mod_cast hX1)
+      linarith
+  have hfloor_abs : (Nat.floor (x X) : ℝ) ≤ |x X| := by
+    by_cases hx : 0 ≤ x X
+    · exact le_trans (Nat.floor_le hx) (le_abs_self (x X))
+    · have hx' : x X < 1 := lt_trans (lt_of_not_ge hx) (by norm_num : (0 : ℝ) < 1)
+      have hf : Nat.floor (x X) = 0 := Nat.floor_eq_zero.mpr hx'
+      simp [hf]
+  have hmain : mainTermInnerSumMax X (Nat.floor (x X)) ≤
+      |x X| / log 2 * (1 + Real.log (X : ℝ)) := by
+    calc
+      mainTermInnerSumMax X (Nat.floor (x X)) ≤
+          (Nat.floor (x X) : ℝ) / log 2 * (1 + Real.log (X : ℝ)) :=
+        mainTermInnerSumMax_le X (Nat.floor (x X))
+      _ ≤ |x X| / log 2 * (1 + Real.log (X : ℝ)) := by
+        have hd : (Nat.floor (x X) : ℝ) / log 2 ≤ |x X| / log 2 :=
+          div_le_div_of_nonneg_right hfloor_abs
+            (le_of_lt (Real.log_pos (by norm_num : (1 : ℝ) < 2)))
+        exact mul_le_mul_of_nonneg_right hd hlogX
+  have hqnonneg : (0 : ℝ) ≤ C₁ * (Real.log (Q + 2)) ^ (6 : ℝ) := by
+    have hlg : (0 : ℝ) ≤ Real.log (Q + 2) :=
+      Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Q + 2))
+    exact mul_nonneg (le_of_lt hC₁) (Real.rpow_nonneg hlg (6 : ℝ))
+  calc
+    (∑ q ∈ Finset.range (Q + 1),
+        ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+          panPieceMaxY X q (Nat.floor (x X)) f
+            (fun y q' l' => logarithmicIntegral (y : ℝ) / Nat.totient q'))
+        ≤ mainTermInnerSumMax X (Nat.floor (x X)) * panMainTotientWeightedSum Q := by
+          simpa [panMainTotientWeightedSum] using
+            panMainWeightedSum_le X Q (Nat.floor (x X)) f hfb
+    _ ≤ mainTermInnerSumMax X (Nat.floor (x X)) * (C₁ * (Real.log (Q + 2)) ^ (6 : ℝ)) := by
+          exact mul_le_mul_of_nonneg_left (hQ Q) (mainTermInnerSumMax_nonneg X (Nat.floor (x X)))
+    _ ≤ (|x X| / log 2 * (1 + Real.log (X : ℝ))) * (C₁ * (Real.log (Q + 2)) ^ (6 : ℝ)) := by
+          exact mul_le_mul_of_nonneg_right hmain hqnonneg
+    _ = C * |x X| * (1 + Real.log (X : ℝ)) * (Real.log (Q + 2)) ^ (6 : ℝ) := by
+          dsimp [C]
+          ring
+
+/-! ## 6. 解析吸收台阶与 `PanMainTermSieveBound` 归约 -/
+
+/-- **解析吸收台阶 (li 主项界, 开放)**: `x` 是筛尺度 (最终 `1 < x X`), 且对每个
+`A > 0` 存在 `C > 0, x₀`, 使对所有 `X ≥ x₀`,
+
+  `xX·(1 + log X)·log⁶(xX + 2) ≤ C·xX/log^A(xX)`.
+
+这是 `PanMainTermSieveBound` 的两个因子 (y,a 因子 `innerSumMax ≪ x·log X`,
+§3; q 因子 `Σ μ²3^ω/φ ≪ log⁶Q`, §4) 装配后剩下的唯一解析输入: 初等多对数积
+`xX·polylog` 被吸收进 `xX/log^A(xX)` 的机制正是经典证明中的筛主项吸收
+(`x/log x·∏(1-ν(p))` 吸收 li 主项, 只余 `O(x/log^A x)`; Liu 2022 §III;
+HR 1974 Ch.10). 模块头红队注记: 仅靠 §3--§4 的初等估计无法完成此吸收. -/
+def PanMainSieveAbsorption (x : ℕ → ℝ) : Prop :=
+  (∀ X : ℕ, 1 < x X) ∧
+    ∀ A : ℝ, 0 < A → ∃ C : ℝ, 0 < C ∧ ∃ x₀ : ℕ,
+      ∀ X : ℕ, x₀ ≤ X →
+        x X * (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ (6 : ℝ) ≤
+          C * x X / (Real.log (x X)) ^ A
+
+/-- **`PanMainTermSieveBound` 的归约**: 解析吸收台阶 (`PanMainSieveAbsorption`)
+⇒ `PanMainTermSieveBound`. 全部有限部分 (li 初等界, 调和级数, q 因子多对数界,
+floor/√ 归约, 权重非负) 在此证明; 唯一的解析输入是吸收本身. -/
+theorem PanMainTermSieveBound.of_innerSumBound {x : ℕ → ℝ} {f : ℕ → ℝ}
+    (hfb : ∀ a : ℕ, |f a| ≤ 1) (hAbs : PanMainSieveAbsorption x) :
+    PanMainTermSieveBound x f := by
+  rcases hAbs with ⟨hx, hAbs'⟩
+  obtain ⟨C₁, hC₁, hQ⟩ := panMainTotientWeightedSum_le_polylog
+  refine ⟨hfb, fun A hA => ?_⟩
+  obtain ⟨C₂, hC₂, x₀, hAbsX⟩ := hAbs' A hA
+  let C : ℝ := C₁ * C₂ / log 2
+  have hCpos : 0 < C := by
+    dsimp [C]
+    exact div_pos (mul_pos hC₁ hC₂) (Real.log_pos (by norm_num : (1 : ℝ) < 2))
+  refine ⟨C, hCpos, (0 : ℝ), x₀, ?_⟩
+  intro X hX
+  let Q : ℕ := Nat.floor ((x X) ^ (1 / 2 : ℝ))
+  have hQdef : Nat.floor ((x X) ^ (1 / 2 : ℝ) / (log (x X)) ^ (0 : ℝ)) = Q := by
+    simp [Q, Real.rpow_zero]
+  have hlog2 : (0 : ℝ) < log 2 := Real.log_pos (by norm_num : (1 : ℝ) < 2)
+  have hlogX : (0 : ℝ) ≤ 1 + Real.log (X : ℝ) := by
+    by_cases hX0 : X = 0
+    · subst X
+      simp [Real.log_zero]
+    · have hX1 : 1 ≤ X := Nat.succ_le_of_lt (Nat.pos_of_ne_zero hX0)
+      have hlog : (0 : ℝ) ≤ Real.log (X : ℝ) := Real.log_nonneg (by exact_mod_cast hX1)
+      linarith
+  have hxXpos : (0 : ℝ) < x X := lt_trans (by norm_num : (0 : ℝ) < 1) (hx X)
+  have hfloor : (Nat.floor (x X) : ℝ) ≤ x X := Nat.floor_le (le_of_lt hxXpos)
+  have hsqrt : (x X) ^ (1 / 2 : ℝ) ≤ x X := by
+    rw [← Real.sqrt_eq_rpow]
+    calc
+      √(x X) ≤ √((x X) ^ 2) := Real.sqrt_le_sqrt (by nlinarith [hx X] : (x X : ℝ) ≤ (x X) ^ 2)
+      _ = x X := Real.sqrt_sq (le_of_lt hxXpos)
+  have hQle : (Q : ℝ) ≤ x X := by
+    dsimp [Q]
+    exact le_trans (Nat.floor_le (Real.rpow_nonneg (le_of_lt hxXpos) (1 / 2 : ℝ))) hsqrt
+  have hQlog : Real.log (Q + 2) ≤ Real.log (x X + 2) := by
+    have hpos : (0 : ℝ) < (Q : ℝ) + 2 := by positivity
+    have hle : ((Q + 2 : ℕ) : ℝ) ≤ x X + 2 := by
+      norm_num [Nat.cast_add]
+      exact hQle
+    exact Real.log_le_log hpos (by simpa [Nat.cast_add] using hle)
+  have hlogle : (Real.log (Q + 2)) ^ (6 : ℝ) ≤ (Real.log (x X + 2)) ^ (6 : ℝ) := by
+    have hlognn : (0 : ℝ) ≤ Real.log (Q + 2) :=
+      Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Q + 2))
+    exact Real.rpow_le_rpow hlognn hQlog (by norm_num : (0 : ℝ) ≤ (6 : ℝ))
+  have hmain : mainTermInnerSumMax X (Nat.floor (x X)) ≤
+      x X / log 2 * (1 + Real.log (X : ℝ)) := by
+    calc
+      mainTermInnerSumMax X (Nat.floor (x X)) ≤
+          (Nat.floor (x X) : ℝ) / log 2 * (1 + Real.log (X : ℝ)) :=
+        mainTermInnerSumMax_le X (Nat.floor (x X))
+      _ ≤ x X / log 2 * (1 + Real.log (X : ℝ)) := by
+        have hd : (Nat.floor (x X) : ℝ) / log 2 ≤ x X / log 2 :=
+          div_le_div_of_nonneg_right hfloor (le_of_lt hlog2)
+        exact mul_le_mul_of_nonneg_right hd hlogX
+  calc
+    mainTermInnerSumMax X (Nat.floor (x X)) *
+        (∑ q ∈ Finset.range (Nat.floor ((x X) ^ (1 / 2 : ℝ) / (log (x X)) ^ (0 : ℝ)) + 1),
+          ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ))
+        = mainTermInnerSumMax X (Nat.floor (x X)) * panMainTotientWeightedSum Q := by
+          rw [hQdef]
+          rfl
+    _ ≤ mainTermInnerSumMax X (Nat.floor (x X)) * (C₁ * (Real.log (Q + 2)) ^ (6 : ℝ)) := by
+          exact mul_le_mul_of_nonneg_left (hQ Q) (mainTermInnerSumMax_nonneg X (Nat.floor (x X)))
+    _ ≤ (x X / log 2 * (1 + Real.log (X : ℝ))) * (C₁ * (Real.log (Q + 2)) ^ (6 : ℝ)) := by
+          exact mul_le_mul_of_nonneg_right hmain (by
+            have hlg : (0 : ℝ) ≤ Real.log (Q + 2) :=
+              Real.log_nonneg (by exact_mod_cast (by omega : 1 ≤ Q + 2))
+            exact mul_nonneg (le_of_lt hC₁) (Real.rpow_nonneg hlg (6 : ℝ)))
+    _ ≤ (x X / log 2 * (1 + Real.log (X : ℝ))) * (C₁ * (Real.log (x X + 2)) ^ (6 : ℝ)) := by
+          have hcl : C₁ * (Real.log (Q + 2)) ^ (6 : ℝ) ≤
+              C₁ * (Real.log (x X + 2)) ^ (6 : ℝ) := by
+            exact mul_le_mul_of_nonneg_left hlogle (le_of_lt hC₁)
+          exact mul_le_mul_of_nonneg_left hcl (by
+            have hnn : (0 : ℝ) ≤ x X / log 2 * (1 + Real.log (X : ℝ)) :=
+              mul_nonneg (div_nonneg (le_of_lt hxXpos) (le_of_lt hlog2)) hlogX
+            exact hnn)
+    _ = (C₁ / log 2) * (x X * (1 + Real.log (X : ℝ)) * (Real.log (x X + 2)) ^ (6 : ℝ)) := by
+          ring
+    _ ≤ (C₁ / log 2) * (C₂ * x X / (Real.log (x X)) ^ A) := by
+          exact mul_le_mul_of_nonneg_left (hAbsX X hX) (le_of_lt (div_pos hC₁ hlog2))
+    _ = C * x X / (Real.log (x X)) ^ A := by
+          dsimp [C]
+          ring
 
 end AnalyticNumberTheory.Sieve

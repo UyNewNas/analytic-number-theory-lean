@@ -368,6 +368,15 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.logIntegral_nat_abs_le
 #print axioms AnalyticNumberTheory.Sieve.mainTermInnerSum_le
 #print axioms AnalyticNumberTheory.Sieve.mainTermInnerSumMax_le
+#print axioms AnalyticNumberTheory.Sieve.panMainTotientWeight_term_squarefree
+#print axioms AnalyticNumberTheory.Sieve.panMainTotientWeight_term_non_squarefree
+#print axioms AnalyticNumberTheory.Sieve.panMainTotientWeightedSum_mono
+#print axioms AnalyticNumberTheory.Sieve.sum_squarefree_prod_primeFactors_le_prod_one_add
+#print axioms AnalyticNumberTheory.Sieve.panMainTotientWeightedSum_le_prod_one_add
+#print axioms AnalyticNumberTheory.Sieve.panMainTotientWeightedSum_le_polylog
+#print axioms AnalyticNumberTheory.Sieve.panMainWeightedSum_polylog
+#print axioms AnalyticNumberTheory.Sieve.PanMainSieveAbsorption
+#print axioms AnalyticNumberTheory.Sieve.PanMainTermSieveBound.of_innerSumBound
 #print axioms AnalyticNumberTheory.Sieve.PanVaughanSplit
 #print axioms AnalyticNumberTheory.Sieve.PanMeanValueUniform.of_vaughanSplit
 #print axioms AnalyticNumberTheory.Sieve.PanLogEventuallyLarge
