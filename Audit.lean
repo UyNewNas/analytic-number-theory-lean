@@ -323,6 +323,17 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.panTypeICharMeanSieveBound
 #print axioms AnalyticNumberTheory.Sieve.panTypeICharSquareMeanBound
 #print axioms AnalyticNumberTheory.Sieve.PanTypeICharacterMeanValue.of_sieveBound
+#print axioms AnalyticNumberTheory.Sieve.moebius_abs_le_one
+#print axioms AnalyticNumberTheory.Sieve.vaughanFirst_zero
+#print axioms AnalyticNumberTheory.Sieve.vaughanFirst_abs_le
+#print axioms AnalyticNumberTheory.Sieve.harmonic_Icc_le
+#print axioms AnalyticNumberTheory.Sieve.card_multiples_Icc
+#print axioms AnalyticNumberTheory.Sieve.lcm_inv_sum_le
+#print axioms AnalyticNumberTheory.Sieve.divisorCountSq_sum_le
+#print axioms AnalyticNumberTheory.Sieve.vaughanFirst_l2_sum_le
+#print axioms AnalyticNumberTheory.Sieve.panTypeICharSqSum_le_additiveSieve
+#print axioms AnalyticNumberTheory.Sieve.panTypeICharSqrtMeanMaxY_le_sum
+#print axioms AnalyticNumberTheory.Sieve.panTypeICharSqrtMeanMaxY_le_sieveSqrtSum
 #print axioms AnalyticNumberTheory.Sieve.panTypeIIV3CharSum
 #print axioms AnalyticNumberTheory.Sieve.apV3_charSum
 #print axioms AnalyticNumberTheory.Sieve.apV3_abs_le
