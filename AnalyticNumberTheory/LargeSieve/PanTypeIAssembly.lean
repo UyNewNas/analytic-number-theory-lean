@@ -146,7 +146,7 @@ noncomputable section
 
 set_option linter.unusedVariables false
 set_option linter.style.haveILetI false
-set_option maxHeartbeats 8000000
+set_option maxHeartbeats 40000000
 
 /-! ## S3 锚点: 已证的权重 φ-和 -/
 
@@ -282,19 +282,20 @@ lemma panTypeIV1CharSum_norm_le_primitive {q m u : ℕ} [NeZero q]
                     ‖(vaughanFirst n u : ℂ) * ψ (n : ZMod χ.conductor)‖
                         ≤ ‖(vaughanFirst n u : ℂ)‖ * ‖ψ (n : ZMod χ.conductor)‖ := norm_mul_le _ _
                     _ = |vaughanFirst n u| * ‖ψ (n : ZMod χ.conductor)‖ := by
-                          rw [RCLike.norm_ofReal]
+                          congr 1
+                          exact RCLike.norm_ofReal (vaughanFirst n u)
                     _ ≤ |vaughanFirst n u| * 1 := by
                           exact mul_le_mul_of_nonneg_left
                             (dirichletChar_norm_le_one χ.conductor ψ (n : ZMod χ.conductor))
                             (abs_nonneg _)
                     _ = |vaughanFirst n u| := by simp
-                simp [hc, hle]
+                simpa [hc] using hle
       _ = panTypeI_nonCoprimeDensity q m u := by
             unfold panTypeI_nonCoprimeDensity
             apply Finset.sum_congr rfl
             intro n hn
             by_cases hc : n.Coprime q <;> simp [hc, Nat.Coprime]
-  simpa [ψ] using le_trans hnorm1 (add_le_add_left hnorm2 _)
+  simpa [ψ] using le_trans hnorm1 (add_le_add_right hnorm2 (‖panTypeIV1CharSum χ.conductor m u ψ‖))
 
 /-! ### S2b: 分组双射与原特征平方和分解 (已证, 精确系数 1) -/
 
@@ -322,6 +323,8 @@ theorem panTypeI_primitiveRegroup (q m u : ℕ) [NeZero q] :
   let s : Finset (Sigma fun q' : ℕ => DirichletCharacter ℂ q') :=
     (q.divisors).sigma (fun q' =>
       (Finset.univ : Finset (DirichletCharacter ℂ q')).filter (fun χ' => χ'.IsPrimitive))
+  let i : ∀ p ∈ s, DirichletCharacter ℂ q := fun p hp =>
+    changeLevel (Finset.mem_divisors.mp (Finset.mem_sigma.mp hp).1).1 p.2
   have hR : (∑ q' ∈ q.divisors, panTypeIPrimitiveSqSum q' m u) =
       (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2) := by
     calc
@@ -329,14 +332,11 @@ theorem panTypeI_primitiveRegroup (q m u : ℕ) [NeZero q] :
           = ∑ p ∈ s, ‖panTypeIV1CharSum p.1 m u p.2‖ ^ 2 := by
             unfold panTypeIPrimitiveSqSum
             rw [Finset.sum_sigma]
-            rfl
       _ = (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2) := by
             refine Finset.sum_bij (s := s) (t := Finset.univ)
               (f := fun p => ‖panTypeIV1CharSum p.1 m u p.2‖ ^ 2)
               (g := fun χ => ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2)
-              (i := fun p hp =>
-                changeLevel (Finset.mem_divisors.mp (Finset.mem_sigma.mp hp).1).1 p.2)
-              ?_ ?_ ?_ ?_
+              (i := i) ?_ ?_ ?_ ?_
             · intro p hp
               exact Finset.mem_univ _
             · -- inj
@@ -397,7 +397,7 @@ theorem panTypeI_primitiveRegroup (q m u : ℕ) [NeZero q] :
                     p.2.primitiveCharacter (n : ZMod p.1) := by
                   have hpp' := primitiveCharacter_changeLevel_apply (R := ℂ) h p.2 (n : ℤ)
                   rw [hc, hprim] at hpp'
-                  exact hpp'
+                  simpa using hpp'
                 have hself : p.2.primitiveCharacter (n : ZMod p.2.conductor) = p.2 (n : ZMod p.1) := by
                   by_cases hc' : n.Coprime p.2.conductor
                   · simpa using (p.2.primitiveCharacter_apply_of_isCoprime (a := (n : ℤ))
@@ -463,7 +463,7 @@ theorem panTypeI_sqSum_primitiveDecomposition (q m u : ℕ) [NeZero q] :
             have hcard : Fintype.card (DirichletCharacter ℂ q) = Nat.totient q := by
               rw [← Nat.card_eq_fintype_card]
               exact DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity ℂ q
-            rw [Finset.sum_const, hcard]
+            rw [Finset.sum_const, Finset.card_univ, hcard]
             simp [nsmul_eq_mul]
             ring
     _ = 2 * (∑ q' ∈ q.divisors, panTypeIPrimitiveSqSum q' m u) +
@@ -497,7 +497,7 @@ lemma panTypeI_nonCoprimeDensity_le_primePartition (q m u : ℕ) (hq : 0 < q) :
       |vaughanFirst n u| = ∑ p ∈ ({p} : Finset ℕ), (if p ∣ n then |vaughanFirst n u| else 0) := by
             simp [hpn]
       _ ≤ ∑ p ∈ q.primeFactors, (if p ∣ n then |vaughanFirst n u| else 0) := by
-            exact Finset.single_le_sum (fun p hp => by simp [abs_nonneg]) hp'
+            simpa using Finset.single_le_sum (fun p hp => by simp [abs_nonneg]) hp'
   calc
     (∑ n ∈ Finset.range (m + 1), if ¬ n.Coprime q then |vaughanFirst n u| else 0)
         ≤ ∑ n ∈ Finset.range (m + 1),
