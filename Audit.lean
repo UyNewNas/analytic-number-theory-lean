@@ -364,3 +364,15 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.PanVaughanSplit.of_analyticInputs
 #print axioms AnalyticNumberTheory.Sieve.panLogEventuallyLarge_of_tendsto_atTop
 #print axioms AnalyticNumberTheory.Sieve.panLogEventuallyLarge_natCast
+#print axioms AnalyticNumberTheory.Sieve.v3_moebius_abs_le_one
+#print axioms AnalyticNumberTheory.Sieve.vaughanThird_zero
+#print axioms AnalyticNumberTheory.Sieve.v3_vonMangoldt_nonneg
+#print axioms AnalyticNumberTheory.Sieve.vaughanThird_abs_le
+#print axioms AnalyticNumberTheory.Sieve.v3_harmonic_Icc_le
+#print axioms AnalyticNumberTheory.Sieve.v3_card_multiples_Icc
+#print axioms AnalyticNumberTheory.Sieve.v3_lcm_inv_sum_le
+#print axioms AnalyticNumberTheory.Sieve.v3_divisorCountSq_sum_le
+#print axioms AnalyticNumberTheory.Sieve.vaughanThird_l2_sum_le
+#print axioms AnalyticNumberTheory.Sieve.panTypeIICharSqSum_le_additiveSieve
+#print axioms AnalyticNumberTheory.Sieve.panTypeIICharSqrtMeanMaxY_le_sum
+#print axioms AnalyticNumberTheory.Sieve.panTypeIICharSqrtMeanMaxY_le_sieveSqrtSum
