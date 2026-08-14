@@ -25,6 +25,7 @@ import AnalyticNumberTheory.Sieve.PanMeanValueBody
 import AnalyticNumberTheory.Sieve.PanV3SquareMean
 import AnalyticNumberTheory.Sieve.PanV1SquareMean
 import AnalyticNumberTheory.Sieve.PanMainTerm
+import AnalyticNumberTheory.Sieve.SumTwoPowWeighted
 import AnalyticNumberTheory.Sieve.PanAssembly
 import AnalyticNumberTheory.Sieve.PanVaughanPointwise
 import AnalyticNumberTheory.LargeSieve.Additive
