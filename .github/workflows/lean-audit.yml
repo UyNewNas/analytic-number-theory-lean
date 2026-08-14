@@ -119,7 +119,9 @@ jobs:
           expected_reports = 441
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
+          if len(reports) != expected_reports:
               print(
+                  f'Expected {expected_reports} public API axiom reports, found {len(reports)}.',
                   file=sys.stderr,
               )
               sys.exit(1)
