@@ -116,7 +116,11 @@ jobs:
 
           output = pathlib.Path('/tmp/axioms.txt').read_text(encoding='utf-8')
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+<<<<<<< HEAD
           expected_reports = 438
+=======
+          expected_reports = 435
+>>>>>>> 7311e45 (w1b-lemmab: sqfree divisor <-> prime-factor subset bijection (issue #42 step 2))
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           if len(reports) != expected_reports:
