@@ -376,3 +376,13 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.panTypeIICharSqSum_le_additiveSieve
 #print axioms AnalyticNumberTheory.Sieve.panTypeIICharSqrtMeanMaxY_le_sum
 #print axioms AnalyticNumberTheory.Sieve.panTypeIICharSqrtMeanMaxY_le_sieveSqrtSum
+#print axioms AnalyticNumberTheory.Sieve.vaughanIdentity_threeTerm_general
+#print axioms AnalyticNumberTheory.Sieve.apMiddle
+#print axioms AnalyticNumberTheory.Sieve.apSmall
+#print axioms AnalyticNumberTheory.Sieve.apVonMangoldt_eq_pieces
+#print axioms AnalyticNumberTheory.Sieve.apVonMangoldt_abs_le_pieces
+#print axioms AnalyticNumberTheory.Sieve.panWeightedVonMangoldt_abs_le
+#print axioms AnalyticNumberTheory.Sieve.PanChebyshevApprox
+#print axioms AnalyticNumberTheory.Sieve.panMaxL_le_pieces_sum
+#print axioms AnalyticNumberTheory.Sieve.panMaxY_le_pieces_sum
+#print axioms AnalyticNumberTheory.Sieve.PanVaughanPointwiseSplit.of_chebyshevApprox
