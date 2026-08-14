@@ -305,7 +305,16 @@ theorem panWeightedVonMangoldt_abs_le (y X q l u v : ℕ) (f : ℕ → ℝ) :
 type I (apV1) + type II (apV3) + middle/small, 后者与 `li` 主项经 PNT 级
 吸收合并; `a = 0` 项 (仅 `q = 1` 非零) 与 `li` 实/整参数取整差异同属此台阶.
 这是 `PanVaughanPointwiseSplit` 归约后剩下的唯一解析输入 (不引入公理,
-不 sorry; 以 Prop 封装, 供后续落地). -/
+不 sorry; 以 Prop 封装, 供后续落地).
+
+> ⚠️ **红队 (issue #44 复查)**: 本陈述的第三块是**纯 `|li/φ(q)|`**, 装配后是
+> 多对数不可吸收: `Σ_{q≤Q} μ²(q)3^ω(q)/φ(q) ≈ (log Q)^{O(1)}` 增长, 而
+> `panPieceMaxY(li/φ(q)) ≥ (1/φ(q))·Σ_{a≤X}|f(a)|·li(⌊y/a⌋) ≈ y·log X/(φ(q)log y)`,
+> 乘积 ≈ `y·polylog` 不可被 `C·y/log^A y` 压制 (f ≡ 1 即反例; 也见
+> `PanMainTerm.lean` 模块头红队注记). 正确形态是 **li 吸收 middle/small**
+> (三块之一, 见 Section 9 的 `PanChebyshevApproxCorrected` 与精确结构定理
+> `panDistributionSum_abs_le_logPieces_mainBlock`); 本陈述保留仅供
+> `PanVaughanPointwiseSplit.of_chebyshevApprox` 的装配链与红队对比. -/
 def PanChebyshevApprox (f : ℕ → ℝ) (u v : ℕ) : Prop :=
   ∀ X q y l : ℕ, 0 < q → l.Coprime q →
     |panDistributionSum y X q l f| ≤
@@ -856,6 +865,167 @@ theorem not_PanChebyshevApprox_of_f0 :
   have hnot : ¬ |panDistributionSum 2 1 1 0 (fun a : ℕ => if a = 0 then 1 else 0)| ≤ 0 := by
     linarith [hge1]
   exact hnot hinst
+
+/-- **修正第三块 (精确结构定理)**: 由 Section 8 的精确恒等式链,
+`panDistributionSum` (π 分布误差) 拆成 type I + type III + **主项吸收块**
+`apMiddleLog − apSmallLog + li/φ` + 素数次幂修正:
+
+  |panDistributionSum y X q l f| ≤
+    |Σ f(a)·apV1Log(y/a;q,l')| + |Σ f(a)·apV3Log(y/a;q,l')| +
+    |Σ f(a)·(apMiddleLog − apSmallLog + li((y:ℝ)/a)/φ(q))| + Σ |f(a)|·PP.
+
+这证实: 纯 `|li/φ|` 第三块是错误形态 (装配后多对数不可吸收, 见
+`PanMainTerm.lean` 模块头红队注记), 正确形态是 li 与 Vaughan middle/small
+片段合并进**同一个绝对值** (Chebyshev ψ↔π 主项吸收; 经典 Liu 2022 §III
+Thm 2 / HR 1974 Ch.10 的 `π(y;q,l)·log y ≈ ΣΛ` 结构). 全部有限代数,
+零 sorry. -/
+theorem panDistributionSum_abs_le_logPieces_mainBlock (y X q l : ℕ) (f : ℕ → ℝ) (u v : ℕ)
+    (hf0 : f 0 = 0) :
+    |panDistributionSum y X q l f| ≤
+      |∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+          f a * apV1Log (y / a) q (natInvMod q a * l % q) u else 0| +
+      |∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+          f a * apV3Log (y / a) q (natInvMod q a * l % q) u v else 0| +
+      |∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+          f a * (apMiddleLog (y / a) q (natInvMod q a * l % q) u v -
+            apSmallLog (y / a) q (natInvMod q a * l % q) v +
+            logarithmicIntegral ((y : ℝ) / a) / Nat.totient q) else 0| +
+      ∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+        |f a| * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0 := by
+  have hmain := panDistributionSum_eq_mainStep y X q l f hf0
+  have hlog : (∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+        f a * (apLogVonMangoldt (y / a) q (natInvMod q a * l % q) -
+          logarithmicIntegral ((y : ℝ) / a) / Nat.totient q) -
+        f a * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0) =
+      (∑ a ∈ Finset.Icc 1 X, if a.Coprime q then f a * apV1Log (y / a) q (natInvMod q a * l % q) u else 0) +
+      (∑ a ∈ Finset.Icc 1 X, if a.Coprime q then f a * apV3Log (y / a) q (natInvMod q a * l % q) u v else 0) -
+      (∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+          f a * (apMiddleLog (y / a) q (natInvMod q a * l % q) u v -
+            apSmallLog (y / a) q (natInvMod q a * l % q) v +
+            logarithmicIntegral ((y : ℝ) / a) / Nat.totient q) else 0) -
+      (∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+          f a * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0) := by
+    rw [← Finset.sum_add_distrib, ← Finset.sum_sub_distrib, ← Finset.sum_sub_distrib]
+    apply Finset.sum_congr rfl
+    intro a ha
+    by_cases hcop : a.Coprime q
+    · simp only [if_pos hcop]
+      have hvp := apLogVonMangoldt_eq_logPieces (y / a) q (natInvMod q a * l % q) u v
+      rw [hvp]
+      ring
+    · simp only [if_neg hcop]
+      ring
+  calc
+    |panDistributionSum y X q l f|
+        = |∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+              f a * (apLogVonMangoldt (y / a) q (natInvMod q a * l % q) -
+                logarithmicIntegral ((y : ℝ) / a) / Nat.totient q) -
+              f a * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0| := by
+          rw [hmain]
+    _ = |(∑ a ∈ Finset.Icc 1 X, if a.Coprime q then f a * apV1Log (y / a) q (natInvMod q a * l % q) u else 0) +
+          (∑ a ∈ Finset.Icc 1 X, if a.Coprime q then f a * apV3Log (y / a) q (natInvMod q a * l % q) u v else 0) -
+          (∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+              f a * (apMiddleLog (y / a) q (natInvMod q a * l % q) u v -
+                apSmallLog (y / a) q (natInvMod q a * l % q) v +
+                logarithmicIntegral ((y : ℝ) / a) / Nat.totient q) else 0) -
+          (∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+              f a * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0)| := by
+          rw [hlog]
+    _ ≤ |∑ a ∈ Finset.Icc 1 X, if a.Coprime q then f a * apV1Log (y / a) q (natInvMod q a * l % q) u else 0| +
+          |∑ a ∈ Finset.Icc 1 X, if a.Coprime q then f a * apV3Log (y / a) q (natInvMod q a * l % q) u v else 0| +
+          |∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+              f a * (apMiddleLog (y / a) q (natInvMod q a * l % q) u v -
+                apSmallLog (y / a) q (natInvMod q a * l % q) v +
+                logarithmicIntegral ((y : ℝ) / a) / Nat.totient q) else 0| +
+          |∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+              f a * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0| := by
+          have htri : ∀ x y z w : ℝ, |x + y - z - w| ≤ |x| + |y| + |z| + |w| := by
+            intro x y z w
+            have h1 : |x + y - z - w| ≤ |x + y| + |z + w| := by
+              have h := abs_add_le (x + y) (-(z + w))
+              rw [abs_neg] at h
+              have heq : x + y - z - w = x + y - (z + w) := by ring
+              rw [heq]
+              simpa [sub_eq_add_neg] using h
+            have h2 : |x + y| ≤ |x| + |y| := abs_add_le x y
+            have h3 : |z + w| ≤ |z| + |w| := abs_add_le z w
+            linarith
+          exact htri _ _ _ _
+    _ ≤ |∑ a ∈ Finset.Icc 1 X, if a.Coprime q then f a * apV1Log (y / a) q (natInvMod q a * l % q) u else 0| +
+          |∑ a ∈ Finset.Icc 1 X, if a.Coprime q then f a * apV3Log (y / a) q (natInvMod q a * l % q) u v else 0| +
+          |∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+              f a * (apMiddleLog (y / a) q (natInvMod q a * l % q) u v -
+                apSmallLog (y / a) q (natInvMod q a * l % q) v +
+                logarithmicIntegral ((y : ℝ) / a) / Nat.totient q) else 0| +
+          ∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+              |f a| * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0 := by
+          have hpp : |∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+                f a * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0| ≤
+              ∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+                |f a| * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0 := by
+            calc
+              |∑ a ∈ Finset.Icc 1 X, (if a.Coprime q then
+                    f a * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0)| ≤
+                  ∑ a ∈ Finset.Icc 1 X, |(if a.Coprime q then
+                    f a * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0)| := by
+                    exact Finset.abs_sum_le_sum_abs
+                      (fun a => if a.Coprime q then f a * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0)
+                      (Finset.Icc 1 X)
+              _ ≤ ∑ a ∈ Finset.Icc 1 X, (if a.Coprime q then
+                    |f a| * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0) := by
+                    exact Finset.sum_le_sum (fun a ha => by
+                      by_cases hcop : a.Coprime q
+                      · simp only [if_pos hcop]
+                        have hPP : 0 ≤ apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) :=
+                          apPrimePowerCorrection_nonneg (y / a) q (natInvMod q a * l % q)
+                        rw [abs_mul, abs_of_nonneg hPP]
+                      · simp only [if_neg hcop]
+                        simp)
+          linarith
+
+/-! ## 9. 红队修正: 第三块必须是 li 吸收 middle/small (issue #44 复查)
+
+`PanChebyshevApprox` 的第三块是纯 `|li/φ(q)|`. 复查确认: 该块装配后是
+**多对数量级** — `Σ_{q≤Q} μ²(q)3^ω(q)/φ(q) ≈ (log Q)^{O(1)}` 增长, 而
+`panPieceMaxY(li/φ) ≥ (1/φ(q))·Σ_{a≤X}|f(a)|·li(⌊y/a⌋) ≈ y·log X/(φ(q)log y)`,
+乘积 ≈ `y·polylog` 不可被 `C·y/log^A y` 压制 (f ≡ 1 即反例). 因此
+`PanChebyshevApprox`、`PanVaughanPointwiseSplit` 的第三片段与
+`PanMainTermBound`/`PanMainTermSieveBound` (T3) 均需改为主项吸收形态.
+精确结构由 `panDistributionSum_abs_le_logPieces_mainBlock` 给出 (零 sorry):
+li 与 middle/small 片段合并在同一绝对值内. 下方定义修正陈述与修正 T3'. -/
+
+/-- **修正后的 PanChebyshevApprox (第三块 = li 吸收 middle/small, panPieceSum 形态)**:
+第三块为 `|Σ f(a)·(li((y/a:ℕ):ℝ)/φ(q) + apMiddleLog(y/a;q,l',u,v) − apSmallLog(y/a;q,l',v))|`
+(主项吸收块), 素数次幂修正显式并入 RHS. 与 `panDistributionSum` 的 li 实参
+`(y:ℝ)/a` 的取整差异属于主项台阶 (经典证明以 `li(x) = x/log x + O(x/log²x)`
+吸收). 原纯 li 第三块装配后多对数不可吸收, 故本陈述取代
+`PanChebyshevApprox`. 需 `f 0 = 0` (a = 0 项, 见红队定理). -/
+def PanChebyshevApproxCorrected (f : ℕ → ℝ) (u v : ℕ) : Prop :=
+  ∀ X q y l : ℕ, 0 < q → l.Coprime q →
+    |panDistributionSum y X q l f| ≤
+      |panPieceSum y X q l f (fun y q l => apV1Log y q l u)| +
+      |panPieceSum y X q l f (fun y q l => apV3Log y q l u v)| +
+      |panPieceSum y X q l f (fun y q l => apMiddleLog y q l u v - apSmallLog y q l v +
+          logarithmicIntegral (y : ℝ) / Nat.totient q)| +
+      ∑ a ∈ Finset.Icc 1 X, if a.Coprime q then
+        |f a| * apPrimePowerCorrection (y / a) q (natInvMod q a * l % q) else 0
+
+/-- **修正主项界 T3' (开放解析台阶)**: 主项吸收块 (li 吸收 middle/small) 的
+装配级加权界, 取代 `PanMainTermBound` (纯 li 块, 多对数不可吸收).
+经典证明 (HR 1974 Ch.10; Liu 2022 §III): Chebyshev ψ↔π 主项关系
+`ψ(x;q,l)/log x ≈ li(x)/φ(q)` (主项 `x/φ(q)` 与 li 在 `x/log x` 阶相消),
+Vaughan 拆分后各片段光滑部分全局匹配 `x/φ(q)`, 剩余是 PNT 级余项
+`O(x/log^A x)` 的界; 该吸收机制是经典解析内容, 保留为本台阶. -/
+def PanMainTermAbsorbedBound (x f : ℕ → ℝ) (u v : ℕ) : Prop :=
+  ∀ A : ℝ, 0 < A → ∃ C : ℝ, 0 < C ∧ ∃ B : ℝ, ∃ x₀ : ℕ,
+    ∀ X : ℕ, x₀ ≤ X →
+      ∑ q ∈ Finset.range (Nat.floor ((x X) ^ (1 / 2 : ℝ) / (log (x X)) ^ B) + 1),
+        ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+          panPieceMaxY X q (Nat.floor (x X)) f
+            (fun y q l => apMiddleLog y q l u v - apSmallLog y q l v +
+              logarithmicIntegral (y : ℝ) / Nat.totient q) ≤
+        C * x X / (log (x X)) ^ A
+
 
 end
 
