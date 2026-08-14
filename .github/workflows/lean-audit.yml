@@ -116,7 +116,11 @@ jobs:
 
           output = pathlib.Path('/tmp/axioms.txt').read_text(encoding='utf-8')
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+<<<<<<< HEAD
           expected_reports = 402
+=======
+          expected_reports = 406
+>>>>>>> 6bf8ad9 (audit: register 8 new PanChebyshevApprox theorems (398->406))
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           if len(reports) != expected_reports:
