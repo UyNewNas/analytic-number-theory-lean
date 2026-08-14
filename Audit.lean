@@ -406,3 +406,11 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.panMaxL_le_pieces_sum
 #print axioms AnalyticNumberTheory.Sieve.panMaxY_le_pieces_sum
 #print axioms AnalyticNumberTheory.Sieve.PanVaughanPointwiseSplit.of_chebyshevApprox
+#print axioms AnalyticNumberTheory.Sieve.apPrimePowerCorrection_nonneg
+#print axioms AnalyticNumberTheory.Sieve.apLogVonMangoldt_eq_primesInAP_add_pp
+#print axioms AnalyticNumberTheory.Sieve.apLogVonMangoldt_eq_primesInAPBelow_inv
+#print axioms AnalyticNumberTheory.Sieve.apLogVonMangoldt_eq_logPieces
+#print axioms AnalyticNumberTheory.Sieve.panDistributionSum_abs_le_primes_li
+#print axioms AnalyticNumberTheory.Sieve.panDistributionSum_eq_mainStep
+#print axioms AnalyticNumberTheory.Sieve.PanChebyshevApprox
+#print axioms AnalyticNumberTheory.Sieve.not_PanChebyshevApprox_of_f0
