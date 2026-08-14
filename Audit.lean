@@ -445,3 +445,4 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeI_nonCoprimeDensity_nonneg
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeIV1CharSum_norm_le_primitive
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeI_nonCoprimeDensity_le_primePartition
+#print axioms AnalyticNumberTheory.Sieve.sum_powerset_two_pow_eq_three_pow
