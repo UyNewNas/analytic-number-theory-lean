@@ -389,4 +389,304 @@ theorem mainTermInnerSumMax_le (X x : ℕ) :
             (div_le_div_of_nonneg_right (by exact_mod_cast hyx)
               (le_of_lt (Real.log_pos (by norm_num : (1 : ℝ) < 2)))) hlogX
 
+/-! ## 4. 加权 totient 倒数和的多对数界 (Mertens 第二定理 + Euler 积展开)
+
+q 因子的估计: `Σ_{q ≤ Q} μ²(q)·3^{ω(q)}/φ(q) ≤ C·log⁶Q`. 证明链:
+
+```text
+Σ_{q ≤ Q} μ²3^ω/φ(q)
+  = Σ_{q ≤ Q, sqfree} μ²3^ω/φ(q)                    -- 非平方自由项 μ = 0
+  = Σ_{q ≤ Q, sqfree} ∏_{p|q} 3/(p-1)              -- goldbachNu = 1/φ, 3^ω = ∏3, μ² = 1
+  ≤ ∏_{p ≤ Q, p prime} (1 + 3/(p-1))               -- q ↦ q.primeFactors 单射入子集
+  ≤ exp(Σ_{p ≤ Q} 3/(p-1))                         -- 1 + u ≤ exp u
+  ≤ exp(6·Σ_{p ≤ Q} 1/p)                           -- 3/(p-1) ≤ 6/p (p ≥ 2)
+  ≤ exp(6·(log log Q + O(1)))                      -- Mertens 第二定理 (mertensSecond_nat)
+  = e^{O(1)}·(log Q)^6
+```
+
+最后一行的常数由 `mertensSecond_nat` 的误差项在 `Q ≥ 3` 下吸收. 这是
+`PanMainTermSieveBound` 中 q 因子的多对数界 (经典 `Σ μ²3^ω/φ(q) ≪ log³Q`
+见 Liu 2022 §III; 此处取充分的幂次 6 以匹配 `3/(p-1) ≤ 6/p` 的粗界).
+-/
+
+section
+
+open AnalyticNumberTheory.Mertens
+
+/-- c_p = 3/(p-1) 对素数 p 非负. -/
+private lemma panMain_cp_nonneg {p : ℕ} (hp : p.Prime) :
+    (0 : ℝ) ≤ 3 / ((p : ℝ) - 1) := by
+  have hp2 : (2 : ℝ) ≤ (p : ℝ) := by exact_mod_cast hp.two_le
+  have hden : (0 : ℝ) ≤ (p : ℝ) - 1 := by linarith
+  exact div_nonneg (by norm_num : (0 : ℝ) ≤ 3) hden
+
+/-- c_p ≤ 6/p 对素数 p (p ≥ 2). -/
+private lemma panMain_cp_le_six_div {p : ℕ} (hp : p.Prime) :
+    (3 : ℝ) / ((p : ℝ) - 1) ≤ 6 / (p : ℝ) := by
+  have hp2 : (2 : ℝ) ≤ (p : ℝ) := by exact_mod_cast hp.two_le
+  have hden1 : 0 < (p : ℝ) - 1 := by linarith
+  have hden2 : 0 < (p : ℝ) := by positivity
+  rw [div_le_div_iff₀ hden1 hden2]
+  nlinarith
+
+/-- 平方自由 q 的素因子积: `q = ∏_{p|q} p`. -/
+private lemma sqfree_eq_prod_primeFactors {q : ℕ} (hq : Squarefree q) :
+    q = ∏ p ∈ q.primeFactors, p := by
+  have hq0 : q ≠ 0 := by
+    intro h
+    subst q
+    exact not_squarefree_zero hq
+  have hprod := Nat.prod_primeFactors_pow_factorization hq0
+  have hsq : ∀ p ∈ q.primeFactors, q.factorization p = 1 := by
+    intro p hp
+    exact Nat.factorization_eq_one_of_squarefree hq (Nat.prime_of_mem_primeFactors hp)
+      (Nat.dvd_of_mem_primeFactors hp)
+  calc
+    q = ∏ p ∈ q.primeFactors, p ^ q.factorization p := hprod
+    _ = ∏ p ∈ q.primeFactors, p := by
+      apply Finset.prod_congr rfl
+      intro p hp
+      rw [hsq p hp, pow_one]
+
+/-- **平方自由 q 的单项重写**: `μ²(q)·3^{ω(q)}/φ(q) = ∏_{p|q} 3/(p-1)`
+(`μ² = 1`, `3^{ω} = ∏3`, `1/φ = goldbachNu q = ∏ 1/(p-1)`). -/
+private lemma panMain_weight_sqfree_eq_prod (q : ℕ) (hq : Squarefree q) :
+    ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ) =
+      ∏ p ∈ q.primeFactors, (3 : ℝ) / ((p : ℝ) - 1) := by
+  have hq0 : q ≠ 0 := by
+    intro h
+    subst q
+    exact not_squarefree_zero hq
+  have hμ : ((μ q : ℤ) : ℝ) ^ 2 = 1 := by
+    have hμz : (μ q : ℤ) = (-1 : ℤ) ^ ArithmeticFunction.cardFactors q := by
+      exact ArithmeticFunction.moebius_apply_of_squarefree hq
+    rw [hμz]
+    norm_num [Int.cast_pow, Int.cast_neg, Int.cast_one]
+    exact neg_one_pow_eq_or ℝ (ArithmeticFunction.cardFactors q)
+  have h3 : (3 : ℝ) ^ q.primeFactors.card = ∏ p ∈ q.primeFactors, (3 : ℝ) := by
+    rw [Finset.prod_const]
+  have hphi : (1 : ℝ) / (Nat.totient q : ℝ) =
+      ∏ p ∈ q.primeFactors, (1 : ℝ) / ((p : ℝ) - 1) := by
+    rw [← goldbachNu_squarefree_eq_inv_totient hq]
+    unfold goldbachNu
+    rw [ArithmeticFunction.prodPrimeFactors_apply hq0]
+  calc
+    ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ)
+        = ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
+            (1 / (Nat.totient q : ℝ)) := by
+          ring
+    _ = 1 * (∏ p ∈ q.primeFactors, (3 : ℝ)) * (∏ p ∈ q.primeFactors, (1 : ℝ) / ((p : ℝ) - 1)) := by
+          rw [hμ, h3, hphi]
+    _ = (∏ p ∈ q.primeFactors, (3 : ℝ)) * (∏ p ∈ q.primeFactors, (1 : ℝ) / ((p : ℝ) - 1)) := by
+          simp
+    _ = ∏ p ∈ q.primeFactors, (3 : ℝ) / ((p : ℝ) - 1) := by
+          rw [← Finset.prod_mul_distrib]
+          apply Finset.prod_congr rfl
+          intro p hp
+          ring
+
+/-- 子集和展开: `Σ_{S ⊆ F} ∏_{p∈S} c_p = ∏_{p∈F} (1 + c_p)`
+(按 F 归纳; 正合等式, 无需非负). -/
+private lemma panMain_powerset_prod_eq (F : Finset ℕ) (c : ℕ → ℝ) :
+    (∑ S ∈ F.powerset, ∏ p ∈ S, c p) = ∏ p ∈ F, (1 + c p) := by
+  classical
+  induction F using Finset.induction_on with
+  | empty => simp
+  | insert a F ha ih =>
+      have hdisj : Disjoint F.powerset (F.powerset.image (fun S => insert a S)) := by
+        rw [Finset.disjoint_left]
+        intro S hS1 hS2
+        rcases Finset.mem_image.mp hS2 with ⟨T, hT, rfl⟩
+        have haS : a ∈ insert a T := Finset.mem_insert_self a T
+        exact ha ((Finset.mem_powerset.mp hS1) haS)
+      calc
+        (∑ S ∈ (insert a F).powerset, ∏ p ∈ S, c p)
+            = (∑ S ∈ F.powerset, ∏ p ∈ S, c p) +
+                (∑ S ∈ (F.powerset.image (fun S => insert a S)), ∏ p ∈ S, c p) := by
+              rw [Finset.powerset_insert, Finset.sum_union hdisj]
+        _ = (∑ S ∈ F.powerset, ∏ p ∈ S, c p) +
+              (∑ S ∈ F.powerset, ∏ p ∈ insert a S, c p) := by
+              congr 1
+              rw [Finset.sum_image]
+              · rfl
+              · intro S hS T hT hST
+                have haS : a ∉ S := fun has => ha ((Finset.mem_powerset.mp hS) has)
+                have haT : a ∉ T := fun hat => ha ((Finset.mem_powerset.mp hT) hat)
+                ext x
+                constructor
+                · intro hx
+                  have hxT : x ∈ insert a T := by rwa [← hST]
+                  rcases Finset.mem_insert.mp hxT with hxT' | hxa
+                  · exact hxT'
+                  · subst x
+                    exact (haS hx).elim
+                · intro hx
+                  have hxS : x ∈ insert a S := by rwa [hST]
+                  rcases Finset.mem_insert.mp hxS with hxS' | hxa
+                  · exact hxS'
+                  · subst x
+                    exact (haT hx).elim
+        _ = (∑ S ∈ F.powerset, ∏ p ∈ S, c p) + c a * (∑ S ∈ F.powerset, ∏ p ∈ S, c p) := by
+              congr 1
+              rw [← Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro S hS
+              have haS : a ∉ S := fun has => ha ((Finset.mem_powerset.mp hS) has)
+              rw [Finset.prod_insert haS]
+        _ = (1 + c a) * (∑ S ∈ F.powerset, ∏ p ∈ S, c p) := by ring
+        _ = (1 + c a) * (∏ p ∈ F, (1 + c p)) := by rw [ih]
+        _ = ∏ p ∈ insert a F, (1 + c p) := by rw [Finset.prod_insert ha]
+
+/-- 平方自由 q ≤ Q 的 `∏_{p|q} c_p` 和 ≤ 素因子子集展开
+`∏_{p ≤ Q, prime} (1 + c_p)` (q ↦ q.primeFactors 单射入 `primesUpTo Q`
+的幂集, 再展开). -/
+private lemma panMain_sqfree_sum_le_prod (Q : ℕ) (c : ℕ → ℝ) (hc : ∀ p, p.Prime → 0 ≤ c p) :
+    (∑ q ∈ (Finset.range (Q + 1)).filter Squarefree, ∏ p ∈ q.primeFactors, c p) ≤
+      ∏ p ∈ primesUpTo Q, (1 + c p) := by
+  let Fq : Finset ℕ := (Finset.range (Q + 1)).filter Squarefree
+  let F : Finset ℕ := primesUpTo Q
+  have hinj : Set.InjOn (fun q : ℕ => q.primeFactors) (↑Fq : Set ℕ) := by
+    intro q hq r hr hpf
+    have hqsq : Squarefree q := (Finset.mem_filter.mp hq).2
+    have hrsq : Squarefree r := (Finset.mem_filter.mp hr).2
+    calc
+      q = ∏ p ∈ q.primeFactors, p := (sqfree_eq_prod_primeFactors hqsq).symm
+      _ = ∏ p ∈ r.primeFactors, p := by rw [hpf]
+      _ = r := sqfree_eq_prod_primeFactors hrsq
+  have hsubset : Fq.image (fun q => q.primeFactors) ⊆ F.powerset := by
+    intro S hS
+    rcases Finset.mem_image.mp hS with ⟨q, hq, rfl⟩
+    rw [Finset.mem_powerset]
+    intro p hp
+    have hqsq : Squarefree q := (Finset.mem_filter.mp hq).2
+    have hq0 : q ≠ 0 := by
+      intro h
+      subst q
+      exact not_squarefree_zero hqsq
+    have hqrange : q ∈ Finset.range (Q + 1) := (Finset.mem_filter.mp hq).1
+    have hqle : q ≤ Q := Nat.le_of_lt_succ (Finset.mem_range.mp hqrange)
+    rw [mem_primesUpTo]
+    constructor
+    · exact Nat.prime_of_mem_primeFactors hp
+    · exact le_trans (Nat.le_of_dvd (Nat.pos_of_ne_zero hq0) (Nat.dvd_of_mem_primeFactors hp)) hqle
+  calc
+    (∑ q ∈ Fq, ∏ p ∈ q.primeFactors, c p)
+        = ∑ S ∈ Fq.image (fun q => q.primeFactors), ∏ p ∈ S, c p := by
+          rw [← Finset.sum_image hinj]
+    _ ≤ ∑ S ∈ F.powerset, ∏ p ∈ S, c p := by
+          exact Finset.sum_le_sum_of_subset_of_nonneg hsubset (fun S hS hnot => by
+            apply Finset.prod_nonneg
+            intro p hp
+            have hpF : p ∈ F := (Finset.mem_powerset.mp hS) hp
+            exact hc p (mem_primesUpTo.mp hpF).1)
+    _ = ∏ p ∈ F, (1 + c p) := panMain_powerset_prod_eq F c
+
+/-- `∏_{p∈F} (1 + c p) ≤ exp(Σ_{p∈F} c p)` 对 `c ≥ 0` (1 + u ≤ exp u 逐因子). -/
+private lemma panMain_prod_one_add_le_exp (F : Finset ℕ) (c : ℕ → ℝ)
+    (hc : ∀ p ∈ F, 0 ≤ c p) :
+    (∏ p ∈ F, (1 + c p)) ≤ rexp (∑ p ∈ F, c p) := by
+  calc
+    (∏ p ∈ F, (1 + c p)) ≤ ∏ p ∈ F, rexp (c p) := by
+      apply Finset.prod_le_prod
+      · intro p hp
+        have hcp : 0 ≤ c p := hc p hp
+        linarith
+      · intro p hp
+        simpa [add_comm] using (Real.add_one_le_exp (c p))
+    _ = rexp (∑ p ∈ F, c p) := by
+      classical
+      induction F using Finset.induction_on with
+      | empty => simp
+      | insert a F ha ih =>
+          rw [Finset.prod_insert ha, Finset.sum_insert ha]
+          rw [Real.exp_add]
+          rw [ih]
+
+/-- **加权 totient 倒数和的多对数界**: 对 `Q ≥ 3`,
+`Σ_{q ≤ Q} μ²(q)·3^{ω(q)}/φ(q) ≤ C·(log Q)^6` (Mertens 第二定理 +
+Euler 积展开). -/
+theorem panMainTotientWeightedSum_le (Q : ℕ) (hQ : 3 ≤ Q) :
+    ∃ C : ℝ, 0 < C ∧ panMainTotientWeightedSum Q ≤ C * (Real.log (Q : ℝ)) ^ 6 := by
+  rcases mertensSecond_nat with ⟨C₀, hC₀, hM₀⟩
+  let K : ℝ := 6 * mertensSecondConstant + 6 * C₀ / Real.log 3
+  let c : ℕ → ℝ := fun p => (3 : ℝ) / ((p : ℝ) - 1)
+  have hlogQ : 0 < Real.log (Q : ℝ) := Real.log_pos (by exact_mod_cast (by omega : 1 < Q))
+  refine ⟨rexp K, Real.exp_pos K, ?_⟩
+  calc
+    panMainTotientWeightedSum Q
+        = ∑ q ∈ Finset.range (Q + 1),
+            ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ) := rfl
+    _ = ∑ q ∈ (Finset.range (Q + 1)).filter Squarefree,
+            ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card / (Nat.totient q : ℝ) := by
+          rw [← Finset.sum_filter_of_ne]
+          intro q hq hterm
+          have hμ2 : ((μ q : ℤ) : ℝ) ^ 2 ≠ 0 := by
+            intro hμ2
+            apply hterm
+            rw [hμ2]
+            simp
+          have hμz : (μ q : ℤ) ≠ 0 := by
+            intro hμz
+            exact hμ2 (by simp [hμz])
+          exact (ArithmeticFunction.moebius_ne_zero_iff_squarefree).mp hμz
+    _ = ∑ q ∈ (Finset.range (Q + 1)).filter Squarefree, ∏ p ∈ q.primeFactors, c p := by
+          dsimp [c]
+          apply Finset.sum_congr rfl
+          intro q hq
+          exact panMain_weight_sqfree_eq_prod q (Finset.mem_filter.mp hq).2
+    _ ≤ ∏ p ∈ primesUpTo Q, (1 + c p) := by
+          exact panMain_sqfree_sum_le_prod Q c (fun p hp => panMain_cp_nonneg hp)
+    _ ≤ rexp (∑ p ∈ primesUpTo Q, c p) := by
+          exact panMain_prod_one_add_le_exp (primesUpTo Q) c (fun p hp => panMain_cp_nonneg (mem_primesUpTo.mp hp).1)
+    _ ≤ rexp (∑ p ∈ primesUpTo Q, (6 : ℝ) / (p : ℝ)) := by
+          apply Real.exp_le_exp.mpr
+          apply Finset.sum_le_sum
+          intro p hp
+          exact panMain_cp_le_six_div (mem_primesUpTo.mp hp).1
+    _ = rexp (6 * primeReciprocalSum Q) := by
+          have hsum : (∑ p ∈ primesUpTo Q, (6 : ℝ) / (p : ℝ)) = 6 * primeReciprocalSum Q := by
+            unfold primeReciprocalSum
+            rw [← Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro p hp
+            ring
+          rw [hsum]
+    _ ≤ rexp (6 * (Real.log (Real.log (Q : ℝ)) + mertensSecondConstant + C₀ / Real.log (Q : ℝ))) := by
+          have hP : primeReciprocalSum Q ≤
+              Real.log (Real.log (Q : ℝ)) + mertensSecondConstant + C₀ / Real.log (Q : ℝ) := by
+            have h := hM₀ Q (by omega : 2 ≤ Q)
+            have hle : primeReciprocalSum Q - (Real.log (Real.log (Q : ℝ)) + mertensSecondConstant) ≤
+                C₀ / Real.log (Q : ℝ) := (abs_le.mp h).2
+            linarith
+          apply Real.exp_le_exp.mpr
+          exact mul_le_mul_of_nonneg_left hP (by norm_num : (0 : ℝ) ≤ 6)
+    _ ≤ rexp (6 * Real.log (Real.log (Q : ℝ)) + K) := by
+          apply Real.exp_le_exp.mpr
+          have hlog3 : 0 < Real.log 3 := Real.log_pos (by norm_num : (1 : ℝ) < 3)
+          have hclog : C₀ / Real.log (Q : ℝ) ≤ C₀ / Real.log 3 := by
+            have hlogQ3 : Real.log 3 ≤ Real.log (Q : ℝ) :=
+              Real.log_le_log (by norm_num : (0 : ℝ) < 3) (by exact_mod_cast hQ)
+            exact div_le_div_of_nonneg_left hC₀.le hlog3 hlogQ3
+          dsimp [K]
+          linarith
+    _ = (Real.log (Q : ℝ)) ^ 6 * rexp K := by
+          have hpow : rexp (6 * Real.log (Real.log (Q : ℝ))) = (Real.log (Q : ℝ)) ^ 6 := by
+            calc
+              rexp (6 * Real.log (Real.log (Q : ℝ)))
+                  = rexp (Real.log (Real.log (Q : ℝ)) * 6) := by
+                    congr 1
+                    ring
+              _ = rexp (Real.log (Real.log (Q : ℝ))) ^ 6 :=
+                Real.exp_mul (Real.log (Real.log (Q : ℝ))) 6
+              _ = (Real.log (Q : ℝ)) ^ 6 := by
+                    rw [Real.exp_log hlogQ]
+          calc
+            rexp (6 * Real.log (Real.log (Q : ℝ)) + K)
+                = rexp (6 * Real.log (Real.log (Q : ℝ))) * rexp K := by
+                  rw [Real.exp_add]
+            _ = (Real.log (Q : ℝ)) ^ 6 * rexp K := by rw [hpow]
+    _ = rexp K * (Real.log (Q : ℝ)) ^ 6 := by ring
+
+end
+
 end AnalyticNumberTheory.Sieve
