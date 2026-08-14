@@ -668,7 +668,7 @@ lemma reducedFracs_sum {Q : ℕ} {β : Type*} [AddCommMonoid β] (T : ℝ → β
     have hn : p₁.2 * p₂.1 = p₁.1 * p₂.2 := by
       have hh : (p₁.2 : ℝ) / (p₁.1 : ℝ) = (p₂.2 : ℝ) / (p₂.1 : ℝ) := h
       field_simp [hq1ne, hq2ne] at hh
-      simpa [mul_comm, mul_left_comm, mul_assoc] using (exact_mod_cast hh : p₁.2 * p₂.1 = p₂.2 * p₁.1)
+      exact_mod_cast hh
     have hcross : (p₁.2 : ℤ) * (p₂.1 : ℤ) = (p₁.1 : ℤ) * (p₂.2 : ℤ) := by
       exact_mod_cast hn
     have hcop1 : p₁.2.Coprime p₁.1 := (Finset.mem_filter.mp hp₁.2).2
