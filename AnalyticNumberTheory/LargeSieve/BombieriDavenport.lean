@@ -665,12 +665,12 @@ lemma reducedFracs_sum {Q : ℕ} {β : Type*} [AddCommMonoid β] (T : ℝ → β
     have hpos2 : 0 < p₂.1 := lt_of_lt_of_le (by norm_num : (0 : ℕ) < 1) (Finset.mem_Icc.mp hp₂.1).1
     have hq1ne : (p₁.1 : ℝ) ≠ 0 := by exact_mod_cast (ne_of_gt hpos1)
     have hq2ne : (p₂.1 : ℝ) ≠ 0 := by exact_mod_cast (ne_of_gt hpos2)
-    have hn : p₁.2 * p₂.1 = p₂.2 * p₁.1 := by
+    have hn : p₁.2 * p₂.1 = p₁.1 * p₂.2 := by
       have hh : (p₁.2 : ℝ) / (p₁.1 : ℝ) = (p₂.2 : ℝ) / (p₂.1 : ℝ) := h
       field_simp [hq1ne, hq2ne] at hh
-      exact_mod_cast hh
+      simpa [mul_comm, mul_left_comm, mul_assoc] using (exact_mod_cast hh : p₁.2 * p₂.1 = p₂.2 * p₁.1)
     have hcross : (p₁.2 : ℤ) * (p₂.1 : ℤ) = (p₁.1 : ℤ) * (p₂.2 : ℤ) := by
-      exact_mod_cast (by simpa [mul_comm, mul_left_comm, mul_assoc] using hn)
+      exact_mod_cast hn
     have hcop1 : p₁.2.Coprime p₁.1 := (Finset.mem_filter.mp hp₁.2).2
     have hcop2 : p₂.2.Coprime p₂.1 := (Finset.mem_filter.mp hp₂.2).2
     have hdvd1 : p₁.1 ∣ p₂.1 := by
@@ -1145,7 +1145,10 @@ lemma perModulus_regroup {Q : ℕ} (w : ℕ → ℝ) (f : ℝ → ℂ) :
             rw [hgcd]
             simpa [mul_comm] using Nat.mul_div_cancel_left p.2.1 (Finset.mem_Icc.mp hd).1
           apply Sigma.ext hfst
-          simp [hsnd1, hgcd]
+          apply heq_of_eq
+          apply Prod.ext
+          · exact hsnd1
+          · exact hgcd
       · -- h: f p = g (i p)
         intro p hp
         -- w p.1 * f (p.2/p.1) = w ((p.1/g)*g) * f ((p.2/g)/(p.1/g))
