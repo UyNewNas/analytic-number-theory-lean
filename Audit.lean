@@ -433,3 +433,10 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_vaughanThird
 #print axioms AnalyticNumberTheory.LargeSieve.csSqrtSum_le_card_mul_sum
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeI_totientWeightSum_polylog
+#print axioms AnalyticNumberTheory.LargeSieve.dirichletChar_eq_primitiveCharacter_of_coprime
+#print axioms AnalyticNumberTheory.LargeSieve.dirichletChar_norm_le_one
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeI_char_induced_by_primitive
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeIV1CharSum_eq_coprimePart
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeI_nonCoprimeDensity_nonneg
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeIV1CharSum_norm_le_primitive
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeI_nonCoprimeDensity_le_primePartition
