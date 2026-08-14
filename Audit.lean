@@ -359,3 +359,6 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.mainTermInnerSumMax_le
 #print axioms AnalyticNumberTheory.Sieve.PanVaughanSplit
 #print axioms AnalyticNumberTheory.Sieve.PanMeanValueUniform.of_vaughanSplit
+#print axioms AnalyticNumberTheory.Sieve.PanLogEventuallyLarge
+#print axioms AnalyticNumberTheory.Sieve.PanVaughanPointwiseSplit
+#print axioms AnalyticNumberTheory.Sieve.PanVaughanSplit.of_analyticInputs
