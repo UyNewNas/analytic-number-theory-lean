@@ -32,6 +32,8 @@ import AnalyticNumberTheory.LargeSieve.Multiplicative
 import AnalyticNumberTheory.LargeSieve.CharacterIndicators
 import AnalyticNumberTheory.LargeSieve.WellSpaced
 import AnalyticNumberTheory.LargeSieve.Duality
+import AnalyticNumberTheory.LargeSieve.BombieriDavenport
+import AnalyticNumberTheory.Sieve.PanTypeIIBoundAudit
 
 /-!
 # Analytic Number Theory
@@ -40,5 +42,3 @@ Stable public imports for the reusable analytic-number-theory foundation.
 Downstream projects should import this module or one of its children instead
 of importing the ported `PrimeNumberTheoremAnd` implementation directly.
 -/
-import AnalyticNumberTheory.LargeSieve.BombieriDavenport
-import AnalyticNumberTheory.Sieve.PanTypeIIBoundAudit
