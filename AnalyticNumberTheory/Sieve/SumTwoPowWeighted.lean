@@ -55,11 +55,8 @@ theorem sumTwoPowWeighted_term_squarefree (d : ℕ) (hd : Squarefree d) :
     rw [← Int.cast_pow, ArithmeticFunction.moebius_sq_eq_one_of_squarefree hd]
     norm_num
   have hprod : (d : ℝ) = ∏ p ∈ d.primeFactors, (p : ℝ) := by
-    calc
-      (d : ℝ) = (∏ p ∈ d.primeFactors, p : ℕ) := by
-        exact_mod_cast squarefree_eq_prod_primeFactors hd
-      _ = ∏ p ∈ d.primeFactors, (p : ℝ) := by
-        rw [Nat.cast_prod]
+    rw [← Nat.cast_prod]
+    exact_mod_cast squarefree_eq_prod_primeFactors hd
   calc
     ((μ d : ℤ) : ℝ) ^ 2 * (2 : ℝ) ^ d.primeFactors.card / (d : ℝ)
         = (2 : ℝ) ^ d.primeFactors.card / (∏ p ∈ d.primeFactors, (p : ℝ)) := by
