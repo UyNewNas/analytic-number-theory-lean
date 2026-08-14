@@ -1,3 +1,4 @@
+import AnalyticNumberTheory.Sieve.PanTypeIIBoundAudit
 import AnalyticNumberTheory.PrimeDistribution.PrimeNumberTheorem
 import AnalyticNumberTheory.PrimeDistribution.ChebyshevTheta
 import AnalyticNumberTheory.Mertens.Basic
@@ -40,4 +41,3 @@ Stable public imports for the reusable analytic-number-theory foundation.
 Downstream projects should import this module or one of its children instead
 of importing the ported `PrimeNumberTheoremAnd` implementation directly.
 -/
-import AnalyticNumberTheory.Sieve.PanTypeIIBoundAudit
