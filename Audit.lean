@@ -426,3 +426,5 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.panTypeIICharSqSum_ge_trivial
 #print axioms AnalyticNumberTheory.Sieve.v3_one_one_sq_sum_le
 #print axioms AnalyticNumberTheory.Sieve.vCharAbs_lower
+#print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_le
+#print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_vaughanFirst
