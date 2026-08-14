@@ -312,3 +312,14 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.panPieceMaxY_le_typeIMeanValueMaxY
 #print axioms AnalyticNumberTheory.Sieve.PanTypeICharacterMeanValue
 #print axioms AnalyticNumberTheory.Sieve.PanTypeIWeightedBound.of_characterMeanValue
+#print axioms AnalyticNumberTheory.Sieve.panTypeICharSqSum
+#print axioms AnalyticNumberTheory.Sieve.panTypeI_charAbsSum_le_cs
+#print axioms AnalyticNumberTheory.Sieve.panTypeIDistributionSum_le_csWeighted
+#print axioms AnalyticNumberTheory.Sieve.panTypeICharSqrtMean
+#print axioms AnalyticNumberTheory.Sieve.panTypeICharSqrtMeanMaxY
+#print axioms AnalyticNumberTheory.Sieve.panTypeIMeanValueMaxY_le_charSqrtMeanMaxY
+#print axioms AnalyticNumberTheory.Sieve.panTypeI_weight_nonneg
+#print axioms AnalyticNumberTheory.Sieve.panTypeICharSqrtMeanMaxY_le_of_abs_le_one
+#print axioms AnalyticNumberTheory.Sieve.panTypeICharMeanSieveBound
+#print axioms AnalyticNumberTheory.Sieve.panTypeICharSquareMeanBound
+#print axioms AnalyticNumberTheory.Sieve.PanTypeICharacterMeanValue.of_sieveBound
