@@ -122,6 +122,26 @@ honest maximum; the classical form requires (1) the (a,q)=1 + Chen-weight a-sum
 `PanMainTerm.lean` — the old asymptotic claim is refuted by
 `(1+log X)·log⁶(X+2)·log X ≥ log X → ∞`.
 
+**Assembly and consumer constraints (T3i follow-up, ant #15)**:
+- *of_analyticInputs* (PanAssembly.lean): the final bound of the three-block sum is
+  the max-scale of the blocks. The main (li) block cannot be `C·xX/log^A(xX)`: it
+  bounds the li *absolute* sum, which is ≍ `xX·(1+log log xX)` (sharp li decay) or
+  `(xX/log 2)·(1+log X)` (crude), times the q-factor `log⁶` — never
+  `O(xX/log^A(xX))`. Hence, in the current single-inequality chain, the assembly's
+  final form is polylog (`C·xX·(log xX)^{A+7}`, implemented). The classical
+  `x/log^A x` assembly requires the main block to be a *difference* with the sieve
+  main term (see below) — a structural redesign, not a constant tweak.
+- *Chen-side consumer* (`WeightedPanCondition`, WeightedPan.lean:453): requires
+  `C·xN/log^A(xN)` for *arbitrary* A > 0 (Chen's switching sieve needs arbitrary
+  log-power savings). The polylog `PanMeanValueUniform` does NOT discharge it, so
+  the bridge (ant #25) is genuinely blocked on the classical form. Note the classical
+  form needs more than the sieve-main-term difference: even with (a,q)=1 and
+  |f| ≤ 1, taking f = 1 gives `Σ_{(a,q)=1} li(y/a) ≍ (y/log y)·log X ≫ y/log^A y`;
+  the Chen weight's convergent a-harmonic sum (`Σ f(a)/a < ∞`) is essential. Both
+  the weight structure (chen repo) and the sieve-main-term difference (BRG) are
+  out of the ant generic chain's reach; the polylog closure is the honest maximum
+  there (implemented and proved, zero sorry).
+
 ## Architecture source
 
 - **Landmark proof**: Pan (1963); Bombieri (1965) / A.I. Vinogradov (1965);
