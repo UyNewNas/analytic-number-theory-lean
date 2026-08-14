@@ -175,6 +175,12 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.LargeSieve.rationalPoints_wellSpaced
 #print axioms AnalyticNumberTheory.LargeSieve.largeSieveRationalPoints
 #print axioms AnalyticNumberTheory.LargeSieve.characterSieveModulus_le
+#print axioms AnalyticNumberTheory.LargeSieve.charOrthSum_unit
+#print axioms AnalyticNumberTheory.LargeSieve.charIndicator_zmod
+#print axioms AnalyticNumberTheory.LargeSieve.charIndicator
+#print axioms AnalyticNumberTheory.LargeSieve.charIndicator_mul
+#print axioms AnalyticNumberTheory.LargeSieve.charIndicator_ap
+#print axioms AnalyticNumberTheory.LargeSieve.charSum_ap
 #print axioms AnalyticNumberTheory.Sieve.chenSieveRatio_approx
 #print axioms AnalyticNumberTheory.Mertens.log_primeProduct
 #print axioms AnalyticNumberTheory.Mertens.abs_log_primeFactor_add_le

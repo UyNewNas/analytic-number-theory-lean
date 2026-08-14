@@ -24,6 +24,7 @@ import AnalyticNumberTheory.Sieve.PanMeanValueBody
 import AnalyticNumberTheory.LargeSieve.Additive
 import AnalyticNumberTheory.LargeSieve.GeomSum
 import AnalyticNumberTheory.LargeSieve.Multiplicative
+import AnalyticNumberTheory.LargeSieve.CharacterIndicators
 import AnalyticNumberTheory.LargeSieve.WellSpaced
 import AnalyticNumberTheory.LargeSieve.Duality
 
