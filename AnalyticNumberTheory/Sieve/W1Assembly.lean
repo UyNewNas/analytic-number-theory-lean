@@ -61,11 +61,15 @@ private lemma panTypeIWeight3_term_le (q : ℕ) :
     ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card * (Nat.totient q : ℝ) / (q : ℝ)
         = ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card *
             ((Nat.totient q : ℝ) / (q : ℝ)) := by
-          ring
+          rw [mul_div_assoc]
     _ ≤ ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card * 1 := by
           exact mul_le_mul_of_nonneg_left (totient_div_self_le_one q)
             (mul_nonneg (sq_nonneg _) (pow_nonneg (by norm_num : (0 : ℝ) ≤ 3) _))
     _ = ((μ q : ℤ) : ℝ) ^ 2 * (3 : ℝ) ^ q.primeFactors.card := by ring
+
+/-- 除法交换: `a·(b/c) = b·(a/c)` (装配主链中把 `Q` 提到和式外). -/
+private lemma mul_div_mul_comm (a b c : ℝ) : a * (b / c) = b * (a / c) := by
+  rw [← mul_div_assoc, ← mul_div_assoc, mul_comm a b]
 
 /-- **装配步骤 2**: `panTypeIWeight3 Q ≤ Σ_{q ≤ Q, sqfree} 3^{ω(q)}`
 (引理 A 逐项消去 `φ(q)/q`, 再以 `μ² = 1 ⟺ sqfree` 过滤). -/
@@ -290,8 +294,32 @@ theorem panTypeIWeight3_le_Q_mul_sumTwoPowWeighted (Q : ℕ) :
           rw [← Finset.mul_sum]
           apply Finset.sum_congr rfl
           intro d hd
-          ring
+          exact mul_div_mul_comm ((2 : ℝ) ^ d.primeFactors.card) (Q : ℝ) (d : ℝ)
     _ = (Q : ℝ) * sumTwoPowWeighted Q := by
           rw [sqfreeTwoPowSum_eq_sumTwoPowWeighted Q]
+
+
+/-! ## 4. W1 完整定理 -/
+
+/-- **W1 完整定理** (issue #42, S3):
+`Σ_{q ≤ Q} μ²(q)·3^{ω(q)}·φ(q)/q ≤ C·Q·(log(Q+2))²` 对所有 `Q : ℕ`.
+
+装配: 引理 A (`φ/q ≤ 1`) → 平方自由过滤 → 引理 B 逐点展开 → 交换求和 + 倍数计数
+(`#{q ≤ Q : d | q} ≤ Q/d`) → μ² 恢复 (`sumTwoPowWeighted`) → 引理 C
+(`sumTwoPowWeighted_le_polylog`). 多对数取 `(log(Q+2))²` (与引理 C 一致;
+`(log Q)²` 在 `Q = 1` 处恒假). -/
+theorem panTypeIWeight3_le_polylog :
+    ∃ C : ℝ, 0 < C ∧ ∀ Q : ℕ,
+      panTypeIWeight3 Q ≤ C * (Q : ℝ) * (Real.log (Q + 2)) ^ (2 : ℝ) := by
+  classical
+  obtain ⟨C₁, hC₁pos, hC₁⟩ := sumTwoPowWeighted_le_polylog
+  refine ⟨C₁, hC₁pos, ?_⟩
+  intro Q
+  calc
+    panTypeIWeight3 Q ≤ (Q : ℝ) * sumTwoPowWeighted Q :=
+      panTypeIWeight3_le_Q_mul_sumTwoPowWeighted Q
+    _ ≤ (Q : ℝ) * (C₁ * (Real.log (Q + 2)) ^ (2 : ℝ)) := by
+          exact mul_le_mul_of_nonneg_left (hC₁ Q) (Nat.cast_nonneg Q)
+    _ = C₁ * (Q : ℝ) * (Real.log (Q + 2)) ^ (2 : ℝ) := by ring
 
 end AnalyticNumberTheory.Sieve
