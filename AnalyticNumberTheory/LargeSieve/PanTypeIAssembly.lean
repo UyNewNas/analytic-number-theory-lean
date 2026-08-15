@@ -299,24 +299,203 @@ lemma panTypeIV1CharSum_norm_le_primitive {q m u : ℕ} [NeZero q]
             by_cases hc : n.Coprime q <;> simp [hc, Nat.Coprime]
   simpa [ψ] using le_trans hnorm1 (add_le_add_right hnorm2 (‖panTypeIV1CharSum χ.conductor m u ψ‖))
 
-/-! ### S2b: 分组双射与原特征平方和分解 (开放; 依赖 Sigma 的 sum_bij 性能问题) -/
+/-! ### S2b: 原特征分解 (成真; 注入-和路线, 避免依赖 Sigma 的 sum_bij) -/
 
 /-- 原特征部分: `P_{q'}(m) = Σ_{χ' 原特征 mod q'} ‖V_χ'(m)‖²`. -/
 noncomputable def panTypeIPrimitiveSqSum (q' m u : ℕ) : ℝ :=
   ∑ χ' ∈ (Finset.univ : Finset (DirichletCharacter ℂ q')).filter (fun χ' => χ'.IsPrimitive),
     ‖panTypeIV1CharSum q' m u χ'‖ ^ 2
 
-/-- **S2b (开放)**: 全特征平方和的原特征分解 (精确系数 1):
-  `t_q(m) ≤ 2·Σ_{q' | q} P_{q'}(m) + 2·φ(q)·D_q(m)²`.
-  (原 def 的 `φ(q)/φ(q')` 权重已修正: 诱导固定原特征 `χ'` 的模 q 特征恰有 1 个;
-  证明路线 = `panTypeIV1CharSum_norm_le_primitive` 点式界 + 分组双射
-  `χ ↦ (χ.conductor, χ.primitiveCharacter)` (changeLevel 单射/满射).
-  Lean 侧受 `Finset.sum_bij` 在依赖 Sigma 类型 (`Σ q', DirichletCharacter ℂ q'`)
-  上的 whnf 性能限制 (8M/40M heartbeats 均超时), 留待后续.) -/
-def panTypeI_sqSum_primitiveDecomposition (q m u : ℕ) : Prop :=
-  panTypeICharSqSum q m u ≤
-    2 * (∑ q' ∈ q.divisors, panTypeIPrimitiveSqSum q' m u) +
-      2 * (Nat.totient q : ℝ) * (panTypeI_nonCoprimeDensity q m u) ^ 2
+/-- 将模 q 特征 χ 提升到固定层 q': 若 χ.conductor = q' 则取其原特征, 否则平凡填充. -/
+noncomputable def panTypeI_liftPrimitive (q' q : ℕ) (χ : DirichletCharacter ℂ q) : DirichletCharacter ℂ q' :=
+  if h : χ.conductor = q' then (cast (by rw [h]) χ.primitiveCharacter) else 1
+
+lemma panTypeI_liftPrimitive_eq_primitiveCharacter {q q' : ℕ} (χ : DirichletCharacter ℂ q)
+    (h : χ.conductor = q') :
+    panTypeI_liftPrimitive q' q χ = (cast (by rw [h]) χ.primitiveCharacter) := by
+  simp [panTypeI_liftPrimitive, h]
+
+lemma panTypeI_liftPrimitive_isPrimitive {q q' : ℕ} (χ : DirichletCharacter ℂ q)
+    (h : χ.conductor = q') : (panTypeI_liftPrimitive q' q χ).IsPrimitive := by
+  cases h
+  simpa [panTypeI_liftPrimitive, IsPrimitive] using (χ.primitiveCharacter_isPrimitive)
+
+/-- changeLevel 在整除证明上无关 (逐点值计算). -/
+lemma panTypeI_changeLevel_congr {q q' : ℕ} (h₁ h₂ : q' ∣ q)
+    (χ : DirichletCharacter ℂ q') :
+    changeLevel h₁ χ = changeLevel h₂ χ := by
+  apply MulChar.ext
+  intro a
+  by_cases ha : IsUnit a
+  · rcases ha with ⟨u, hu⟩
+    rw [← hu]
+    rw [changeLevel_eq_cast_of_dvd h₁ u, changeLevel_eq_cast_of_dvd h₂ u]
+  · simp [MulChar.map_nonunit _ ha]
+
+/-- 固定 q' 时, 原特征映射在 conductor = q' 的纤维上单射. -/
+lemma panTypeI_primitiveCharacter_inj_on_fiber {q q' : ℕ}
+    (χ₁ χ₂ : DirichletCharacter ℂ q)
+    (hc₁ : χ₁.conductor = q') (hc₂ : χ₂.conductor = q')
+    (hp : (cast (by rw [hc₁]) χ₁.primitiveCharacter) =
+          (cast (by rw [hc₂]) χ₂.primitiveCharacter)) : χ₁ = χ₂ := by
+  subst q'
+  cases hc₂
+  have hp' : χ₁.primitiveCharacter = χ₂.primitiveCharacter := by simpa using hp
+  have h₁ : χ₁ = changeLevel (χ₁.conductor_dvd_level) χ₁.primitiveCharacter :=
+    (changeLevel_primitiveCharacter χ₁).symm
+  have h₂ : χ₂ = changeLevel (χ₂.conductor_dvd_level) χ₂.primitiveCharacter :=
+    (changeLevel_primitiveCharacter χ₂).symm
+  calc
+    χ₁ = changeLevel (χ₁.conductor_dvd_level) χ₁.primitiveCharacter := h₁
+    _ = changeLevel (χ₂.conductor_dvd_level) χ₂.primitiveCharacter := by
+          rw [hp']
+          exact panTypeI_changeLevel_congr _ _ _
+    _ = χ₂ := h₂.symm
+
+/-- 注入和上界: 若 f 在 s 上单射且像 ⊆ t, 且 h a = g (f a), g ≥ 0,
+  则 Σ_{a∈s} h a ≤ Σ_{b∈t} g b. -/
+lemma panTypeI_sum_le_sum_of_injOn {α β : Type*} (f : α → β) (g : β → ℝ) (h : α → ℝ)
+    (s : Finset α) (t : Finset β)
+    (hmem : ∀ a ∈ s, f a ∈ t)
+    (hinj : ∀ a₁ ∈ s, ∀ a₂ ∈ s, f a₁ = f a₂ → a₁ = a₂)
+    (hval : ∀ a ∈ s, h a = g (f a))
+    (hnonneg : ∀ b ∈ t, 0 ≤ g b) :
+    (∑ a ∈ s, h a) ≤ (∑ b ∈ t, g b) := by
+  have himg : s.image f ⊆ t := by
+    intro b hb
+    rcases Finset.mem_image.mp hb with ⟨a, ha, rfl⟩
+    exact hmem a ha
+  have hinj' : Set.InjOn f (↑s) := by
+    intro a₁ ha₁ a₂ ha₂ hh
+    exact hinj a₁ ha₁ a₂ ha₂ hh
+  calc
+    (∑ a ∈ s, h a) = ∑ a ∈ s, g (f a) := by
+          exact Finset.sum_congr rfl (fun a ha => hval a ha)
+    _ = ∑ b ∈ s.image f, g b := by
+          simpa using (Finset.sum_image (s := s) (f := f) (g := g) hinj').symm
+    _ ≤ ∑ b ∈ t, g b := by
+          exact Finset.sum_le_sum_of_subset_of_nonneg himg (fun b hb hnot => hnonneg b hb)
+
+/-- 纤维上界: 模 q 中 conductor = q' 的特征对原特征平方和的贡献 ≤ P_{q'}(m). -/
+lemma panTypeI_primitiveFiberSqSum_le {q q' m u : ℕ} (hqq : q' ∣ q) :
+    (∑ χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ q)).filter (fun χ => χ.conductor = q'),
+      ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2) ≤
+    panTypeIPrimitiveSqSum q' m u := by
+  let s₁ : Finset (DirichletCharacter ℂ q) :=
+    (Finset.univ : Finset (DirichletCharacter ℂ q)).filter (fun χ => χ.conductor = q')
+  let s₂ : Finset (DirichletCharacter ℂ q') :=
+    (Finset.univ : Finset (DirichletCharacter ℂ q')).filter (fun χ' => χ'.IsPrimitive)
+  rw [panTypeIPrimitiveSqSum]
+  refine panTypeI_sum_le_sum_of_injOn (f := fun χ => panTypeI_liftPrimitive q' q χ)
+    (g := fun χ' => ‖panTypeIV1CharSum q' m u χ'‖ ^ 2)
+    (h := fun χ => ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2)
+    s₁ s₂ ?hmem ?hinj ?hval ?hnonneg
+  · intro χ hχ
+    have hχ' : χ.conductor = q' := (Finset.mem_filter.mp hχ).2
+    cases hχ'
+    simp [s₂, panTypeI_liftPrimitive]
+    exact χ.primitiveCharacter_isPrimitive
+  · intro χ₁ hχ₁ χ₂ hχ₂ h
+    have hc₁ : χ₁.conductor = q' := (Finset.mem_filter.mp hχ₁).2
+    have hc₂ : χ₂.conductor = q' := (Finset.mem_filter.mp hχ₂).2
+    have hp : (cast (by rw [hc₁]) χ₁.primitiveCharacter) =
+          (cast (by rw [hc₂]) χ₂.primitiveCharacter) := by
+      rw [panTypeI_liftPrimitive_eq_primitiveCharacter χ₁ hc₁,
+        panTypeI_liftPrimitive_eq_primitiveCharacter χ₂ hc₂] at h
+      exact h
+    exact panTypeI_primitiveCharacter_inj_on_fiber χ₁ χ₂ hc₁ hc₂ hp
+  · intro χ hχ
+    have hχ' : χ.conductor = q' := (Finset.mem_filter.mp hχ).2
+    cases hχ'
+    congr 1
+    simp [panTypeI_liftPrimitive]
+  · intro χ' hχ'
+    exact sq_nonneg _
+
+/-- **S2 平方界**: ‖V_χ‖² ≤ 2‖V_{χ.prim}‖² + 2·D_q(m)². -/
+lemma panTypeIV1CharSum_sq_le_primitive {q m u : ℕ} [NeZero q]
+    (χ : DirichletCharacter ℂ q) :
+    ‖panTypeIV1CharSum q m u χ‖ ^ 2 ≤
+      2 * ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2 +
+        2 * (panTypeI_nonCoprimeDensity q m u) ^ 2 := by
+  let V := panTypeIV1CharSum q m u χ
+  let W := panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter
+  let D := panTypeI_nonCoprimeDensity q m u
+  have hnorm : ‖V‖ ≤ ‖W‖ + D := by
+    simpa [V, W, D] using (panTypeIV1CharSum_norm_le_primitive (q := q) (m := m) (u := u) χ)
+  have hnonneg : 0 ≤ ‖W‖ + D := add_nonneg (norm_nonneg _) (panTypeI_nonCoprimeDensity_nonneg q m u)
+  have hs : ‖V‖ ^ 2 ≤ (‖W‖ + D) ^ 2 := by
+    simpa [pow_two] using mul_le_mul hnorm hnorm (norm_nonneg _) hnonneg
+  have hsq : (‖W‖ + D) ^ 2 ≤ 2 * ‖W‖ ^ 2 + 2 * D ^ 2 := by
+    nlinarith [sq_nonneg (‖W‖ - D)]
+  have hfin : ‖V‖ ^ 2 ≤ 2 * ‖W‖ ^ 2 + 2 * D ^ 2 := by
+    calc
+      ‖V‖ ^ 2 ≤ (‖W‖ + D) ^ 2 := hs
+      _ ≤ 2 * ‖W‖ ^ 2 + 2 * D ^ 2 := hsq
+  simpa [V, W, D] using hfin
+
+/-- **S2b (成真)**: 全特征平方和的原特征分解:
+  t_q(m) ≤ 2·Σ_{q' | q} P_{q'}(m) + 2·φ(q)·D_q(m)². -/
+theorem panTypeI_sqSum_primitiveDecomposition (q m u : ℕ) (hq : 0 < q) :
+    panTypeICharSqSum q m u ≤
+      2 * (∑ q' ∈ q.divisors, panTypeIPrimitiveSqSum q' m u) +
+        2 * (Nat.totient q : ℝ) * (panTypeI_nonCoprimeDensity q m u) ^ 2 := by
+  haveI : NeZero q := ⟨Nat.ne_of_gt hq⟩
+  have hpoint : ∀ χ : DirichletCharacter ℂ q,
+      ‖panTypeIV1CharSum q m u χ‖ ^ 2 ≤
+        2 * ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2 +
+          2 * (panTypeI_nonCoprimeDensity q m u) ^ 2 := by
+    intro χ
+    exact panTypeIV1CharSum_sq_le_primitive (q := q) (m := m) (u := u) χ
+  haveI : HasEnoughRootsOfUnity ℂ (Monoid.exponent (ZMod q)ˣ) :=
+    AnalyticNumberTheory.LargeSieve.complexHasEnoughRootsOfUnity (Monoid.exponent (ZMod q)ˣ)
+      (Monoid.exponent_ne_zero_of_finite (G := (ZMod q)ˣ))
+  have hcard : Fintype.card (DirichletCharacter ℂ q) = Nat.totient q := by
+    rw [← Nat.card_eq_fintype_card]
+    exact DirichletCharacter.card_eq_totient_of_hasEnoughRootsOfUnity ℂ q
+  have h1 : panTypeICharSqSum q m u ≤
+      2 * (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2) +
+        2 * (Nat.totient q : ℝ) * (panTypeI_nonCoprimeDensity q m u) ^ 2 := by
+    unfold panTypeICharSqSum
+    calc
+      (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum q m u χ‖ ^ 2)
+          ≤ ∑ χ : DirichletCharacter ℂ q,
+              (2 * ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2 +
+                2 * (panTypeI_nonCoprimeDensity q m u) ^ 2) := by
+              exact Finset.sum_le_sum (fun χ hχ => hpoint χ)
+      _ = 2 * (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2) +
+            2 * (Nat.totient q : ℝ) * (panTypeI_nonCoprimeDensity q m u) ^ 2 := by
+              rw [Finset.sum_add_distrib]
+              rw [← Finset.mul_sum]
+              rw [Finset.sum_const, nsmul_eq_mul]
+              rw [hcard]
+              ring
+  have h2 : (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2) ≤
+      ∑ q' ∈ q.divisors, panTypeIPrimitiveSqSum q' m u := by
+    calc
+      (∑ χ : DirichletCharacter ℂ q, ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2)
+          = ∑ χ : DirichletCharacter ℂ q,
+              ∑ q' ∈ q.divisors, (if χ.conductor = q'
+                  then ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2 else 0) := by
+              apply Finset.sum_congr rfl
+              intro χ hχ
+              have hmem : χ.conductor ∈ q.divisors := by
+                exact Nat.mem_divisors.mpr ⟨χ.conductor_dvd_level, Nat.ne_of_gt hq⟩
+              rw [Finset.sum_ite_eq]
+              simp [hmem]
+      _ = ∑ q' ∈ q.divisors,
+            ∑ χ : DirichletCharacter ℂ q, (if χ.conductor = q'
+                then ‖panTypeIV1CharSum χ.conductor m u χ.primitiveCharacter‖ ^ 2 else 0) := by
+            rw [Finset.sum_comm]
+      _ ≤ ∑ q' ∈ q.divisors, panTypeIPrimitiveSqSum q' m u := by
+            apply Finset.sum_le_sum
+            intro q' hq'
+            rw [← Finset.sum_filter]
+            exact panTypeI_primitiveFiberSqSum_le (q := q) (q' := q') (m := m) (u := u)
+              (Nat.mem_divisors.mp hq').1
+  nlinarith [h1, h2]
+
+
 
 /-! ### S2c: 非互素密度 (结构已证; 密度估计开放) -/
 
