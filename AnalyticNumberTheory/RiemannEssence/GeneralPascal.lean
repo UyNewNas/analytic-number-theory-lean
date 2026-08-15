@@ -74,12 +74,10 @@ lemma J_rec (g : ℕ → ℝ) (k n : ℕ) :
           have h1 : ¬ k + 1 < k + 1 := by omega
           have h2 : k + 1 < (k + 1) + 1 := by omega
           have h3 : k < k + 1 := by omega
-          rw [if_neg h1, if_pos h2, if_pos h3]
+          have h5 : (n + 1) + k = n + (k + 1) := by omega
+          rw [if_neg h1, if_pos h2, if_pos h3, h5]
           simp [Nat.choose_self]
-          congr 1
-          omega
-        · have hgk : k < j := by omega
-          have h1 : ¬ j + 1 < k + 1 := by omega
+        · have h1 : ¬ j + 1 < k + 1 := by omega
           have h2 : ¬ j + 1 < (k + 1) + 1 := by omega
           have h3 : ¬ j < k + 1 := by omega
           rw [if_neg h2, if_neg h1, if_neg h3]
