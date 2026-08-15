@@ -463,3 +463,9 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeI_sqSum_primitiveDecomposition
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeIPrimitiveSqSum_nonneg
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeI_charCard_eq_totient
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeIIPrimitiveSqSum_nonneg
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeII_nonCoprimeDensity_nonneg
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeIIV3CharSum_norm_le_primitive
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeIIV3CharSum_sq_le_primitive
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeII_primitiveFiberSqSum_le
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeII_sqSum_primitiveDecomposition
