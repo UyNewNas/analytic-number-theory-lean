@@ -1,3 +1,6 @@
+import AnalyticNumberTheory.LargeSieve.PanTypeIAssembly
+import AnalyticNumberTheory.Sieve.PanMeanValueBody
+
 /-!
 ! # AnalyticNumberTheory.LargeSieve.PanTypeIIAssembly
 
@@ -8,9 +11,6 @@ S2b 分解: t_q(m) ≤ 2·Σ_{q' | q} φ(q)·P2_{q'}(m) + 2·φ(q)·D2_q(m)².
 证明装置与 PanTypeIAssembly.lean 的 S2b 完全相同 (逐点平方界 + 纤维大小),
 仅序列换成 vaughanThird(n,u,v). 零 sorry, 零非形式化输入.
 -/
-
-import AnalyticNumberTheory.LargeSieve.PanTypeIAssembly
-import AnalyticNumberTheory.Sieve.PanMeanValueBody
 
 namespace AnalyticNumberTheory.LargeSieve
 
