@@ -366,7 +366,7 @@ lemma panTypeI_primitiveFiberSqSum_le {q q' m u : ℕ} (hq : 0 < q) :
     intro χ hχ
     have hχ' : χ.conductor = q' := (Finset.mem_filter.mp hχ).2
     rw [panTypeIPrimitiveSqSum]
-    exact Finset.single_le_sum (fun χ' hχ' => sq_nonneg _)
+    exact Finset.single_le_sum (fun χ' hχ' => sq_nonneg ‖panTypeIV1CharSum q' m u χ'‖)
       (Finset.mem_filter.mpr ⟨Finset.mem_univ _, panTypeI_liftPrimitive_isPrimitive χ hχ'⟩)
   have hsize : s₁.card ≤ Nat.totient q := by
     calc
