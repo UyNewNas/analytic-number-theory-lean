@@ -469,3 +469,6 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeIIV3CharSum_sq_le_primitive
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeII_primitiveFiberSqSum_le
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeII_sqSum_primitiveDecomposition
+#print axioms AnalyticNumberTheory.LargeSieve.sum_multiples_eq_sum_range
+#print axioms AnalyticNumberTheory.LargeSieve.log_mul_plus_one_le
+#print axioms AnalyticNumberTheory.LargeSieve.prime_mul_divisors_card_le
