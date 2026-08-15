@@ -457,11 +457,9 @@ all other non-whitelisted axioms are rejected.
 #print axioms AnalyticNumberTheory.Sieve.q_div_totient_mul_totient_div_q_eq_one
 #print axioms AnalyticNumberTheory.Sieve.mul_totient_div_q_mul_q_div_totient
 
-#print axioms AnalyticNumberTheory.LargeSieve.panTypeI_liftPrimitive_eq_primitiveCharacter
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeI_liftPrimitive_isPrimitive
-#print axioms AnalyticNumberTheory.LargeSieve.panTypeI_changeLevel_congr
-#print axioms AnalyticNumberTheory.LargeSieve.panTypeI_primitiveCharacter_inj_on_fiber
-#print axioms AnalyticNumberTheory.LargeSieve.panTypeI_sum_le_sum_of_injOn
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeI_primitiveFiberSqSum_le
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeIV1CharSum_sq_le_primitive
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeI_sqSum_primitiveDecomposition
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeIPrimitiveSqSum_nonneg
+#print axioms AnalyticNumberTheory.LargeSieve.panTypeI_charCard_eq_totient
