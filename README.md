@@ -30,6 +30,12 @@ The foundation currently provides:
 
 Chen-specific sieve consequences remain in `chen-theorem-lean`.
 
+The lower-sieve error interface is under a source-faithfulness audit:
+[`COMPACT_SUPPORT_LOWER_SIEVE_AUDIT.md`](COMPACT_SUPPORT_LOWER_SIEVE_AUDIT.md)
+records why a compactly supported lower coefficient sequence must retain its
+own `errSum`, rather than be widened to the all-divisor `errSum(1)`, before a
+Chen/Pan consumer is formalized.
+
 ## Status and trust
 
 This repository is under development. A commit is release-ready only when its

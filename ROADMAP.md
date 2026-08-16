@@ -94,6 +94,11 @@ the common asymptotic/error-term API.
   target `UniformJurkatRichertLowerBound` (constants precede `∀ N`) and the
   finite seam `siftedSum_lower_bound_of_mainTerm` from the main-term estimate
   to the explicit-error sifted lower bound.
+- [ ] **Compact-support repair (#66):** revise the lower-sieve consumer so a
+  supported lower Möbius sequence keeps `errSum(μ⁻)` (hence only `d ≤ D`)
+  instead of being widened to all-divisor `errSum(1)`; the written
+  specification and source-audit gates are in
+  `COMPACT_SUPPORT_LOWER_SIEVE_AUDIT.md`.
 - [x] **Selberg upper-bound sieve (#6):** add
   `AnalyticNumberTheory/Sieve/SelbergUpperBound.lean` with the generic
   Selberg weights, the Mathlib Λ²-sieve bridges, and the optimal-weight
