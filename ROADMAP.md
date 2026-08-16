@@ -103,6 +103,10 @@ the common asymptotic/error-term API.
   term before asking for arbitrary-log-saving distribution estimates; the
   exact modulus-one obstruction and migration order are recorded in
   `SIEVE_MAIN_TERM_NORMALIZATION_AUDIT.md`.
+- [ ] **Chen `a = 1` weighted BV seam:** after the Li migration, expose the
+  source-matched weighted statement at the delta weight `f = 1_{a=1}` and
+  transport it only to compactly supported lower-sieve moduli. This is not the
+  current generic Pan principal-part chain; see `A1_WEIGHTED_BV_SOURCE_MATCH.md`.
 - [x] **Selberg upper-bound sieve (#6):** add
   `AnalyticNumberTheory/Sieve/SelbergUpperBound.lean` with the generic
   Selberg weights, the Mathlib Λ²-sieve bridges, and the optimal-weight

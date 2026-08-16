@@ -41,6 +41,12 @@ records that the working `x/log x` definition is not an admissible
 arbitrary-log-saving distribution main term; the genuine `Li` normalization
 must be introduced before a Chen/Pan error theorem can be claimed.
 
+For the actual Chen lower-sieve consumer, [`A1_WEIGHTED_BV_SOURCE_MATCH.md`](A1_WEIGHTED_BV_SOURCE_MATCH.md)
+records the narrower, source-matched `a = 1` weighted BV supply. It separates
+that theorem from the unsuitable generic Pan principal-part chain, and lists
+the three remaining independent supplies: the modulus-one `pi-Li` bound,
+signed MainB correction, and compact lower-sieve coefficients.
+
 ## Status and trust
 
 This repository is under development. A commit is release-ready only when its
