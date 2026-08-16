@@ -36,6 +36,11 @@ records why a compactly supported lower coefficient sequence must retain its
 own `errSum`, rather than be widened to the all-divisor `errSum(1)`, before a
 Chen/Pan consumer is formalized.
 
+A second audit, [`SIEVE_MAIN_TERM_NORMALIZATION_AUDIT.md`](SIEVE_MAIN_TERM_NORMALIZATION_AUDIT.md),
+records that the working `x/log x` definition is not an admissible
+arbitrary-log-saving distribution main term; the genuine `Li` normalization
+must be introduced before a Chen/Pan error theorem can be claimed.
+
 ## Status and trust
 
 This repository is under development. A commit is release-ready only when its

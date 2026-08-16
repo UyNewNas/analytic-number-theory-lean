@@ -130,10 +130,11 @@ only distributional sum to consume is of the form
 Since `|μ⁻_N(d)|≤1≤3^ω(d)`, it is bounded by the standard Chen a=1 weighted
 Pan/BV sum on that same modulus range.  The restriction `d|P(N)` also gives
 `gcd(N mod d,d)=1` for `d≥2`, so these are legitimate coprime residue classes
-for the Pan maximum.  The exceptional `d=1` term is
+for the Pan maximum.  After the normalization repair in
+`SIEVE_MAIN_TERM_NORMALIZATION_AUDIT.md`, the exceptional `d=1` term is
 
 ```text
-|π(N-2)-li(N-2)|,
+|π(N-2)-Li(N-2)|,
 ```
 
 and must be supplied by a quantitative PNT consequence, not by a BV theorem.
@@ -173,7 +174,10 @@ with exact definitions rather than prose:
 Failure conditions are equally clear: any proposed route that reverts to
 `errSum(1)`, treats a non-coprime residue class as a Pan/BV class, or takes
 absolute values before the signed forbidden-divisor cancellation has not met
-this specification.
+this specification.  A further failure condition is measuring an
+arbitrary-log-saving error against the merely first-order term `x/log x`;
+that false normalization is audited separately in
+`SIEVE_MAIN_TERM_NORMALIZATION_AUDIT.md`.
 
 ## 7. Literature orientation
 

@@ -99,6 +99,10 @@ the common asymptotic/error-term API.
   instead of being widened to all-divisor `errSum(1)`; the written
   specification and source-audit gates are in
   `COMPACT_SUPPORT_LOWER_SIEVE_AUDIT.md`.
+- [ ] **Genuine Li normalization:** replace the working `x/log x` sieve main
+  term before asking for arbitrary-log-saving distribution estimates; the
+  exact modulus-one obstruction and migration order are recorded in
+  `SIEVE_MAIN_TERM_NORMALIZATION_AUDIT.md`.
 - [x] **Selberg upper-bound sieve (#6):** add
   `AnalyticNumberTheory/Sieve/SelbergUpperBound.lean` with the generic
   Selberg weights, the Mathlib Λ²-sieve bridges, and the optimal-weight
