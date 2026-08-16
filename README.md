@@ -55,6 +55,10 @@ A third audit, [`SIEVE_RATIO_PARAMETER_AUDIT.md`](SIEVE_RATIO_PARAMETER_AUDIT.md
 records that the linear-sieve parameter is `log D / log z`, not `D / z`; the
 current latter interface cannot source-match a Chen Jurkat--Richert main term.
 
+[`SIEVE_INTERFACE_STATUS.md`](SIEVE_INTERFACE_STATUS.md) is the authoritative
+ledger separating kernel-clean legacy interfaces from source-valid future
+Chen consumers.
+
 ## Status and trust
 
 This repository is under development. A commit is release-ready only when its
