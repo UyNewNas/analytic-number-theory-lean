@@ -35,6 +35,7 @@ corrected sub-steps of the type-I assembly.
 -/
 
 import AnalyticNumberTheory.LargeSieve.Multiplicative
+import AnalyticNumberTheory.Sieve.PanMeanValueBody
 import Mathlib.NumberTheory.DirichletCharacter.GaussSum
 import Mathlib.Tactic
 
@@ -43,6 +44,7 @@ namespace AnalyticNumberTheory.LargeSieve
 open Finset
 open scoped BigOperators
 open Classical
+open AnalyticNumberTheory.Sieve
 
 noncomputable section
 
@@ -164,8 +166,7 @@ lemma gaussSum_mulShift_apply {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ 
 /-- The sum over ZMod q equals the sum over representatives r < q. -/
 lemma zmodSum_eq_rangeSum {q : ℕ} [NeZero q] {M : Type*} [AddCommMonoid M] (f : ZMod q → M) :
     (∑ a : ZMod q, f a) = ∑ r ∈ Finset.range q, f (r : ZMod q) := by
-  rw [Finset.sum_bij (s := Finset.univ) (t := Finset.range q) (f := f)
-    (g := fun r : ℕ => f (r : ZMod q)) (i := fun a _ => a.val)]
+  refine Finset.sum_bij (s := Finset.univ) (t := Finset.range q) (fun a _ => a.val) ?_ ?_ ?_ ?_
   · intro a ha
     exact Finset.mem_range.mpr (ZMod.val_lt a)
   · intro a₁ ha₁ a₂ ha₂ h
@@ -383,17 +384,28 @@ lemma star_isPrimitive {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) (hχ
 
 /-- The additive sum T(x) = sum_n a_n * e(n * x.val / q) for x : ZMod q. -/
 def charAddSum (a : ℤ → ℂ) (M : ℤ) (N q : ℕ) (x : ZMod q) : ℂ :=
-  ∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * (x.val : ℝ) / (q : ℝ))
+  ∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * ((x.val : ℝ) / (q : ℝ)))
+
+/-- e(n·x/q) written with the single quotient x/q: argument-form bridge. -/
+lemma charReal_mul_div {q : ℕ} [NeZero q] (n : ℤ) (x : ZMod q) :
+    charReal ((n : ℝ) * ((x.val : ℝ) / (q : ℝ))) =
+      charReal ((n : ℝ) * (x.val : ℝ) / (q : ℝ)) := by
+  congr 1
+  field_simp [show (q : ℝ) ≠ 0 by exact_mod_cast (NeZero.ne q)]
 
 /-- The Fourier transform of a primitive character: for all n,
   sum_{x mod q} star(chi x) * e(n x / q) = chi n * tau(star chi). -/
 lemma primitiveFourier {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) (hχ : χ.IsPrimitive)
     (n : ℤ) :
-    (∑ x : ZMod q, star (χ x) * charReal ((n : ℝ) * (x.val : ℝ) / (q : ℝ))) =
+    (∑ x : ZMod q, star (χ x) * charReal ((n : ℝ) * ((x.val : ℝ) / (q : ℝ)))) =
       χ (n : ZMod q) * gaussSum (star χ) (zmodCharStd q) := by
   calc
-    (∑ x : ZMod q, star (χ x) * charReal ((n : ℝ) * (x.val : ℝ) / (q : ℝ)))
-        = gaussSum (star χ) ((zmodCharStd q).mulShift (n : ZMod q)) := by
+    (∑ x : ZMod q, star (χ x) * charReal ((n : ℝ) * ((x.val : ℝ) / (q : ℝ))))
+        = ∑ x : ZMod q, star (χ x) * charReal ((n : ℝ) * (x.val : ℝ) / (q : ℝ)) := by
+          apply Finset.sum_congr rfl
+          intro x hx
+          rw [charReal_mul_div]
+    _ = gaussSum (star χ) ((zmodCharStd q).mulShift (n : ZMod q)) := by
           exact (gaussSum_mulShift_apply (star χ) n).symm
     _ = χ (n : ZMod q) * gaussSum (star χ) (zmodCharStd q) := by
           have hprim := star_isPrimitive χ hχ
@@ -419,9 +431,9 @@ lemma primitiveInversion {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) (h
     unfold charAddSum
     calc
       (∑ x : ZMod q, star (χ x) * (∑ n ∈ Finset.Icc (M + 1) (M + N),
-          a n * charReal ((n : ℝ) * (x.val : ℝ) / (q : ℝ))))
+          a n * charReal ((n : ℝ) * ((x.val : ℝ) / (q : ℝ)))))
           = ∑ x : ZMod q, ∑ n ∈ Finset.Icc (M + 1) (M + N),
-              star (χ x) * (a n * charReal ((n : ℝ) * (x.val : ℝ) / (q : ℝ))) := by
+              star (χ x) * (a n * charReal ((n : ℝ) * ((x.val : ℝ) / (q : ℝ)))) := by
             apply Finset.sum_congr rfl
             intro x hx
             rw [mul_comm, Finset.sum_mul]
@@ -429,10 +441,10 @@ lemma primitiveInversion {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) (h
             intro n hn
             ring
       _ = ∑ n ∈ Finset.Icc (M + 1) (M + N), ∑ x : ZMod q,
-            star (χ x) * (a n * charReal ((n : ℝ) * (x.val : ℝ) / (q : ℝ))) := by
+            star (χ x) * (a n * charReal ((n : ℝ) * ((x.val : ℝ) / (q : ℝ)))) := by
             rw [Finset.sum_comm]
       _ = ∑ n ∈ Finset.Icc (M + 1) (M + N),
-            a n * (∑ x : ZMod q, star (χ x) * charReal ((n : ℝ) * (x.val : ℝ) / (q : ℝ))) := by
+            a n * (∑ x : ZMod q, star (χ x) * charReal ((n : ℝ) * ((x.val : ℝ) / (q : ℝ)))) := by
             apply Finset.sum_congr rfl
             intro n hn
             rw [Finset.mul_sum]
@@ -628,19 +640,17 @@ lemma reducedFracs_subset_rationalPoints (Q : ℕ) : reducedFracs Q ⊆ rational
   exact Finset.mem_image.mpr ⟨r, (Finset.mem_filter.mp hr).1, rfl⟩
 
 /-- The double sum over reduced pairs equals the sum over reducedFracs (the map is injective). -/
-lemma reducedFracs_sum {Q : ℕ} (T : ℝ → ℂ) :
+lemma reducedFracs_sum {Q : ℕ} {β : Type*} [AddCommMonoid β] (T : ℝ → β) :
     (∑ q ∈ Finset.Icc 1 Q, ∑ r ∈ (Finset.range q).filter (fun r => r.Coprime q),
-      ‖T ((r : ℝ) / (q : ℝ))‖ ^ 2) =
-      ∑ x ∈ reducedFracs Q, ‖T x‖ ^ 2 := by
+      T ((r : ℝ) / (q : ℝ))) =
+      ∑ x ∈ reducedFracs Q, T x := by
   rw [← Finset.sum_sigma (s := Finset.Icc 1 Q)
     (t := fun q => (Finset.range q).filter (fun r => r.Coprime q))
-    (f := fun p : Σ q : ℕ, ℕ => ‖T ((p.2 : ℝ) / (p.1 : ℝ))‖ ^ 2)]
-  rw [Finset.sum_bij (s := (Finset.Icc 1 Q).sigma (fun q =>
+    (f := fun p : Σ q : ℕ, ℕ => T ((p.2 : ℝ) / (p.1 : ℝ)))]
+  refine Finset.sum_bij (s := (Finset.Icc 1 Q).sigma (fun q =>
       (Finset.range q).filter (fun r => r.Coprime q)))
     (t := reducedFracs Q)
-    (f := fun p : Σ q : ℕ, ℕ => ‖T ((p.2 : ℝ) / (p.1 : ℝ))‖ ^ 2)
-    (g := fun x : ℝ => ‖T x‖ ^ 2)
-    (i := fun p _ => ((p.2 : ℝ) / (p.1 : ℝ)))]
+    (fun p _ => ((p.2 : ℝ) / (p.1 : ℝ))) ?_ ?_ ?_ ?_
   · -- hi: i p = p.2/p.1 ∈ reducedFracs
     intro p hp
     rw [Finset.mem_sigma] at hp
@@ -655,10 +665,12 @@ lemma reducedFracs_sum {Q : ℕ} (T : ℝ → ℂ) :
     have hpos2 : 0 < p₂.1 := lt_of_lt_of_le (by norm_num : (0 : ℕ) < 1) (Finset.mem_Icc.mp hp₂.1).1
     have hq1ne : (p₁.1 : ℝ) ≠ 0 := by exact_mod_cast (ne_of_gt hpos1)
     have hq2ne : (p₂.1 : ℝ) ≠ 0 := by exact_mod_cast (ne_of_gt hpos2)
-    have hcross : (p₁.2 : ℤ) * (p₂.1 : ℤ) = (p₁.1 : ℤ) * (p₂.2 : ℤ) := by
+    have hn : p₁.2 * p₂.1 = p₁.1 * p₂.2 := by
       have hh : (p₁.2 : ℝ) / (p₁.1 : ℝ) = (p₂.2 : ℝ) / (p₂.1 : ℝ) := h
       field_simp [hq1ne, hq2ne] at hh
       exact_mod_cast hh
+    have hcross : (p₁.2 : ℤ) * (p₂.1 : ℤ) = (p₁.1 : ℤ) * (p₂.2 : ℤ) := by
+      exact_mod_cast hn
     have hcop1 : p₁.2.Coprime p₁.1 := (Finset.mem_filter.mp hp₁.2).2
     have hcop2 : p₂.2.Coprime p₂.1 := (Finset.mem_filter.mp hp₂.2).2
     have hdvd1 : p₁.1 ∣ p₂.1 := by
@@ -705,7 +717,7 @@ lemma reducedFracs_sum {Q : ℕ} (T : ℝ → ℂ) :
 lemma charAddSum_natCast {q : ℕ} [NeZero q] (a : ℤ → ℂ) (M : ℤ) (N : ℕ) {r : ℕ}
     (hr : r < q) :
     charAddSum a M N q (r : ZMod q) =
-      ∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * (r : ℝ) / (q : ℝ)) := by
+      ∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * ((r : ℝ) / (q : ℝ))) := by
   unfold charAddSum
   have hrq : (r : ZMod q).val = r := by
     rw [ZMod.val_natCast, Nat.mod_eq_of_lt hr]
@@ -715,35 +727,25 @@ lemma charAddSum_natCast {q : ℕ} [NeZero q] (a : ℤ → ℂ) (M : ℤ) (N : �
 lemma unitsSum_eq_reducedFracs {q : ℕ} [NeZero q] (T : ZMod q → ℂ) :
     (∑ x : ZMod q, (if IsUnit x then ‖T x‖ ^ 2 else 0)) =
       ∑ r ∈ (Finset.range q).filter (fun r => r.Coprime q), ‖T (r : ZMod q)‖ ^ 2 := by
-  rw [← Finset.sum_filter]
-  rw [Finset.sum_bij (s := (Finset.univ : Finset (ZMod q)).filter (fun x => IsUnit x))
-    (t := (Finset.range q).filter (fun r => r.Coprime q))
-    (f := fun x : ZMod q => ‖T x‖ ^ 2)
-    (g := fun r : ℕ => ‖T (r : ZMod q)‖ ^ 2)
-    (i := fun x _ => x.val)]
-  · intro x hx
-    -- x.val ∈ t: IsUnit x → x.val.Coprime q
-    have hx' := (Finset.mem_filter.mp hx).2
-    have hx'' : IsUnit (x.val : ZMod q) := by
-      rw [← ZMod.natCast_zmod_val x] at hx'
-      exact hx'
-    rw [Finset.mem_filter, Finset.mem_range]
-    exact ⟨ZMod.val_lt x, (ZMod.isUnit_iff_coprime x.val q).1 hx''⟩
-  · intro x₁ hx₁ x₂ hx₂ h
-    rw [← ZMod.natCast_zmod_val x₁, ← ZMod.natCast_zmod_val x₂]
-    exact congrArg (fun v : ℕ => (v : ZMod q)) h
-  · intro r hr
-    -- ∃ x ∈ s, x.val = r: x = (r : ZMod q)
-    have hr' := Finset.mem_filter.mp hr
-    refine ⟨(r : ZMod q), ?_, ?_⟩
-    · rw [Finset.mem_filter]
-      exact ⟨Finset.mem_univ _, (ZMod.isUnit_iff_coprime r q).2 hr'.2⟩
-    · rw [ZMod.val_natCast, Nat.mod_eq_of_lt (Finset.mem_range.mp hr'.1)]
-  · intro x hx
-    congr 1
-    congr 1
-    congr 1
-    exact (ZMod.natCast_zmod_val x).symm
+  calc
+    (∑ x : ZMod q, (if IsUnit x then ‖T x‖ ^ 2 else 0))
+        = ∑ r ∈ Finset.range q,
+            (if IsUnit (r : ZMod q) then ‖T (r : ZMod q)‖ ^ 2 else 0) := by
+          rw [zmodSum_eq_rangeSum (f := fun x : ZMod q =>
+            if IsUnit x then ‖T x‖ ^ 2 else 0)]
+    _ = ∑ r ∈ (Finset.range q).filter (fun r => r.Coprime q), ‖T (r : ZMod q)‖ ^ 2 := by
+          rw [← Finset.sum_filter]
+          have hext : (Finset.range q).filter (fun r : ℕ => IsUnit (r : ZMod q)) =
+              (Finset.range q).filter (fun r : ℕ => r.Coprime q) := by
+            ext r
+            constructor
+            · intro h
+              rw [Finset.mem_filter] at h ⊢
+              exact ⟨h.1, (ZMod.isUnit_iff_coprime r q).1 h.2⟩
+            · intro h
+              rw [Finset.mem_filter] at h ⊢
+              exact ⟨h.1, (ZMod.isUnit_iff_coprime r q).2 h.2⟩
+          rw [hext]
 
 /-- **Bombieri-Davenport lemma**: sum_{1 <= q <= Q} (q/phi(q)) * sum over primitive chi
   of |sum_n a_n chi(n)|^2 is bounded by the additive large sieve on the Farey set
@@ -760,7 +762,7 @@ theorem bombieriDavenport_le (Q : ℕ) (hQ : 0 < Q) (a : ℤ → ℂ) (M : ℤ) 
         (∑ χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ q)).filter (fun χ => χ.IsPrimitive),
           ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * χ (n : ZMod q)‖ ^ 2)
         ≤ ∑ r ∈ (Finset.range q).filter (fun r => r.Coprime q),
-            ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * (r : ℝ) / (q : ℝ))‖ ^ 2 := by
+            ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * ((r : ℝ) / (q : ℝ)))‖ ^ 2 := by
     intro q hq
     haveI : NeZero q := ⟨Nat.ne_of_gt (Finset.mem_Icc.mp hq).1⟩
     let primChars : Finset (DirichletCharacter ℂ q) :=
@@ -799,18 +801,17 @@ theorem bombieriDavenport_le (Q : ℕ) (hQ : 0 < Q) (a : ℤ → ℂ) (M : ℤ) 
             rw [charParseval_units (T := charAddSum a M N q)]
       _ = (1 / (q.totient : ℝ)) * ((q.totient : ℝ) *
             (∑ r ∈ (Finset.range q).filter (fun r => r.Coprime q),
-              ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * (r : ℝ) / (q : ℝ))‖ ^ 2)) := by
+              ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * ((r : ℝ) / (q : ℝ)))‖ ^ 2)) := by
             have hpu : (∑ x : ZMod q, (if IsUnit x then ‖charAddSum a M N q x‖ ^ 2 else 0)) =
                 ∑ r ∈ (Finset.range q).filter (fun r => r.Coprime q),
                   ‖charAddSum a M N q (r : ZMod q)‖ ^ 2 :=
               unitsSum_eq_reducedFracs (T := charAddSum a M N q)
             have hcr : ∀ r ∈ (Finset.range q).filter (fun r => r.Coprime q),
                 ‖charAddSum a M N q (r : ZMod q)‖ ^ 2 =
-                  ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * (r : ℝ) / (q : ℝ))‖ ^ 2 := by
+                  ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * ((r : ℝ) / (q : ℝ)))‖ ^ 2 := by
               intro r hr
-              congr 1
-              congr 1
-              exact charAddSum_natCast a M N (Finset.mem_range.mp (Finset.mem_filter.mp hr).1)
+              exact congrArg (fun z : ℂ => ‖z‖ ^ 2)
+                (charAddSum_natCast a M N (Finset.mem_range.mp (Finset.mem_filter.mp hr).1))
             calc
               (1 / (q.totient : ℝ)) * ((q.totient : ℝ) *
                   (∑ x : ZMod q, (if IsUnit x then ‖charAddSum a M N q x‖ ^ 2 else 0)))
@@ -820,14 +821,14 @@ theorem bombieriDavenport_le (Q : ℕ) (hQ : 0 < Q) (a : ℤ → ℂ) (M : ℤ) 
                     rw [hpu]
               _ = (1 / (q.totient : ℝ)) * ((q.totient : ℝ) *
                       (∑ r ∈ (Finset.range q).filter (fun r => r.Coprime q),
-                        ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * (r : ℝ) / (q : ℝ))‖ ^ 2)) := by
+                        ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * ((r : ℝ) / (q : ℝ)))‖ ^ 2)) := by
                     congr 1
                     congr 1
                     apply Finset.sum_congr rfl
                     intro r hr
                     exact hcr r hr
       _ = ∑ r ∈ (Finset.range q).filter (fun r => r.Coprime q),
-            ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * (r : ℝ) / (q : ℝ))‖ ^ 2 := by
+            ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * ((r : ℝ) / (q : ℝ)))‖ ^ 2 := by
             have hqpos : 0 < q := lt_of_lt_of_le (by norm_num : (0 : ℕ) < 1) (Finset.mem_Icc.mp hq).1
             field_simp [show (q.totient : ℝ) ≠ 0 by exact_mod_cast (Nat.totient_pos.mpr hqpos).ne']
   -- assemble over q and use the additive large sieve on the Farey set
@@ -837,7 +838,7 @@ theorem bombieriDavenport_le (Q : ℕ) (hQ : 0 < Q) (a : ℤ → ℂ) (M : ℤ) 
         (∑ χ ∈ (Finset.univ : Finset (DirichletCharacter ℂ q)).filter (fun χ => χ.IsPrimitive),
           ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * χ (n : ZMod q)‖ ^ 2))
         ≤ ∑ q ∈ Finset.Icc 1 Q, ∑ r ∈ (Finset.range q).filter (fun r => r.Coprime q),
-            ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * (r : ℝ) / (q : ℝ))‖ ^ 2 := by
+            ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * ((r : ℝ) / (q : ℝ)))‖ ^ 2 := by
           apply Finset.sum_le_sum
           intro q hq
           exact hmain q hq
@@ -845,9 +846,9 @@ theorem bombieriDavenport_le (Q : ℕ) (hQ : 0 < Q) (a : ℤ → ℂ) (M : ℤ) 
           exact reducedFracs_sum (fun x : ℝ =>
             ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * x)‖ ^ 2)
     _ ≤ ∑ x ∈ rationalPoints Q, ‖∑ n ∈ Finset.Icc (M + 1) (M + N), a n * charReal ((n : ℝ) * x)‖ ^ 2 := by
-          exact Finset.sum_le_sum_of_subset_of_nonneg (reducedFracs_subset_rationalPoints Q) (fun _ _ => sq_nonneg _)
+          exact Finset.sum_le_sum_of_subset_of_nonneg (reducedFracs_subset_rationalPoints Q) (fun _ _ _ => sq_nonneg _)
     _ ≤ largeSieveBound N (1 / (Q : ℝ) ^ 2) * (∑ n ∈ Finset.Icc (M + 1) (M + N), ‖a n‖ ^ 2) := by
-          exact largeSieveRationalPoints M N Q hQ a
+          simpa [mul_comm] using largeSieveRationalPoints M N Q hQ a
 
 /-! ## 7. Application to the type-I assembly and the honest status report -/
 
@@ -858,41 +859,38 @@ lemma vaughanFirst_Icc_charSum {q m u : ℕ} (χ : DirichletCharacter ℂ q) :
     (∑ n ∈ Finset.Icc (0 : ℤ) (m : ℤ),
       (if 0 ≤ n then (vaughanFirst n.toNat u : ℂ) else 0) * χ (n : ZMod q)) =
       ∑ n ∈ Finset.range (m + 1), (vaughanFirst n u : ℂ) * χ (n : ZMod q) := by
-  rw [Finset.sum_bij (s := Finset.Icc (0 : ℤ) (m : ℤ)) (t := Finset.range (m + 1))
-    (f := fun n : ℤ => (if 0 ≤ n then (vaughanFirst n.toNat u : ℂ) else 0) * χ (n : ZMod q))
-    (g := fun n : ℕ => (vaughanFirst n u : ℂ) * χ (n : ZMod q))
-    (i := fun n _ => n.toNat)]
+  refine Finset.sum_bij (s := Finset.Icc (0 : ℤ) (m : ℤ)) (t := Finset.range (m + 1))
+    (fun n _ => n.toNat) ?_ ?_ ?_ ?_
   · intro n hn
     rw [Finset.mem_Icc] at hn
     rw [Finset.mem_range]
     -- 0 ≤ n and n ≤ m → n.toNat ≤ m
     have hto : n.toNat ≤ m := by
-      -- n.toNat = n as ℤ (since 0 ≤ n), so n.toNat ≤ m from n ≤ m
       have hz : (n.toNat : ℤ) = n := Int.toNat_of_nonneg hn.1
-      -- n.toNat ≤ m : ℕ — from (n.toNat : ℤ) = n ≤ m
       exact_mod_cast (by simpa [hz] using hn.2)
     omega
   · intro n₁ hn₁ n₂ hn₂ h
     -- n₁.toNat = n₂.toNat → n₁ = n₂ (both in Icc, so nonneg)
     have h₁ : 0 ≤ n₁ := (Finset.mem_Icc.mp hn₁).1
     have h₂ : 0 ≤ n₂ := (Finset.mem_Icc.mp hn₂).1
-    exact_mod_cast (by
-      have h1z : (n₁.toNat : ℤ) = n₁ := Int.toNat_of_nonneg h₁
-      have h2z : (n₂.toNat : ℤ) = n₂ := Int.toNat_of_nonneg h₂
-      rwa [h1z, h2z] at h)
+    calc
+      n₁ = (n₁.toNat : ℤ) := (Int.toNat_of_nonneg h₁).symm
+      _ = (n₂.toNat : ℤ) := by rw [h]
+      _ = n₂ := Int.toNat_of_nonneg h₂
   · intro n hn
     rw [Finset.mem_range] at hn
     refine ⟨(n : ℤ), ?_, ?_⟩
     · rw [Finset.mem_Icc]
-      exact ⟨by norm_num, by exact_mod_cast (Nat.le_of_lt_succ hn)⟩
+      exact ⟨by exact_mod_cast (Nat.zero_le n), by exact_mod_cast (Nat.le_of_lt_succ hn)⟩
     · -- (n : ℤ).toNat = n
-      exact Int.toNat_of_nonneg (by norm_num : 0 ≤ (n : ℤ))
+      exact Int.toNat_natCast n
   · intro n hn
     -- the summands match: (if 0 ≤ (n : ℤ) then vaughanFirst (n : ℤ).toNat u else 0) = vaughanFirst n u
-    have hto : ((n : ℤ).toNat) = n := by
-      exact Int.toNat_of_nonneg (by norm_num : 0 ≤ (n : ℤ))
-    have hnon : 0 ≤ (n : ℤ) := by norm_num
-    simp [hto, hnon]
+    have hnon : 0 ≤ (n : ℤ) := (Finset.mem_Icc.mp hn).1
+    have hto : (n.toNat : ZMod q) = (n : ZMod q) := by
+      rw [← Int.cast_natCast (R := ZMod q) n.toNat]
+      exact congrArg (fun z : ℤ => (z : ZMod q)) (Int.toNat_of_nonneg hnon)
+    simp [hnon, hto]
 
 /-- The norm-square of the interval coefficients equals the range sum of
   vaughanFirst(n,u)^2. -/
@@ -900,33 +898,35 @@ lemma vaughanFirst_Icc_normSq (m u : ℕ) :
     (∑ n ∈ Finset.Icc (0 : ℤ) (m : ℤ),
       ‖(if 0 ≤ n then (vaughanFirst n.toNat u : ℂ) else 0)‖ ^ 2) =
       ∑ n ∈ Finset.range (m + 1), (vaughanFirst n u) ^ 2 := by
-  rw [Finset.sum_bij (s := Finset.Icc (0 : ℤ) (m : ℤ)) (t := Finset.range (m + 1))
-    (f := fun n : ℤ => ‖(if 0 ≤ n then (vaughanFirst n.toNat u : ℂ) else 0)‖ ^ 2)
-    (g := fun n : ℕ => (vaughanFirst n u) ^ 2)
-    (i := fun n _ => n.toNat)]
+  refine Finset.sum_bij (s := Finset.Icc (0 : ℤ) (m : ℤ)) (t := Finset.range (m + 1))
+    (fun n _ => n.toNat) ?_ ?_ ?_ ?_
   · intro n hn
     rw [Finset.mem_Icc] at hn
     rw [Finset.mem_range]
     have hz : (n.toNat : ℤ) = n := Int.toNat_of_nonneg hn.1
-    exact_mod_cast (by simpa [hz] using hn.2)
+    have hto : n.toNat ≤ m := by
+      exact_mod_cast (by simpa [hz] using hn.2)
+    omega
   · intro n₁ hn₁ n₂ hn₂ h
     have h₁ : 0 ≤ n₁ := (Finset.mem_Icc.mp hn₁).1
     have h₂ : 0 ≤ n₂ := (Finset.mem_Icc.mp hn₂).1
-    exact_mod_cast (by
-      have h1z : (n₁.toNat : ℤ) = n₁ := Int.toNat_of_nonneg h₁
-      have h2z : (n₂.toNat : ℤ) = n₂ := Int.toNat_of_nonneg h₂
-      rwa [h1z, h2z] at h)
+    calc
+      n₁ = (n₁.toNat : ℤ) := (Int.toNat_of_nonneg h₁).symm
+      _ = (n₂.toNat : ℤ) := by rw [h]
+      _ = n₂ := Int.toNat_of_nonneg h₂
   · intro n hn
     rw [Finset.mem_range] at hn
     refine ⟨(n : ℤ), ?_, ?_⟩
     · rw [Finset.mem_Icc]
-      exact ⟨by norm_num, by exact_mod_cast (Nat.le_of_lt_succ hn)⟩
-    · exact Int.toNat_of_nonneg (by norm_num : 0 ≤ (n : ℤ))
+      exact ⟨by exact_mod_cast (Nat.zero_le n), by exact_mod_cast (Nat.le_of_lt_succ hn)⟩
+    · exact Int.toNat_natCast n
   · intro n hn
-    have hto : ((n : ℤ).toNat) = n := Int.toNat_of_nonneg (by norm_num : 0 ≤ (n : ℤ))
-    have hnon : 0 ≤ (n : ℤ) := by norm_num
+    have hnon : 0 ≤ (n : ℤ) := (Finset.mem_Icc.mp hn).1
     -- ‖(vaughanFirst n u : ℂ)‖² = (vaughanFirst n u)²
-    simp [hto, hnon, sq_abs]
+    have hnorm : ‖(vaughanFirst n.toNat u : ℂ)‖ ^ 2 = (vaughanFirst n.toNat u) ^ 2 := by
+      rw [← Complex.normSq_eq_norm_sq]
+      simpa [pow_two] using Complex.normSq_ofReal (vaughanFirst n.toNat u)
+    simp [hnon, hnorm]
 
 /-- **Bombieri-Davenport for the type-I coefficients**: the primitive-character
   (q/phi(q))-weighted mean bound for vaughanFirst(n,u), i.e. the corrected
@@ -948,7 +948,6 @@ theorem bombieriDavenport_vaughanFirst (Q m u : ℕ) (hQ : 0 < Q) :
     congr 1
     unfold panTypeIV1CharSum
     rw [← vaughanFirst_Icc_charSum χ]
-    simpa [a]
   -- rewrite the norm-square: Σ_{Icc}‖a n‖² = Σ_{range}(vaughanFirst n u)²
   have hR : (∑ n ∈ Finset.Icc (0 : ℤ) (m : ℤ), ‖a n‖ ^ 2) =
       ∑ n ∈ Finset.range (m + 1), (vaughanFirst n u) ^ 2 := by
@@ -976,7 +975,9 @@ theorem bombieriDavenport_vaughanFirst (Q m u : ℕ) (hQ : 0 < Q) :
             apply Finset.sum_congr rfl
             intro χ hχ
             exact (hL q hq χ hχ).symm]
-          exact hbd
+          have hn1 : (-1 + 1 : ℤ) = 0 := by norm_num
+          have hn2 : (-1 + ((m : ℤ) + 1) : ℤ) = (m : ℤ) := by omega
+          simpa [hn1, hn2] using hbd
     _ ≤ largeSieveBound (m + 1) (1 / (Q : ℝ) ^ 2) * (∑ n ∈ Finset.range (m + 1), (vaughanFirst n u) ^ 2) := by
           rw [hR]
 
@@ -1019,7 +1020,7 @@ Sub-steps to the corrected type-I mean value:
 
 /-- gcd multiplication: gcd(a*c, b*c) = c * gcd(a, b). -/
 lemma gcd_mul_right' (a b c : ℕ) : (a * c).gcd (b * c) = c * (a.gcd b) := by
-  exact Nat.gcd_mul_right a b c
+  rw [Nat.gcd_mul_right a c b, mul_comm]
 
 /-- Dividing by the gcd gives a coprime pair. -/
 lemma coprime_div_gcd {q r : ℕ} (hq : 0 < q) : (q / q.gcd r).Coprime (r / q.gcd r) := by
@@ -1027,17 +1028,14 @@ lemma coprime_div_gcd {q r : ℕ} (hq : 0 < q) : (q / q.gcd r).Coprime (r / q.gc
   have hg : 0 < q.gcd r := Nat.gcd_pos_of_pos_left r hq
   have hdiv : q.gcd r ∣ q := Nat.gcd_dvd_left q r
   have hdiv2 : q.gcd r ∣ r := Nat.gcd_dvd_right q r
-  -- gcd(q, r) = gcd((q/g)·g, (r/g)·g) = g·gcd(q/g, r/g)
-  have hcalc : (q / q.gcd r * (q.gcd r)).gcd (r / q.gcd r * (q.gcd r)) = q.gcd r := by
-    rw [gcd_mul_right']
+  -- gcd(q, r) = gcd((q/g)·g, (r/g)·g) = g·gcd(q/g, r/g) = g
+  have hcalc : (q.gcd r) * (q / q.gcd r).gcd (r / q.gcd r) = q.gcd r := by
+    rw [← gcd_mul_right' (q / q.gcd r) (r / q.gcd r) (q.gcd r)]
     rw [Nat.div_mul_cancel hdiv, Nat.div_mul_cancel hdiv2]
   -- g·gcd(q/g, r/g) = g ⟹ gcd(q/g, r/g) = 1
-  have hcalc' : (q / q.gcd r).gcd (r / q.gcd r) = 1 := by
-    -- from hcalc: (q/g).gcd (r/g) * g = g — cancel g
-    have hmain : ((q / q.gcd r).gcd (r / q.gcd r)) * (q.gcd r) = (q.gcd r) := by
-      simpa [mul_comm] using hcalc
-    exact (mul_right_cancel₀ (Nat.ne_of_gt hg) hmain)
-  exact hcalc'
+  have hmain : ((q / q.gcd r).gcd (r / q.gcd r)) * (q.gcd r) = (q.gcd r) := by
+    simpa [mul_comm] using hcalc
+  exact (mul_right_cancel₀ (Nat.ne_of_gt hg) (by simpa [one_mul] using hmain))
 
 /-- **Per-modulus regrouping (逐 q 装配的精确内容)**: for weights w(q),
     sum_{q <= Q} w(q) * sum_{r < q} f(r/q) = sum_{q' <= Q} W(q') * sum_{red r'} f(r'/q')
@@ -1054,15 +1052,15 @@ lemma perModulus_regroup {Q : ℕ} (w : ℕ → ℝ) (f : ℝ → ℂ) :
       ∑ q' ∈ Finset.Icc 1 Q, ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'),
         ∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d) * f ((r' : ℝ) / (q' : ℝ)) := by
     -- bijection between (q, r) and (q', r', d)
-    let s : Finset (Σ q : ℕ, ℕ) := (Finset.Icc 1 Q).sigma (fun q => Finset.range q)
-    let t : Finset (Σ q' : ℕ, ℕ × ℕ) := (Finset.Icc 1 Q).sigma (fun q' =>
-      ((Finset.range q').filter (fun r' => r'.Coprime q')).product (Finset.Icc 1 (Q / q')))
-    have hbij : (∑ p ∈ s, w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ))) =
-        (∑ p ∈ t, w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ))) := by
-      rw [Finset.sum_bij (s := s) (t := t)
-        (f := fun p : Σ q : ℕ, ℕ => w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ)))
-        (g := fun p : Σ q' : ℕ, ℕ × ℕ => w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ)))
-        (i := fun p _ => (⟨p.1 / p.1.gcd p.2, (p.2 / p.1.gcd p.2, p.1.gcd p.2)⟩ : Σ q' : ℕ, ℕ × ℕ))]
+    have hbij : (∑ p ∈ (Finset.Icc 1 Q).sigma (fun q => Finset.range q),
+          w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ))) =
+        (∑ p ∈ (Finset.Icc 1 Q).sigma (fun q' =>
+            ((Finset.range q').filter (fun r' => r'.Coprime q')).product (Finset.Icc 1 (Q / q'))),
+          w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ))) := by
+      refine Finset.sum_bij (s := (Finset.Icc 1 Q).sigma (fun q => Finset.range q))
+        (t := (Finset.Icc 1 Q).sigma (fun q' =>
+          ((Finset.range q').filter (fun r' => r'.Coprime q')).product (Finset.Icc 1 (Q / q'))))
+        (fun p _ => (⟨p.1 / p.1.gcd p.2, (p.2 / p.1.gcd p.2, p.1.gcd p.2)⟩ : Σ q' : ℕ, ℕ × ℕ)) ?_ ?_ ?_ ?_
       · -- i p ∈ t
         intro p hp
         rw [Finset.mem_sigma] at hp
@@ -1073,26 +1071,27 @@ lemma perModulus_regroup {Q : ℕ} (w : ℕ → ℝ) (f : ℝ → ℂ) :
         have hgpos : 0 < g := Nat.gcd_pos_of_pos_left p.2 (Finset.mem_Icc.mp hq).1
         have hgdiv1 : g ∣ p.1 := Nat.gcd_dvd_left p.1 p.2
         have hgdiv2 : g ∣ p.2 := Nat.gcd_dvd_right p.1 p.2
+        have hqpos : 0 < p.1 := lt_of_lt_of_le (by norm_num : (0 : ℕ) < 1) (Finset.mem_Icc.mp hq).1
         have hq' : p.1 / g ∈ Finset.Icc 1 Q := by
           rw [Finset.mem_Icc]
           constructor
-          · exact Nat.succ_le_of_lt (Nat.div_pos hgpos (le_of_lt (Finset.mem_Icc.mp hq).1))  -- hmm
+          · exact Nat.succ_le_of_lt (Nat.div_pos (Nat.le_of_dvd hqpos hgdiv1) hgpos)
           · exact le_trans (Nat.div_le_self p.1 g) (Finset.mem_Icc.mp hq).2
         have hd : g ∈ Finset.Icc 1 (Q / (p.1 / g)) := by
           rw [Finset.mem_Icc]
           constructor
           · exact hgpos
           · -- g <= Q / (p.1/g) ⟺ g·(p.1/g) <= Q ⟺ p.1 <= Q ✓
-            have hgm : g * (p.1 / g) = p.1 := (Nat.mul_div_cancel' hgdiv1).symm
-            rw [Nat.le_div_iff_mul_le (Nat.div_pos hgpos (le_of_lt (Finset.mem_Icc.mp hq).1))]
-            rw [← hgm]
+            have hgm : g * (p.1 / g) = p.1 := Nat.mul_div_cancel' hgdiv1
+            rw [Nat.le_div_iff_mul_le (Nat.div_pos (Nat.le_of_dvd hqpos hgdiv1) hgpos)]
+            rw [hgm]
             exact (Finset.mem_Icc.mp hq).2
         have hr' : p.2 / g ∈ (Finset.range (p.1 / g)).filter (fun r' => r'.Coprime (p.1 / g)) := by
           rw [Finset.mem_filter, Finset.mem_range]
           constructor
           · -- p.2 / g < p.1 / g ⟸ p.2 < p.1
-            exact Nat.div_lt_div_of_lt_of_dvd hr hgdiv2 hgdiv1  -- hmm — check
-          · exact coprime_div_gcd (Finset.mem_Icc.mp hq).1
+            exact Nat.div_lt_div_of_lt_of_dvd hgdiv1 (Finset.mem_range.mp hr)
+          · exact (coprime_div_gcd (Finset.mem_Icc.mp hq).1).symm
         exact ⟨hq', Finset.mem_product.mpr ⟨hr', hd⟩⟩
       · -- i_inj: reduced fractions unique
         intro p₁ hp₁ p₂ hp₂ h
@@ -1125,7 +1124,7 @@ lemma perModulus_regroup {Q : ℕ} (w : ℕ → ℝ) (f : ℝ → ℂ) :
           constructor
           · rw [Finset.mem_Icc]
             constructor
-            · exact Nat.succ_le_of_lt (lt_of_lt_of_le (Finset.mem_Icc.mp hq').1 (Nat.le_mul_of_pos_right _ (Finset.mem_Icc.mp hd).1))
+            · exact Nat.succ_le_of_lt (Nat.mul_pos (Finset.mem_Icc.mp hq').1 (Finset.mem_Icc.mp hd).1)
             · -- p.1·p.2.2 <= Q: from d <= Q / q'
               have hle := (Finset.mem_Icc.mp hd).2
               rw [Nat.le_div_iff_mul_le (Finset.mem_Icc.mp hq').1] at hle
@@ -1137,16 +1136,19 @@ lemma perModulus_regroup {Q : ℕ} (w : ℕ → ℝ) (f : ℝ → ℂ) :
           have hcop : p.2.1.Coprime p.1 := hr'.2
           have hgcd : (p.1 * p.2.2).gcd (p.2.1 * p.2.2) = p.2.2 := by
             rw [gcd_mul_right' p.1 p.2.1 p.2.2]
-            have hg : p.1.gcd p.2.1 = 1 := by
-              rw [Nat.coprime_iff_gcd_eq_one]
-              exact hcop.symm
+            have hg : p.1.gcd p.2.1 = 1 := hcop.symm.gcd_eq_one
             simp [hg]
           have hfst : (p.1 * p.2.2) / (p.1 * p.2.2).gcd (p.2.1 * p.2.2) = p.1 := by
-            rw [hgcd, Nat.div_mul_cancel (dvd_mul_right p.1 p.2.2)]
+            rw [hgcd]
+            simpa [mul_comm] using Nat.mul_div_cancel_left p.1 (Finset.mem_Icc.mp hd).1
           have hsnd1 : (p.2.1 * p.2.2) / (p.1 * p.2.2).gcd (p.2.1 * p.2.2) = p.2.1 := by
-            rw [hgcd, Nat.div_mul_cancel (dvd_mul_right p.2.1 p.2.2)]
+            rw [hgcd]
+            simpa [mul_comm] using Nat.mul_div_cancel_left p.2.1 (Finset.mem_Icc.mp hd).1
           apply Sigma.ext hfst
-          simp [hsnd1, hgcd]
+          apply heq_of_eq
+          apply Prod.ext
+          · exact hsnd1
+          · exact hgcd
       · -- h: f p = g (i p)
         intro p hp
         -- w p.1 * f (p.2/p.1) = w ((p.1/g)*g) * f ((p.2/g)/(p.1/g))
@@ -1154,32 +1156,30 @@ lemma perModulus_regroup {Q : ℕ} (w : ℕ → ℝ) (f : ℝ → ℂ) :
           exact (Nat.div_mul_cancel (Nat.gcd_dvd_left p.1 p.2)).symm
         have hg2 : p.2 = (p.2 / p.1.gcd p.2) * p.1.gcd p.2 := by
           exact (Nat.div_mul_cancel (Nat.gcd_dvd_right p.1 p.2)).symm
-        -- the ℕ identities for the first factor
-        have hw : p.1 = (p.1 / p.1.gcd p.2) * p.1.gcd p.2 := hg
-        congr 1
-        · -- w p.1 = w ((p.1/g)·g)
-          rw [hw]
-        · -- f (p.2/p.1) = f (p.2/g / (p.1/g))
-          congr 1
-          -- p.2/p.1 = (p.2/g)/(p.1/g) — from the ℕ factorizations
-          have hq1 : (p.1 : ℝ) ≠ 0 := by
-            exact_mod_cast (Nat.pos_of_ne_zero (by
-              have hq' : 1 ≤ p.1 := (Finset.mem_Icc.mp (Finset.mem_sigma.mp hp).1).1
-              exact Nat.ne_of_gt (lt_of_lt_of_le (by norm_num : (0 : ℕ) < 1) hq')))
+        have hw : w p.1 = w ((p.1 / p.1.gcd p.2) * p.1.gcd p.2) := by rw [← hg]
+        have hfrac : (p.2 : ℝ) / (p.1 : ℝ) =
+            ((p.2 / p.1.gcd p.2 : ℕ) : ℝ) / ((p.1 / p.1.gcd p.2 : ℕ) : ℝ) := by
+          have hqpos : 0 < p.1 := lt_of_lt_of_le (by norm_num : (0 : ℕ) < 1)
+            (Finset.mem_Icc.mp (Finset.mem_sigma.mp hp).1).1
           have hg0 : (p.1.gcd p.2 : ℝ) ≠ 0 := by
-            exact_mod_cast (Nat.ne_of_gt (Nat.gcd_pos_of_pos_left p.2 (by
-              have hq' : 1 ≤ p.1 := (Finset.mem_Icc.mp (Finset.mem_sigma.mp hp).1).1
-              exact lt_of_lt_of_le (by norm_num : (0 : ℕ) < 1) hq')))
-          have hgR : (p.1 : ℝ) = (p.1 / p.1.gcd p.2 : ℝ) * (p.1.gcd p.2 : ℝ) := by exact_mod_cast hg
-          have hg2R : (p.2 : ℝ) = (p.2 / p.1.gcd p.2 : ℝ) * (p.1.gcd p.2 : ℝ) := by exact_mod_cast hg2
+            exact_mod_cast (Nat.ne_of_gt (Nat.gcd_pos_of_pos_left p.2 hqpos))
+          have hb0 : ((p.1 / p.1.gcd p.2 : ℕ) : ℝ) ≠ 0 := by
+            exact_mod_cast (Nat.ne_of_gt (Nat.div_pos (Nat.le_of_dvd hqpos (Nat.gcd_dvd_left p.1 p.2))
+              (Nat.gcd_pos_of_pos_left p.2 hqpos)))
+          have hgR : (p.1 : ℝ) = ((p.1 / p.1.gcd p.2 : ℕ) : ℝ) * (p.1.gcd p.2 : ℝ) := by
+            exact_mod_cast hg
+          have hg2R : (p.2 : ℝ) = ((p.2 / p.1.gcd p.2 : ℕ) : ℝ) * (p.1.gcd p.2 : ℝ) := by
+            exact_mod_cast hg2
           calc
             (p.2 : ℝ) / (p.1 : ℝ)
-                = ((p.2 / p.1.gcd p.2 : ℝ) * (p.1.gcd p.2 : ℝ)) /
-                    ((p.1 / p.1.gcd p.2 : ℝ) * (p.1.gcd p.2 : ℝ)) := by
+                = (((p.2 / p.1.gcd p.2 : ℕ) : ℝ) * (p.1.gcd p.2 : ℝ)) /
+                    (((p.1 / p.1.gcd p.2 : ℕ) : ℝ) * (p.1.gcd p.2 : ℝ)) := by
                   rw [← hg2R, ← hgR]
-            _ = (p.2 / p.1.gcd p.2 : ℝ) / (p.1 / p.1.gcd p.2 : ℝ) := by
-                  field_simp [hg0]
-                  ring
+            _ = ((p.2 / p.1.gcd p.2 : ℕ) : ℝ) / ((p.1 / p.1.gcd p.2 : ℕ) : ℝ) := by
+                  field_simp [hg0, hb0]
+        rw [hw]
+        congr 1
+        exact congrArg f hfrac
     -- the LHS double sum = the sigma sum over s
     calc
       (∑ q ∈ Finset.Icc 1 Q, w q * ∑ r ∈ Finset.range q, f ((r : ℝ) / (q : ℝ)))
@@ -1187,10 +1187,13 @@ lemma perModulus_regroup {Q : ℕ} (w : ℕ → ℝ) (f : ℝ → ℂ) :
             apply Finset.sum_congr rfl
             intro q hq
             rw [Finset.mul_sum]
-      _ = ∑ p ∈ s, w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ)) := by
-            rw [Finset.sum_sigma (s := Finset.Icc 1 Q) (t := fun q => Finset.range q)
-              (f := fun p : Σ q : ℕ, ℕ => w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ)))]
-      _ = ∑ p ∈ t, w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ)) := hbij
+      _ = ∑ p ∈ (Finset.Icc 1 Q).sigma (fun q => Finset.range q),
+            w p.1 * f ((p.2 : ℝ) / (p.1 : ℝ)) := by
+            rw [Finset.sum_sigma' (s := Finset.Icc 1 Q) (t := fun q => Finset.range q)
+              (f := fun q r => w q * f ((r : ℝ) / (q : ℝ)))]
+      _ = (∑ p ∈ (Finset.Icc 1 Q).sigma (fun q' =>
+            ((Finset.range q').filter (fun r' => r'.Coprime q')).product (Finset.Icc 1 (Q / q'))),
+            w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ))) := hbij
       _ = ∑ q' ∈ Finset.Icc 1 Q, ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'),
             ∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d) * f ((r' : ℝ) / (q' : ℝ)) := by
             rw [Finset.sum_sigma (s := Finset.Icc 1 Q)
@@ -1198,7 +1201,11 @@ lemma perModulus_regroup {Q : ℕ} (w : ℕ → ℝ) (f : ℝ → ℂ) :
               (f := fun p : Σ q' : ℕ, ℕ × ℕ => w (p.1 * p.2.2) * f ((p.2.1 : ℝ) / (p.1 : ℝ)))]
             apply Finset.sum_congr rfl
             intro q' hq'
-            rw [Finset.sum_product]
+            rw [← Finset.sum_product
+              (s := (Finset.range q').filter (fun r' => r'.Coprime q'))
+              (t := Finset.Icc 1 (Q / q'))
+              (f := fun z : ℕ × ℕ => w (q' * z.2) * f ((z.1 : ℝ) / (q' : ℝ)))]
+            rw [Finset.product_eq_sprod]
   -- RHS factorization
   have hRight : (∑ q' ∈ Finset.Icc 1 Q,
         (∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d)) *
@@ -1207,11 +1214,25 @@ lemma perModulus_regroup {Q : ℕ} (w : ℕ → ℝ) (f : ℝ → ℂ) :
         ∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d) * f ((r' : ℝ) / (q' : ℝ)) := by
     apply Finset.sum_congr rfl
     intro q' hq'
-    -- (Σ_d w)·(Σ_r' f) = Σ_{r',d} w·f — expand
-    rw [Finset.sum_mul]
-    apply Finset.sum_congr rfl
-    intro r' hr'
-    rw [Finset.mul_sum]
+    -- (Σ_d w)·(Σ_r' f) = Σ_{r',d} w·f — expand (with the ℝ sum cast to ℂ)
+    have hcast : (algebraMap ℝ ℂ) (∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d)) =
+        ∑ d ∈ Finset.Icc 1 (Q / q'), (w (q' * d) : ℂ) := by
+      exact map_sum (algebraMap ℝ ℂ) (fun d => w (q' * d)) (Finset.Icc 1 (Q / q'))
+    calc
+      (algebraMap ℝ ℂ) (∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d)) *
+          ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'), f ((r' : ℝ) / (q' : ℝ))
+          = (∑ d ∈ Finset.Icc 1 (Q / q'), (w (q' * d) : ℂ)) *
+              ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'), f ((r' : ℝ) / (q' : ℝ)) := by
+            rw [hcast]
+      _ = ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'),
+            ∑ d ∈ Finset.Icc 1 (Q / q'), (w (q' * d) : ℂ) * f ((r' : ℝ) / (q' : ℝ)) := by
+            rw [Finset.mul_sum]
+            apply Finset.sum_congr rfl
+            intro r' hr'
+            rw [Finset.sum_mul]
+      _ = ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'),
+            ∑ d ∈ Finset.Icc 1 (Q / q'), w (q' * d) * f ((r' : ℝ) / (q' : ℝ)) := by
+            rfl
   calc
     (∑ q ∈ Finset.Icc 1 Q, w q * ∑ r ∈ Finset.range q, f ((r : ℝ) / (q : ℝ)))
         = ∑ q' ∈ Finset.Icc 1 Q, ∑ r' ∈ (Finset.range q').filter (fun r' => r'.Coprime q'),
