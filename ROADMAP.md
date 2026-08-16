@@ -99,6 +99,10 @@ the common asymptotic/error-term API.
   instead of being widened to all-divisor `errSum(1)`; the written
   specification and source-audit gates are in
   `COMPACT_SUPPORT_LOWER_SIEVE_AUDIT.md`.
+- [ ] **Correct linear-sieve ratio:** migrate the JR function argument from
+  the false scale `D/z` to `log D/log z`, then prove the Chen rounded scales
+  lie in the source-valid interval before applying the lower sieve; see
+  `SIEVE_RATIO_PARAMETER_AUDIT.md`.
 - [ ] **Genuine Li normalization:** replace the working `x/log x` sieve main
   term before asking for arbitrary-log-saving distribution estimates; the
   exact modulus-one obstruction and migration order are recorded in

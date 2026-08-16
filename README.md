@@ -51,6 +51,10 @@ signed MainB correction, and compact lower-sieve coefficients.
 paper derivation of that modulus-one `pi-Li` bound from ANT's existing medium
 PNT and exact partial-summation identities; it is the next reusable API seam.
 
+A third audit, [`SIEVE_RATIO_PARAMETER_AUDIT.md`](SIEVE_RATIO_PARAMETER_AUDIT.md),
+records that the linear-sieve parameter is `log D / log z`, not `D / z`; the
+current latter interface cannot source-match a Chen Jurkat--Richert main term.
+
 ## Status and trust
 
 This repository is under development. A commit is release-ready only when its
