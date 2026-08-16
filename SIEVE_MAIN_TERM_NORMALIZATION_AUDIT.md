@@ -124,6 +124,27 @@ term.  That alternative cannot deliver the arbitrary-log-saving error needed
 by the current Chen positivity route, so the genuine `Li` normalization is
 the recommended architecture.
 
+### Existing reusable asset
+
+This migration does not need to introduce the analysis from scratch.
+`PrimeNumberTheoremAnd/Consequences.lean` already uses the genuine interval
+integral in `pi_asymp` and derives it from the partial-summation identity
+`pi_asymp_aux`.  The reusable task is to promote that integral, with its
+endpoint convention, into the stable ANT sieve API and to prove/export the
+quantitative `pi-Li` consequence of `chebyshevPsi_medium_error`.
+
+The first migration surface is deliberately finite and named:
+
+```text
+BombieriVinogradov.lean  : logarithmicIntegral and distributionError
+WeightedPan.lean         : panDistributionError and Pan source statement
+PanMeanValueBody.lean    : main-term piece declarations
+PanAssembly.lean         : Vaughan/Pan assembly main-term slots
+PanMainTerm.lean         : main-term absorption objects
+```
+
+Only after these definitions agree should their Chen consumers be migrated.
+
 ## 5. Relationship to the compact-support repair
 
 Compact support and correct normalization solve different self-created
