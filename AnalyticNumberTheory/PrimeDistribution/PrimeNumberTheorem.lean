@@ -10,7 +10,36 @@ This module is the stable facade over the ported PNTAnd implementation.
 namespace AnalyticNumberTheory.PrimeDistribution
 
 open Asymptotics Filter Real
+open MeasureTheory intervalIntegral
 open scoped Chebyshev
+
+/-- The genuine logarithmic integral used as the prime-distribution main term.
+
+This is deliberately not the first asymptotic approximation `x / log x`.
+The endpoint convention is `primeLogIntegral 2 = 0`, matching the interval
+integral already used by PNTAnd's `pi_asymp` development. -/
+noncomputable def primeLogIntegral (x : ℝ) : ℝ :=
+  ∫ t in (2 : ℝ)..x, 1 / log t
+
+/-- Unfolding lemma for the stable genuine-`Li` API. -/
+theorem primeLogIntegral_def (x : ℝ) :
+    primeLogIntegral x = ∫ t in (2 : ℝ)..x, 1 / log t := rfl
+
+/-- Exact Abel/partial-summation identity for prime counting, re-exported
+from PNTAnd as the stable starting point for the quantitative `pi-Li` API. -/
+theorem primeCounting_partialSummation (x : ℝ) (hx : 2 ≤ x) :
+    Nat.primeCounting ⌊x⌋₊ =
+      (log x)⁻¹ * Chebyshev.theta x +
+        ∫ t in Set.Icc 2 x, Chebyshev.theta t * (t * log t ^ 2)⁻¹ :=
+  pi_asymp_aux x hx
+
+/-- Integration by parts for the genuine logarithmic integral. -/
+theorem primeLogIntegral_eq_main_add_tail (x : ℝ) (hx : 4 ≤ x) :
+    primeLogIntegral x = x / log x - 2 / log 2 +
+      ∫ t in Set.Icc 2 x, 1 / (log t) ^ 2 := by
+  rw [primeLogIntegral, intervalIntegral.integral_of_le (by linarith [hx]),
+    ← MeasureTheory.integral_Icc_eq_integral_Ioc]
+  exact integral_log_inv_pialt x hx
 
 /-- A medium-strength prime number theorem for Chebyshev's psi function. -/
 theorem chebyshevPsi_medium_error :
