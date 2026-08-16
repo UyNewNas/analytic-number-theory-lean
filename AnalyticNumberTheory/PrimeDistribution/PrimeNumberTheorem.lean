@@ -25,6 +25,14 @@ noncomputable def primeLogIntegral (x : ℝ) : ℝ :=
 theorem primeLogIntegral_def (x : ℝ) :
     primeLogIntegral x = ∫ t in (2 : ℝ)..x, 1 / log t := rfl
 
+/-- Exact Abel/partial-summation identity for prime counting, re-exported
+from PNTAnd as the stable starting point for the quantitative `pi-Li` API. -/
+theorem primeCounting_partialSummation (x : ℝ) (hx : 2 ≤ x) :
+    Nat.primeCounting ⌊x⌋₊ =
+      (log x)⁻¹ * Chebyshev.theta x +
+        ∫ t in Set.Icc 2 x, Chebyshev.theta t * (t * log t ^ 2)⁻¹ :=
+  pi_asymp_aux x hx
+
 /-- A medium-strength prime number theorem for Chebyshev's psi function. -/
 theorem chebyshevPsi_medium_error :
     ∃ c > 0,
