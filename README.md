@@ -47,6 +47,10 @@ that theorem from the unsuitable generic Pan principal-part chain, and lists
 the three remaining independent supplies: the modulus-one `pi-Li` bound,
 signed MainB correction, and compact lower-sieve coefficients.
 
+[`PNT_TO_PI_LI_WRITTEN_PROOF.md`](PNT_TO_PI_LI_WRITTEN_PROOF.md) gives the
+paper derivation of that modulus-one `pi-Li` bound from ANT's existing medium
+PNT and exact partial-summation identities; it is the next reusable API seam.
+
 ## Status and trust
 
 This repository is under development. A commit is release-ready only when its

@@ -103,6 +103,10 @@ the common asymptotic/error-term API.
   term before asking for arbitrary-log-saving distribution estimates; the
   exact modulus-one obstruction and migration order are recorded in
   `SIEVE_MAIN_TERM_NORMALIZATION_AUDIT.md`.
+- [ ] **Quantitative `pi-Li` facade:** promote the genuine interval integral
+  already used by PNTAnd and formalize the medium-PNT-to-`pi-Li` transfer for
+  the modulus-one Chen term; the written derivation is in
+  `PNT_TO_PI_LI_WRITTEN_PROOF.md`.
 - [ ] **Chen `a = 1` weighted BV seam:** after the Li migration, expose the
   source-matched weighted statement at the delta weight `f = 1_{a=1}` and
   transport it only to compactly supported lower-sieve moduli. This is not the
