@@ -90,10 +90,11 @@ the common asymptotic/error-term API.
   interfaces) from Chen into `AnalyticNumberTheory/Sieve/`.
 - [x] Correct the lower sieve function on `(3, 5]` to the standard Buchstab
   value `f(s) = 2e^γ·log((s-1)/2)/s`.
-- [x] **Uniform Jurkat--Richert lower bound (#5):** formalize the uniform
-  target `UniformJurkatRichertLowerBound` (constants precede `∀ N`) and the
-  finite seam `siftedSum_lower_bound_of_mainTerm` from the main-term estimate
-  to the explicit-error sifted lower bound.
+- [x] **Legacy JR algebra record (#5):** formalize
+  `UniformJurkatRichertLowerBound` (constants precede `∀ N`) and the finite
+  seam `siftedSum_lower_bound_of_mainTerm`. These declarations preserve useful
+  finite algebra, but use the refuted `D/z` parameter and all-divisor error,
+  so they are not source-valid Chen inputs.
 - [ ] **Compact-support repair (#66):** revise the lower-sieve consumer so a
   supported lower Möbius sequence keeps `errSum(μ⁻)` (hence only `d ≤ D`)
   instead of being widened to all-divisor `errSum(1)`; the written
@@ -121,9 +122,9 @@ the common asymptotic/error-term API.
   theorem `selberg_upper_bound_optimal`
   (`siftedSum ≤ totalMass · (Σ selbergTerms)⁻¹ + errSum(Λ²w*)`), plus the
   uniform target `UniformSelbergUpperBound`.
-- [ ] Prove the uniform main-term estimate
-  `UniformJurkatRichertMainTerm` (`mainSum(μ⁻) ≥ V(z)·(f(s) - η)`), the
-  analytic core of issue #5.
+- [ ] Prove the uniform supported main-term estimate
+  `UniformSupportedJurkatRichertMainTerm`
+  (`mainSum(μ⁻) ≥ V(z)·(f(log D/log z) - η)`), the analytic core of issue #5.
 - [ ] Plug the Mertens/singular-series main-term estimate and the weighted
   Pan error into the Selberg upper bound for the Chen constant
   `3.9404·𝔖(N)·N/log²N` (issue #6 acceptance).

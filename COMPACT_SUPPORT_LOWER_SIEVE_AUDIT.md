@@ -92,18 +92,20 @@ there exists μ⁻_N with
   (iii) μ⁻_N(d) ≠ 0 and d | (SP N).prodPrimes
         implies d ≤ floor(DN N),
   (iv) sieveProductPrimeFactors(SP N)
-       · (fs(DN N/zN N)-eta0) ≤ (SP N).mainSum(μ⁻_N),
+       · (fs(sieveRatio(DN N, zN N)) - eta0) ≤ (SP N).mainSum(μ⁻_N),
 and
-  (SP N).totalMass · sieveProductPrimeFactors(SP N)
-  · (fs(DN N/zN N)-eta0)
+(SP N).totalMass · sieveProductPrimeFactors(SP N)
+  · (fs(sieveRatio(DN N, zN N)) - eta0)
   - Σ_{d | (SP N).prodPrimes, d≤floor(DN N)}
       |(SP N).rem(d)|
   ≤ (SP N).siftedSum.                                         (5)
 ```
 
-The proof of `(5)` is the finite chain `(1) -> (3) -> (4)` plus the main-term
-inequality.  Its quantifier order is essential: `N0` and `eta0` precede the
-universal quantifier over `N`; the coefficients may depend on `N`.
+Here `sieveRatio(D,z) = log D/log z`, under the positivity hypotheses recorded
+in `SIEVE_RATIO_PARAMETER_AUDIT.md`. The proof of `(5)` is the finite chain
+`(1) -> (3) -> (4)` plus the main-term inequality. Its quantifier order is
+essential: `N0` and `eta0` precede the universal quantifier over `N`; the
+coefficients may depend on `N`.
 
 The difference from the old interface is not cosmetic.  The support clause
 is what makes the phrase "level D" mathematically meaningful.
