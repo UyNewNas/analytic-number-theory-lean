@@ -193,3 +193,35 @@ This reference is methodological orientation, not a proof of clauses (iii),
 source match before any theorem claim.
 
 Source: [arXiv:2203.07871](https://arxiv.org/abs/2203.07871).
+
+## 8. Corrected combined JR interface
+
+The future replacement must combine support with the correct linear-sieve
+parameter.  It is not enough to patch either field independently.  With
+`sieveRatio(D,z) = log D/log z`, the target has the following shape:
+
+```text
+exists N0, eta0>0, for every even N >= N0,
+  exists muMinus_N,
+    IsLowerMoebius(muMinus_N)
+    and |muMinus_N(d)| <= 1
+    and [muMinus_N(d) != 0 and d | P_N -> d <= floor(D_N)]
+    and
+      V_N * (f(sieveRatio(D_N,z_N)) - eta0)
+        <= mainSum(muMinus_N),
+
+  X_N*V_N*(f(sieveRatio(D_N,z_N))-eta0)
+    - sum_{d|P_N, d<=D_N}|rem_N(d)|
+    <= siftedSum_N.
+```
+
+The first line is the source-dependent JR supply.  The second follows by
+finite algebra from the first line and support.  It is the only interface a
+Chen consumer may use after migration.
+
+The existing `UniformJurkatRichertMainTerm` and
+`UniformJurkatRichertLowerBound` use `D/z` and widen the error to all
+divisors; they are useful records of finite algebra but are not source-valid
+Chen theorem targets.  A later Lean migration should introduce new names for
+the corrected interfaces rather than silently changing the meaning of the old
+ones.
