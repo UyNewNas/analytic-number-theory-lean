@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   build:
@@ -101,8 +102,54 @@ jobs:
 
       - uses: leanprover/lean-action@v1
         with:
-          build: true
-          build-args: PrimeNumberTheoremAnd AnalyticNumberTheory
+          build: false
+
+      - name: Build Lean targets with diagnostic capture
+        id: lean_build
+        continue-on-error: true
+        shell: bash
+        run: |
+          set -o pipefail
+          lake build PrimeNumberTheoremAnd AnalyticNumberTheory 2>&1 | tee /tmp/lake-build.log
+
+      - name: Publish Lean build diagnostic
+        if: always()
+        uses: actions/github-script@v7
+        env:
+          LEAN_BUILD_OUTCOME: ${{ steps.lean_build.outcome }}
+        with:
+          script: |
+            const fs = require('fs')
+            const marker = '<!-- ant-ci-diagnostic -->'
+            const log = fs.existsSync('/tmp/lake-build.log')
+              ? fs.readFileSync('/tmp/lake-build.log', 'utf8')
+              : 'The Lean build did not create /tmp/lake-build.log.'
+            const diagnostic = log.split('\n')
+              .filter(line => /error:|warning:|declaration uses|failed|Building/.test(line))
+              .slice(-160)
+              .join('\n') || log.slice(-12000)
+            const body = `${marker}\n## CI diagnostic\n\n` +
+              `Lean build outcome: **${process.env.LEAN_BUILD_OUTCOME}**.\n\n` +
+              '```text\n' + diagnostic.slice(-12000) + '\n```'
+            if (!context.payload.pull_request) {
+              core.info(body)
+              return
+            }
+            const { owner, repo } = context.repo
+            const issue_number = context.payload.pull_request.number
+            const comments = await github.paginate(github.rest.issues.listComments,
+              { owner, repo, issue_number, per_page: 100 })
+            const prior = comments.find(comment => comment.body?.includes(marker))
+            if (prior) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: prior.id, body })
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body })
+            }
+
+      - name: Fail if Lean build failed
+        if: steps.lean_build.outcome == 'failure'
+        shell: bash
+        run: exit 1
 
       - name: Audit public theorem axioms
         shell: bash
