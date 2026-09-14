@@ -1,15 +1,15 @@
 # Maintenance and reuse roadmap
 
-Updated 2026-09-14. The library retains its prime-distribution, Mertens, and
-reusable sieve foundations. Work is selected by a concrete theorem consumer,
-not by the size of the historical Chen/Pan backlog.
+Direction adopted 2026-09-14; status refreshed 2026-09-15. The library retains
+its prime-distribution, Mertens, and reusable sieve foundations. Work is selected
+by a concrete theorem consumer, not by the size of the historical Chen/Pan backlog.
 
 ## Completed downstream and retained upstream
 
 [subfish-zhou/goldbach-lean](https://github.com/subfish-zhou/goldbach-lean) credits
 this library and `UyNewNas/chen-theorem-lean` as upstream foundations and provides
-completed Chen and Li–Liu applications. Reference snapshot:
-`df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59` (2026-09-08).
+completed Chen and Li–Liu applications. Reference snapshot for the first Li reuse
+comparison: `df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59` (2026-09-08).
 
 - [Provenance](https://github.com/subfish-zhou/goldbach-lean/blob/df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59/docs/PROVENANCE.md)
 - [Theorem interfaces](https://github.com/subfish-zhou/goldbach-lean/blob/df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59/docs/THEOREMS.md)
@@ -28,62 +28,94 @@ ANT therefore needs a source/dependency comparison, not merely a Lake version bu
 
 [Issue #1](https://github.com/UyNewNas/analytic-number-theory-lean/issues/1) is the
 work register. Existing CI repairs remain limited maintenance, not a reason to
-restart every open branch. General Pan/BV statements require exact comparison
-of weights, source support, maxima, main terms, and uniform quantifiers with
+restart every open branch. General Pan/BV statements require exact comparison of
+weights, source support, maxima, main terms, levels, and quantifier order with
 proved downstream instances.
 
-## First bounded work item: genuine Li API (#69 / existing PR #70)
+## First bounded reuse slice: genuine Li API (#69 / PR #70)
 
-This is the first source comparison, not a second implementation project.
-PR #70 currently changes only `PrimeDistribution/PrimeNumberTheorem.lean`; retain
-its public endpoint convention and reuse its branch when implementation resumes.
-
-### Exact source correspondence
-
-Existing [PR #70](https://github.com/UyNewNas/analytic-number-theory-lean/pull/70),
-head `88f20482d3c1ae96e2034e6da0f3ae36c215e969`, defines
+This source comparison has now produced a bounded neutral ANT implementation; it
+is not a second Chen application project. Existing
+[PR #70](https://github.com/UyNewNas/analytic-number-theory-lean/pull/70), head
+`6d7297966e8c2d3634a4265f6eba4b58d9ce3e30`, preserves the public convention
 
 ```text
-primeLogIntegral(x) = integral from 2 to x of 1/log(t)
+primeLogIntegral(x) = integral from 2 to x of 1/log(t),
+primeLogIntegral(2) = 0.
 ```
 
 The inspected downstream
 [`Arithmetic/LiuLogarithmicIntegral.lean`](https://github.com/subfish-zhou/goldbach-lean/blob/df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59/MathlibNt/SieveTheory/Arithmetic/LiuLogarithmicIntegral.lean)
-defines
+uses
 
 ```text
 liuLogarithmicIntegral(kappa, x) = kappa + integral from 2 to x of 1/log(t).
 ```
 
-Thus the definitions agree at `kappa = 0`; the downstream normalization
-`kappa = 2/log(2)` is an additive shift, not a competing Li convention. This
-source-level identity has not yet been compiled as a cross-project bridge.
+Thus `liuLogarithmicIntegral kappa x = kappa + primeLogIntegral x` at the source
+normalization level. ANT keeps the zero-at-two convention and does not depend on
+the downstream Goldbach/Liu application layer.
 
-| Existing ANT PR #70 | Downstream source | Bounded next action |
-| --- | --- | --- |
-| `primeLogIntegral` / `primeLogIntegral_def` | `liuLogarithmicIntegral` / `liuLogarithmicIntegral_sub_normalization` | Preserve the zero-at-two public convention; expose additive normalization only where consumed. |
-| `primeLogIntegral_eq_main_add_tail`, currently `4 ≤ x` with a set integral over `Icc` | `liuLogarithmicIntegralRemainder_eq`, `2 ≤ x` with an interval integral | Reuse the integration-by-parts argument to obtain the full `2 ≤ x` range and reconcile interval/set-integral notation. |
-| No corresponding neutral lemma in the inspected PR patch | Integrability and nonnegativity lemmas above `2`; `div_log_le_liuLogarithmicIntegral` | Extract only the lemmas needed by the main-term consumer, retaining provenance. |
-| `primeCounting_partialSummation` | Distribution/PNT layers beyond the Li definition module | Keep quantitative `pi - Li` estimates as a separate checked target; the elementary Li module alone does not supply them. |
+PR #70 now contains the neutral slice required by #69:
 
-The downstream file directly imports `Liu.Weights.LiuWeightPaperQ` as well as
-Mathlib analysis. The inspected elementary definitions/proofs above contain no
-explicit Chen-weight references; a neutral extraction must still verify its
-complete import requirements rather than carry that application dependency
-into ANT. Do not add a dependency from ANT back to the Goldbach application.
+- definition/unfolding, zero-at-two, additive normalization, and nonnegativity;
+- exact prime-counting partial summation;
+- `primeLogIntegral_eq_main_add_tail` on the full source range `2 ≤ x`, including
+  the interval/set-integral reconciliation needed by the adapted proof;
+- exact `primeCounting_sub_normalizedLi_eq`;
+- endpoint and integral remainder bounds;
+- the quantitative consequence
 
-### Acceptance for this bounded slice
+```text
+Nat.primeCounting ⌊x⌋₊ - (2 / log 2 + primeLogIntegral x)
+  = O(x / log^2 x).
+```
 
-- Preserve the existing `primeLogIntegral` meaning and PNT exports.
-- Check the normalization and endpoint bridges with the pinned Lean/mathlib.
-- Record the downstream commit and preserve attribution for adapted proofs.
-- Keep the existing full-build/source-scan/axiom checks; identify baseline CI
-  problems separately from the proposed API changes.
-- Demonstrate use by the distribution-main-term interface in #69. Proceed to a
-  quantitative `pi - Li` or weighted-BV implementation only for the exact needed
-  statement; do not assume an application-specific theorem proves general Pan.
+The adapted proof ideas retain the downstream source revision and attribution.
+No `LiuWeightPaperQ` or other Goldbach application dependency is imported into ANT.
 
-No Li backport or new analytic theorem is included in this roadmap change.
+### Verification boundary
+
+At PR #70 head `6d7297966e8c2d3634a4265f6eba4b58d9ce3e30`, workflow run
+`34824232102` reports the executable `sorry`/`admit` scan and the additive
+`Audit genuine Li slice` gate as **success**. The repository-wide build still
+fails later in the pre-existing `LargeSieve/BombieriDavenport.lean` dev baseline.
+The focused gate is additive; it does not replace or weaken the normal full build
+and trust audit.
+
+The baseline repair remains separate in
+[PR #73](https://github.com/UyNewNas/analytic-number-theory-lean/pull/73): it is an
+exact restoration of the previously verified Bombieri–Davenport file, has a
+successful repository-wide build/trust audit on head
+`28df7a866bf4c1cafd791ffdf2a64cb9e3cafae5`, and is ready for review but unmerged.
+After an explicit #73 integration, re-run/rebase #70 against the resulting `dev`
+and require the normal repository-wide checks before integration.
+
+### Dormant stronger interfaces
+
+Do not continue automatically from the neutral `O(x/log^2 x)` result to arbitrary
+fixed logarithmic saving, `WeightedBVAtOne`, supported transport, or a general Pan
+theorem. Activate one only when a named consumer requires the exact statement and
+the source/type comparison matches its weights, support, main term, level, maxima,
+and quantifier order.
+
+## Next small maintenance candidate after the CI baseline is settled
+
+A downstream delta check through
+`subfish-zhou/goldbach-lean@f688a96b31750c1295ae05db63f88bc80f089154`
+found one concrete reuse pattern with existing ANT consumers. Commit
+`c222da0a14ffbac061ee930f779fc7046215d2ae` factors duplicated LCM-weight bounds
+used by Pan V1/V3 into a shared downstream module. ANT itself still has the
+corresponding duplicated finite LCM/harmonic estimates in `PanV1SquareMean.lean`
+and `PanV3SquareMean.lean`.
+
+If this refactor is activated after the baseline is green, extract only a neutral
+shared helper provable from ANT's existing dependencies and preserve the current
+V1/V3 public theorem names as wrappers/aliases where needed. Do **not** copy the
+downstream module wholesale: its current implementation imports
+`LiLiuPrereqFouvryDivisorMean`, which would pull application-specific Fouvry/Li–Liu
+dependencies upstream. Later downstream `LogGridEstimates` and derivative
+automation have no named ANT consumer and remain unscheduled.
 
 ## Existing results and historical detail
 
