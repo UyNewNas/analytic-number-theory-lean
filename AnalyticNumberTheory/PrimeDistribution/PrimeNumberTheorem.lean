@@ -21,6 +21,32 @@ integral already used by PNTAnd's `pi_asymp` development. -/
 noncomputable def primeLogIntegral (x : ℝ) : ℝ :=
   ∫ t in (2 : ℝ)..x, 1 / log t
 
+/-- The chosen endpoint convention: the genuine logarithmic integral vanishes at `2`. -/
+@[simp] theorem primeLogIntegral_two : primeLogIntegral 2 = 0 := by
+  simp [primeLogIntegral]
+
+/-- Adding a normalization constant changes only that constant.
+
+This is the neutral ANT analogue of the normalization identity used by the
+downstream Liu logarithmic-integral formalization at
+`subfish-zhou/goldbach-lean@df1f3b3`, without importing its application-specific
+weight layer. -/
+@[simp] theorem primeLogIntegral_additive_normalization_sub (κ₂ κ₁ x : ℝ) :
+    (κ₂ + primeLogIntegral x) - (κ₁ + primeLogIntegral x) = κ₂ - κ₁ := by
+  ring
+
+/-- The genuine logarithmic integral is nonnegative on its source range.
+
+The proof is adapted from the corresponding downstream Liu logarithmic-integral
+lemma at `subfish-zhou/goldbach-lean@df1f3b3`, using only neutral Mathlib
+interval-integral facts. -/
+theorem primeLogIntegral_nonneg {x : ℝ} (hx : 2 ≤ x) :
+    0 ≤ primeLogIntegral x := by
+  rw [primeLogIntegral]
+  apply intervalIntegral.integral_nonneg hx
+  intro t ht
+  exact one_div_nonneg.mpr (le_of_lt (Real.log_pos (by linarith [ht.1])))
+
 /-- Unfolding lemma for the stable genuine-`Li` API. -/
 theorem primeLogIntegral_def (x : ℝ) :
     primeLogIntegral x = ∫ t in (2 : ℝ)..x, 1 / log t := rfl
