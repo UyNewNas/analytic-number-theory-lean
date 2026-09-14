@@ -78,6 +78,23 @@ theorem primeLogIntegral_eq_main_add_tail (x : ℝ) (hx : 2 ≤ x) :
     ← mul_one_div, one_div, ← mul_one_div, one_div]
   simp only [one_div, h, mul_comm]
 
+/-- Exact error decomposition for prime counting against the fixed normalized
+logarithmic integral `2 / log 2 + primeLogIntegral x`.
+
+This isolates the two quantities that a quantitative `pi-Li` theorem must pay:
+the endpoint theta error and its partial-summation integral.  The downstream
+`primeCount_li_pnt` theorem at `subfish-zhou/goldbach-lean@df1f3b3` obtains an
+arbitrary logarithmic saving from the `q = 1` specialization of its proved
+Standard Bombieri--Vinogradov theorem.  ANT keeps only this neutral identity
+here; no downstream BV/application layer is imported. -/
+theorem primeCounting_sub_normalizedLi_eq (x : ℝ) (hx : 2 ≤ x) :
+    (Nat.primeCounting ⌊x⌋₊ : ℝ) - (2 / log 2 + primeLogIntegral x) =
+      ((log x)⁻¹ * Chebyshev.theta x - x / log x) +
+        ((∫ t in Set.Icc 2 x, Chebyshev.theta t * (t * log t ^ 2)⁻¹) -
+          ∫ t in Set.Icc 2 x, 1 / (log t) ^ 2) := by
+  rw [primeCounting_partialSummation x hx, primeLogIntegral_eq_main_add_tail x hx]
+  ring
+
 /-- A medium-strength prime number theorem for Chebyshev's psi function. -/
 theorem chebyshevPsi_medium_error :
     ∃ c > 0,
