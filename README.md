@@ -1,68 +1,62 @@
 # Analytic Number Theory for Lean
 
-A reusable Lean foundation for prime distribution and its analytic
-consequences.
+A reusable Lean foundation for prime distribution and its analytic consequences.
 
-The foundation currently provides:
+## Direction — 2026-09-14
 
-- a medium-strength error estimate for Chebyshev's psi function;
-- quantitative Chebyshev-theta interfaces, retaining the standard square-root
-  prime-power correction and exposing an `O(x / log x)` form for partial
-  summation, plus its Abel-endpoint error;
-- the standard prime-counting asymptotic `pi(x) ~ x / log x`;
-- a natural-number prime-counting interface for downstream theorem projects.
-- elementary finite prime sums/products and logarithmic estimates that form
-  the neutral starting point for reusable Mertens theorems.
-- an Abel-summation identity expressing reciprocal-prime sums through
-  Chebyshev's theta function, including its positive-kernel form, exact
-  identity main term, and a natural-number Mertens-II estimate with
-  `O(1 / log x)` error.
-- Mertens' product formula with exact constant `exp (-gamma) / log x` and
-  `O(1 / log^2 x)` error, including a uniform natural-number interface;
-- the audited zeta/Euler-log, Abel/Mellin, scaled Gamma-kernel, and finite-part
-  chain identifying the canonical product constant with Euler's constant.
-- the reusable sieve layer, including the Goldbach local density
-  `ν(d) = 1/φ(d)` on squarefree moduli, generic Selberg main-term identities,
-  and the **weighted Pan--Bombieri--Vinogradov input**: the uniform
-  `3^{ω(d)}`-weighted distribution condition consumed by additive sieve
-  proofs, its lcm-pair weight origin, the `errSum` seam, and the precise
-  classical Pan mean-value statement as an explicitly-marked open target.
+The project is maintained as a reusable foundation, with **demand-driven fixes
+and selective reuse of completed downstream work**. Its purpose is no longer to
+supply a second independently completed Chen proof.
 
-Chen-specific sieve consequences remain in `chen-theorem-lean`.
+[subfish-zhou/goldbach-lean](https://github.com/subfish-zhou/goldbach-lean) has
+completed Chen and Li–Liu applications on foundations originating here and in
+[chen-theorem-lean](https://github.com/UyNewNas/chen-theorem-lean). Its
+[provenance record](https://github.com/subfish-zhou/goldbach-lean/blob/df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59/docs/PROVENANCE.md)
+credits both upstream repositories and describes subsequent downstream proof
+completion and engineering. It currently includes an adapted local source
+closure rather than depending on this repository as an external Lake package.
 
-## Status and trust
+The [current roadmap](ROADMAP.md) and [work register (#1)](https://github.com/UyNewNas/analytic-number-theory-lean/issues/1)
+replace the old assumption that every open Pan/Chen branch must be completed.
+The first bounded comparison is the genuine logarithmic-integral API in
+[#69](https://github.com/UyNewNas/analytic-number-theory-lean/issues/69), reusing
+existing [PR #70](https://github.com/UyNewNas/analytic-number-theory-lean/pull/70)
+rather than opening a duplicate implementation.
 
-This repository is under development. A commit is release-ready only when its
-CI passes all three gates:
+## Existing foundation
 
-- every tracked Lean source is free of executable `sorry` and `admit` tokens;
-- both `PrimeNumberTheoremAnd` and `AnalyticNumberTheory` build successfully;
-- the declarations listed in `Audit.lean` do not depend on `sorryAx`.
+- Prime distribution: medium-strength Chebyshev-psi error, quantitative theta
+  interfaces, prime-counting asymptotics, and a natural-number PNT facade.
+- Mertens: finite prime sums/products, Abel summation, Mertens II with
+  `O(1 / log x)` error, and the product formula with exact constant
+  `exp (-gamma)` and `O(1 / log^2 x)` error.
+- Constant identification: the zeta/Euler-log, Abel/Mellin, Gamma-kernel, and
+  finite-part chain connecting the canonical product constant to Euler's constant.
+- Sieve foundations: local density, Selberg identities and bounds, singular
+  series, and explicit distribution/weighted-Pan interfaces.
 
-Passing the audit does not mean that Lean uses no axioms. The standard mathlib
-foundation (`propext`, `Classical.choice`, and `Quot.sound`) is allowed and is
-reported by `#print axioms`. CI status, rather than this README, is the source
-of truth for the current commit.
+The local general Pan interfaces and their hypotheses remain distinct from the
+proved source-specific estimates used by downstream Chen applications. A
+completed application is not automatically a proof of every older general API.
+
+## Reuse scope
+
+Prefer a small, theorem-oriented extraction with a named consumer over copying
+the downstream project wholesale. Preserve source revisions and attribution,
+keep endpoint conventions and quantifier order explicit, and retain the existing
+build and axiom checks. Results tied to a particular application's source
+weights or final counting object remain with that application.
 
 ## Public API
-
-Downstream projects should use:
 
 ```lean
 import AnalyticNumberTheory
 ```
 
-Lake dependency:
-
-```toml
-[[require]]
-name = "analytic_number_theory"
-git = "https://github.com/UyNewNas/analytic-number-theory-lean.git"
-rev = "v0.1.0"
-```
-
-The `PrimeNumberTheoremAnd` namespace is retained as a provenance-preserving
-implementation layer and is not the stable API.
+Consumers should pin a tested tag or commit of
+`https://github.com/UyNewNas/analytic-number-theory-lean.git` in their Lake
+configuration. The `PrimeNumberTheoremAnd` namespace is the provenance-preserving
+implementation layer; the `AnalyticNumberTheory` facade is the public API.
 
 ## Build and audit
 
@@ -71,8 +65,13 @@ lake build PrimeNumberTheoremAnd AnalyticNumberTheory
 lake env lean Audit.lean
 ```
 
-For a release, run the same source scan as CI in addition to these commands.
-The repository policy applies to every tracked `.lean` file, including root
-modules and audit files.
+Use the pinned toolchain and dependencies. A release needs a successful full
+build, the existing executable-placeholder scan, and the declaration axiom
+audit. Standard Lean/mathlib axioms (`propext`, `Classical.choice`, `Quot.sound`)
+remain allowed. CI for the exact commit, not this maintenance roadmap, records
+its build status.
 
-See `UPSTREAM.md` for the exact source revision and port boundary.
+See [UPSTREAM.md](UPSTREAM.md) for the PNTAnd source revision and port boundary,
+and [LICENSE](LICENSE) for Apache-2.0 licensing. Downstream contributions brought
+back here must retain their own provenance as well as the original upstream
+notices.
