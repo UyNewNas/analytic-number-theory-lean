@@ -97,6 +97,26 @@ theorem chebyshevTheta_error :
       ring
     _ =O[atTop] fun x : ℝ => x / log x := hpsi'.sub hdelta
 
+/-- The theta endpoint term in `primeCounting_sub_normalizedLi_eq` gains one
+additional logarithm after division by `log x`.
+
+This is the first quantitative consequence of the neutral `pi - Li`
+decomposition: it uses only ANT's existing coarse theta estimate and does not
+invoke the downstream Bombieri--Vinogradov application. -/
+theorem primeCounting_normalizedLi_theta_endpoint_error :
+    (fun x : ℝ => (log x)⁻¹ * Chebyshev.theta x - x / log x) =O[atTop]
+      fun x : ℝ => x / (log x) ^ 2 := by
+  have hkernel : (fun x : ℝ => (log x)⁻¹) =O[atTop] fun x : ℝ => (log x)⁻¹ :=
+    isBigO_refl _ _
+  have h := chebyshevTheta_error.mul hkernel
+  refine h.congr' ?_ ?_
+  · exact Eventually.of_forall fun x => by
+      simp only [Pi.sub_apply, id_eq, div_eq_mul_inv]
+      ring
+  · filter_upwards [eventually_gt_atTop (1 : ℝ)] with x hx
+    have hlog : log x ≠ 0 := (Real.log_pos hx).ne'
+    field_simp
+
 /-- The endpoint error in the Abel formula for reciprocal-prime sums. -/
 theorem chebyshevTheta_endpoint_error :
     (fun x : ℝ => (Chebyshev.theta x - x) / (x * log x)) =O[atTop]
