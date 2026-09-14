@@ -33,13 +33,24 @@ theorem primeCounting_partialSummation (x : ℝ) (hx : 2 ≤ x) :
         ∫ t in Set.Icc 2 x, Chebyshev.theta t * (t * log t ^ 2)⁻¹ :=
   pi_asymp_aux x hx
 
-/-- Integration by parts for the genuine logarithmic integral. -/
-theorem primeLogIntegral_eq_main_add_tail (x : ℝ) (hx : 4 ≤ x) :
+/-- Integration by parts for the genuine logarithmic integral.
+
+This is the full source range `x ≥ 2`.  The proof uses the same underlying
+`integral_log_inv` identity as the downstream Liu logarithmic-integral
+formalization at `subfish-zhou/goldbach-lean@df1f3b3`; no application-specific
+weight definitions are imported here. -/
+theorem primeLogIntegral_eq_main_add_tail (x : ℝ) (hx : 2 ≤ x) :
     primeLogIntegral x = x / log x - 2 / log 2 +
       ∫ t in Set.Icc 2 x, 1 / (log t) ^ 2 := by
-  rw [primeLogIntegral, intervalIntegral.integral_of_le (by linarith [hx]),
+  rw [primeLogIntegral, intervalIntegral.integral_of_le hx,
     ← MeasureTheory.integral_Icc_eq_integral_Ioc]
-  exact integral_log_inv_pialt x hx
+  have h := integral_log_inv 2 x (by norm_num) (by linarith)
+  rw [MeasureTheory.integral_Icc_eq_integral_Ioc,
+    ← intervalIntegral.integral_of_le hx,
+    MeasureTheory.integral_Icc_eq_integral_Ioc,
+    ← intervalIntegral.integral_of_le hx,
+    ← mul_one_div, one_div, ← mul_one_div, one_div]
+  simp only [one_div, h, mul_comm]
 
 /-- A medium-strength prime number theorem for Chebyshev's psi function. -/
 theorem chebyshevPsi_medium_error :
