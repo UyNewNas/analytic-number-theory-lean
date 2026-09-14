@@ -1,139 +1,96 @@
-# Formal Mathematics Atlas roadmap
+# Maintenance and reuse roadmap
 
-This repository is the reusable **Prime Distribution / Analytic Number Theory**
-foundation. It is upstream of theorem-focused repositories such as Chen and
-future Goldbach developments.
+Updated 2026-09-14. The library retains its prime-distribution, Mertens, and
+reusable sieve foundations. Work is selected by a concrete theorem consumer,
+not by the size of the historical Chen/Pan backlog.
+
+## Completed downstream and retained upstream
+
+[subfish-zhou/goldbach-lean](https://github.com/subfish-zhou/goldbach-lean) credits
+this library and `UyNewNas/chen-theorem-lean` as upstream foundations and provides
+completed Chen and Li–Liu applications. Reference snapshot:
+`df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59` (2026-09-08).
+
+- [Provenance](https://github.com/subfish-zhou/goldbach-lean/blob/df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59/docs/PROVENANCE.md)
+- [Theorem interfaces](https://github.com/subfish-zhou/goldbach-lean/blob/df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59/docs/THEOREMS.md)
+- [Source architecture](https://github.com/subfish-zhou/goldbach-lean/blob/df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59/docs/ARCHITECTURE.md)
+
+The downstream package includes an adapted local source closure. Reuse back into
+ANT therefore needs a source/dependency comparison, not merely a Lake version bump.
+
+## Work classification
+
+| Class | Treatment |
+| --- | --- |
+| Application completed downstream | Link the completed application instead of independently reconstructing it here. |
+| Old formulation or route superseded | Preserve its mathematical findings, remove it from the active proof queue, and record why; do not call the old proposition proved. |
+| Reusable result retained on demand | Keep the precise API and activate only the portion needed by a named consumer. |
+
+[Issue #1](https://github.com/UyNewNas/analytic-number-theory-lean/issues/1) is the
+work register. Existing CI repairs remain limited maintenance, not a reason to
+restart every open branch. General Pan/BV statements require exact comparison
+of weights, source support, maxima, main terms, and uniform quantifiers with
+proved downstream instances.
+
+## First bounded work item: genuine Li API (#69 / existing PR #70)
+
+This is the first source comparison, not a second implementation project.
+PR #70 currently changes only `PrimeDistribution/PrimeNumberTheorem.lean`; retain
+its public endpoint convention and reuse its branch when implementation resumes.
+
+### Exact source correspondence
+
+Existing [PR #70](https://github.com/UyNewNas/analytic-number-theory-lean/pull/70),
+head `88f20482d3c1ae96e2034e6da0f3ae36c215e969`, defines
 
 ```text
-analytic-number-theory-lean
-├── prime distribution (PNT and effective psi estimates)
-├── Mertens II and canonical product asymptotics
-└── Abelian constant-identification bridge
-        │
-        ├──> chen-theorem-lean (sieve consumer)
-        ├──> goldbach-lean (future)
-        └──> other prime-distribution consumers
+primeLogIntegral(x) = integral from 2 to x of 1/log(t)
 ```
 
-## Release lines
+The inspected downstream
+[`Arithmetic/LiuLogarithmicIntegral.lean`](https://github.com/subfish-zhou/goldbach-lean/blob/df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59/MathlibNt/SieveTheory/Arithmetic/LiuLogarithmicIntegral.lean)
+defines
 
-### v0.1 — prime-distribution foundation
+```text
+liuLogarithmicIntegral(kappa, x) = kappa + integral from 2 to x of 1/log(t).
+```
 
-- [x] Pin the Chen-compatible Lean/mathlib toolchain.
-- [x] Port and provenance-record the minimal PNTAnd import closure.
-- [x] Expose Chebyshev-psi and prime-counting PNT interfaces.
-- [x] Transfer the effective psi estimate to theta, with its explicit
-  square-root prime-power correction and an `O(x / log x)` partial-summation
-  facade.
-- [x] Provide a natural-number facade used by Chen.
-- [x] Add elementary finite prime sums, products, positivity, monotonicity, and
-  logarithmic-factor estimates.
-- [x] Enforce zero executable `sorry`/`admit`, full builds, and an axiom audit
-  in CI.
+Thus the definitions agree at `kappa = 0`; the downstream normalization
+`kappa = 2/log(2)` is an additive shift, not a competing Li convention. This
+source-level identity has not yet been compiled as a cross-project bridge.
 
-### v0.2 — reusable Mertens layer
+| Existing ANT PR #70 | Downstream source | Bounded next action |
+| --- | --- | --- |
+| `primeLogIntegral` / `primeLogIntegral_def` | `liuLogarithmicIntegral` / `liuLogarithmicIntegral_sub_normalization` | Preserve the zero-at-two public convention; expose additive normalization only where consumed. |
+| `primeLogIntegral_eq_main_add_tail`, currently `4 ≤ x` with a set integral over `Icc` | `liuLogarithmicIntegralRemainder_eq`, `2 ≤ x` with an interval integral | Reuse the integration-by-parts argument to obtain the full `2 ≤ x` range and reconcile interval/set-integral notation. |
+| No corresponding neutral lemma in the inspected PR patch | Integrability and nonnegativity lemmas above `2`; `div_log_le_liuLogarithmicIntegral` | Extract only the lemmas needed by the main-term consumer, retaining provenance. |
+| `primeCounting_partialSummation` | Distribution/PNT layers beyond the Li definition module | Keep quantitative `pi - Li` estimates as a separate checked target; the elementary Li module alone does not supply them. |
 
-The two independent work lines below may proceed in parallel after agreeing on
-the common asymptotic/error-term API.
+The downstream file directly imports `Liu.Weights.LiuWeightPaperQ` as well as
+Mathlib analysis. The inspected elementary definitions/proofs above contain no
+explicit Chen-weight references; a neutral extraction must still verify its
+complete import requirements rather than carry that application dependency
+into ANT. Do not add a dependency from ANT back to the Goldbach application.
 
-- [x] Establish the finite Abel-summation bridge from reciprocal-prime sums
-  to Chebyshev theta.
-- [x] Separate the exact `log log x` main term and the endpoint error of that
-  bridge.
-- [x] Add the generic improper-integral tail estimate for the
-  `1 / (x log² x)` kernel.
-- [x] Prove local integrability and integrable asymptotic domination of the
-  Chebyshev-theta error kernel.
-- [x] Define the generic Mertens-II constant and identify finite error
-  integrals with their improper tails.
-- [x] Derive the exact Mertens-II error decomposition and the error-kernel
-  tail rate.
-- [x] **Mertens II:** prove the reciprocal-prime sum estimate from the PNT
-  facade plus partial/Abel summation, including a natural-number API.
-- [x] **Canonical Mertens product:** build the convergent quadratic correction
-  and derive the `O(1 / log² x)` Euler-product estimate from Mertens II.
-- [x] Add the finite logarithmic product bridge; the limiting correction and
-  its Euler--Mascheroni constant identification remain separate milestones.
-- [x] Define the zero-extended logarithmic correction and prove its absolute
-  convergence to the canonical correction constant.
-- [x] Bound the correction tail by `2 / x` using the integral test.
-- [x] Derive the Mertens product logarithm with its canonical constant and
-  `O(1 / log x)` error; identifying that constant with Euler's constant is
-  still a separate Abelian bridge.
-- [x] Establish the normalized zeta--von Mangoldt bridge at `s = 1`.
-- [x] Specialize the Euler-log expansion to real parameters and split it into
-  the prime Dirichlet term plus the convergent correction.
-- [x] Prove the scaled logarithmic Gamma kernel giving `-γ`.
-- [x] Prove the Abel/Mellin representation of the prime Dirichlet sum for
-  every positive displacement `ε > 0`.
-- [x] Perform the logarithmic change of variables to the exponential Abel
-  kernel and prove a generic `O(1/u)` remainder-vanishing theorem.
-- [x] Prove that the prime finite-part limit implies the required constant
-  identity via the normalized zeta limit.
-- [x] Prove the Abelian finite-part limit and conclude
-  `mertensSecondConstant + logarithmicCorrectionLimit = γ`.
-- [ ] Add namespace-level compatibility lemmas relating the generic finite
-  objects to downstream definitions.
+### Acceptance for this bounded slice
 
-### v0.3 — downstream migration
+- Preserve the existing `primeLogIntegral` meaning and PNT exports.
+- Check the normalization and endpoint bridges with the pinned Lean/mathlib.
+- Record the downstream commit and preserve attribution for adapted proofs.
+- Keep the existing full-build/source-scan/axiom checks; identify baseline CI
+  problems separately from the proposed API changes.
+- Demonstrate use by the distribution-main-term interface in #69. Proceed to a
+  quantitative `pi - Li` or weighted-BV implementation only for the exact needed
+  statement; do not assume an application-specific theorem proves general Pan.
 
-- [x] Replace Chen's local PNT placeholder with the public natural-number PNT.
-- [x] Replace Chen's Mertens-II placeholder with the generic theorem.
-- [x] Replace Chen's product-formula placeholder with the generic theorem.
-- [ ] Keep sieve notation and Chen-specific consequences in
-  `chen-theorem-lean`; move only mathematically reusable results here.
+No Li backport or new analytic theorem is included in this roadmap change.
 
-### v0.4 — reusable sieve layer
+## Existing results and historical detail
 
-- [x] Migrate the generic sieve layer (Goldbach density, Selberg identities,
-  distribution, singular series, linear sieve, Bombieri--Vinogradov
-  interfaces) from Chen into `AnalyticNumberTheory/Sieve/`.
-- [x] Correct the lower sieve function on `(3, 5]` to the standard Buchstab
-  value `f(s) = 2e^γ·log((s-1)/2)/s`.
-- [x] **Uniform Jurkat--Richert lower bound (#5):** formalize the uniform
-  target `UniformJurkatRichertLowerBound` (constants precede `∀ N`) and the
-  finite seam `siftedSum_lower_bound_of_mainTerm` from the main-term estimate
-  to the explicit-error sifted lower bound.
-- [x] **Selberg upper-bound sieve (#6):** add
-  `AnalyticNumberTheory/Sieve/SelbergUpperBound.lean` with the generic
-  Selberg weights, the Mathlib Λ²-sieve bridges, and the optimal-weight
-  theorem `selberg_upper_bound_optimal`
-  (`siftedSum ≤ totalMass · (Σ selbergTerms)⁻¹ + errSum(Λ²w*)`), plus the
-  uniform target `UniformSelbergUpperBound`.
-- [ ] Prove the uniform main-term estimate
-  `UniformJurkatRichertMainTerm` (`mainSum(μ⁻) ≥ V(z)·(f(s) - η)`), the
-  analytic core of issue #5.
-- [ ] Plug the Mertens/singular-series main-term estimate and the weighted
-  Pan error into the Selberg upper bound for the Chen constant
-  `3.9404·𝔖(N)·N/log²N` (issue #6 acceptance).
-- [x] **Weighted Pan--BV input (#7):** formalize the uniform weighted
-  distribution input `WeightedPanCondition`, the `3^{ω(d)}` lcm-pair weight
-  origin (`lcmPairCount` / `lcmPairWeightedSum`), the generic `errSum` seam,
-  and the precise classical target `PanMeanValueUniform`.
-- [x] **Truncated singular series uniform lower bound (chen #3):**
-  `singularSeriesTruncated_ge_half` — `𝔖(N,z) ≥ 1/2` for every `N` and
-  `z ≥ 2`, the twin-prime-constant-level input for the Chen main-term lower
-  bound (finite-product/telescope argument, no Mertens needed).
-- [x] **Selberg upper bound in sieve-product form:** the optimal Λ² bound
-  re-expressed as `siftedSum ≤ totalMass·V(z) + errSum` via
-  `selbergMainTerm_eq_prod_one_sub_nu` /
-  `selbergMainTerm_eq_sieveProduct` / `selberg_upper_bound_sieveProduct`,
-  the exact main-term shape consumed by the Chen Ω upper bound (chen #7).
-- [x] **Selberg Λ² error-term bridge:** for unit-bounded weights,
-  `errSum(Λ²w) ≤ Σ_{d | P} 3^{ω(d)}·|rem d|`
-  (`errSum_lambdaSquared_le_threeOmegaWeightedPanRemainder`), the exact
-  classical Selberg error form feeding the Pan input into the Ω upper bound.
-- [x] **Optimal Selberg weight = Möbius:** the X-equation
-  `Σ_{d ⊇ l} ν(d)·μ(d) = g(l)·μ(l)·T`, hence `mainSum(Λ²μ) = (Σg)⁻¹`
-  (`mainSum_lambdaSquared_moebius_eq`) and the full classical Selberg bound
-  `siftedSum ≤ totalMass·V + Σ 3^{ω(d)}·|rem d|`
-  (`selberg_upper_bound_moebius_pan`), with the unit-bounded weight `μ`.
-- [ ] Prove `PanMeanValueUniform` (large sieve / Vaughan identity), the
-  analytic core of issue #7, and close the bridge from it to
-  `WeightedPanCondition` with PNT-level main-term estimates.
+PNT, Mertens II, the exact Mertens product, and the constant-identification chain
+remain available; the source and audits are unchanged. Keep the existing
+`PrimeNumberTheoremAnd` provenance boundary.
 
-## Boundary rule
-
-A declaration belongs here when its statement is useful without importing a
-particular sieve or target theorem. Definitions tied to Chen's singular series,
-sieve weights, or final theorem remain in the Chen repository.
+The [previous roadmap](https://github.com/UyNewNas/analytic-number-theory-lean/blob/5536c2d8c387d4bb5438478636c25d7b093206d2/ROADMAP.md)
+preserves the earlier release milestones. `PAN_PROOF_ATLAS.md` remains a
+historical dependency record; its unchecked items are not all active tasks.
