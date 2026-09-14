@@ -53,8 +53,12 @@ liuLogarithmicIntegral(kappa, x) = kappa + integral from 2 to x of 1/log(t).
 ```
 
 Thus `liuLogarithmicIntegral kappa x = kappa + primeLogIntegral x` at the source
-normalization level. ANT keeps the zero-at-two convention and does not depend on
-the downstream Goldbach/Liu application layer.
+normalization level. This correspondence is established by inspecting the pinned
+downstream definition and ANT's compiled local definition; it has **not** been
+compiled in a Lean environment importing both projects at once. PR #70's machine
+verification therefore covers the ANT-side API and proofs, not a cross-project
+symbol bridge. ANT keeps the zero-at-two convention and does not depend on the
+downstream Goldbach/Liu application layer.
 
 PR #70 now contains the neutral slice required by #69:
 
