@@ -104,6 +104,48 @@ jobs:
           build: true
           build-args: PrimeNumberTheoremAnd AnalyticNumberTheory
 
+      - name: Audit genuine Li slice
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -o pipefail
+          lake build AnalyticNumberTheory.PrimeDistribution.ChebyshevTheta
+          lake env lean PrimeLiAudit.lean 2>&1 | tee /tmp/prime-li-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/prime-li-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          expected_reports = 10
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if len(reports) != expected_reports:
+              print(
+                  f'Expected {expected_reports} genuine-Li axiom reports, found {len(reports)}.',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Genuine-Li API uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print('Genuine-Li axiom whitelist passed: ' + ', '.join(sorted(used)))
+          PY
+
       - name: Audit public theorem axioms
         shell: bash
         run: |

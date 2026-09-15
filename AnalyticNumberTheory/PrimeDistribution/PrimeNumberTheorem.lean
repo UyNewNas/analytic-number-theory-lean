@@ -10,7 +10,90 @@ This module is the stable facade over the ported PNTAnd implementation.
 namespace AnalyticNumberTheory.PrimeDistribution
 
 open Asymptotics Filter Real
+open MeasureTheory intervalIntegral
 open scoped Chebyshev
+
+/-- The genuine logarithmic integral used as the prime-distribution main term.
+
+This is deliberately not the first asymptotic approximation `x / log x`.
+The endpoint convention is `primeLogIntegral 2 = 0`, matching the interval
+integral already used by PNTAnd's `pi_asymp` development. -/
+noncomputable def primeLogIntegral (x : ℝ) : ℝ :=
+  ∫ t in (2 : ℝ)..x, 1 / log t
+
+/-- The chosen endpoint convention: the genuine logarithmic integral vanishes at `2`. -/
+@[simp] theorem primeLogIntegral_two : primeLogIntegral 2 = 0 := by
+  simp [primeLogIntegral]
+
+/-- Adding a normalization constant changes only that constant.
+
+This is the neutral ANT analogue of the normalization identity used by the
+downstream Liu logarithmic-integral formalization at
+`subfish-zhou/goldbach-lean@df1f3b3`, without importing its application-specific
+weight layer. -/
+@[simp] theorem primeLogIntegral_additive_normalization_sub (κ₂ κ₁ x : ℝ) :
+    (κ₂ + primeLogIntegral x) - (κ₁ + primeLogIntegral x) = κ₂ - κ₁ := by
+  ring
+
+/-- The genuine logarithmic integral is nonnegative on its source range.
+
+The proof is adapted from the corresponding downstream Liu logarithmic-integral
+lemma at `subfish-zhou/goldbach-lean@df1f3b3`, using only neutral Mathlib
+interval-integral facts. -/
+theorem primeLogIntegral_nonneg {x : ℝ} (hx : 2 ≤ x) :
+    0 ≤ primeLogIntegral x := by
+  rw [primeLogIntegral]
+  apply intervalIntegral.integral_nonneg hx
+  intro t ht
+  exact one_div_nonneg.mpr (le_of_lt (Real.log_pos (by linarith [ht.1])))
+
+/-- Unfolding lemma for the stable genuine-`Li` API. -/
+theorem primeLogIntegral_def (x : ℝ) :
+    primeLogIntegral x = ∫ t in (2 : ℝ)..x, 1 / log t := rfl
+
+/-- Exact Abel/partial-summation identity for prime counting, re-exported
+from PNTAnd as the stable starting point for the quantitative `pi-Li` API. -/
+theorem primeCounting_partialSummation (x : ℝ) (hx : 2 ≤ x) :
+    Nat.primeCounting ⌊x⌋₊ =
+      (log x)⁻¹ * Chebyshev.theta x +
+        ∫ t in Set.Icc 2 x, Chebyshev.theta t * (t * log t ^ 2)⁻¹ :=
+  pi_asymp_aux x hx
+
+/-- Integration by parts for the genuine logarithmic integral.
+
+This is the full source range `x ≥ 2`.  The proof uses the same underlying
+`integral_log_inv` identity as the downstream Liu logarithmic-integral
+formalization at `subfish-zhou/goldbach-lean@df1f3b3`; no application-specific
+weight definitions are imported here. -/
+theorem primeLogIntegral_eq_main_add_tail (x : ℝ) (hx : 2 ≤ x) :
+    primeLogIntegral x = x / log x - 2 / log 2 +
+      ∫ t in Set.Icc 2 x, 1 / (log t) ^ 2 := by
+  rw [primeLogIntegral, intervalIntegral.integral_of_le hx,
+    ← MeasureTheory.integral_Icc_eq_integral_Ioc]
+  have h := integral_log_inv 2 x (by norm_num) (by linarith)
+  rw [MeasureTheory.integral_Icc_eq_integral_Ioc,
+    ← intervalIntegral.integral_of_le hx,
+    MeasureTheory.integral_Icc_eq_integral_Ioc,
+    ← intervalIntegral.integral_of_le hx,
+    ← mul_one_div, one_div, ← mul_one_div, one_div]
+  simp only [one_div, h, mul_comm]
+
+/-- Exact error decomposition for prime counting against the fixed normalized
+logarithmic integral `2 / log 2 + primeLogIntegral x`.
+
+This isolates the two quantities that a quantitative `pi-Li` theorem must pay:
+the endpoint theta error and its partial-summation integral.  The downstream
+`primeCount_li_pnt` theorem at `subfish-zhou/goldbach-lean@df1f3b3` obtains an
+arbitrary logarithmic saving from the `q = 1` specialization of its proved
+Standard Bombieri--Vinogradov theorem.  ANT keeps only this neutral identity
+here; no downstream BV/application layer is imported. -/
+theorem primeCounting_sub_normalizedLi_eq (x : ℝ) (hx : 2 ≤ x) :
+    (Nat.primeCounting ⌊x⌋₊ : ℝ) - (2 / log 2 + primeLogIntegral x) =
+      ((log x)⁻¹ * Chebyshev.theta x - x / log x) +
+        ((∫ t in Set.Icc 2 x, Chebyshev.theta t * (t * log t ^ 2)⁻¹) -
+          ∫ t in Set.Icc 2 x, 1 / (log t) ^ 2) := by
+  rw [primeCounting_partialSummation x hx, primeLogIntegral_eq_main_add_tail x hx]
+  ring
 
 /-- A medium-strength prime number theorem for Chebyshev's psi function. -/
 theorem chebyshevPsi_medium_error :
