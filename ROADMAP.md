@@ -90,19 +90,41 @@ the common asymptotic/error-term API.
   interfaces) from Chen into `AnalyticNumberTheory/Sieve/`.
 - [x] Correct the lower sieve function on `(3, 5]` to the standard Buchstab
   value `f(s) = 2e^γ·log((s-1)/2)/s`.
-- [x] **Uniform Jurkat--Richert lower bound (#5):** formalize the uniform
-  target `UniformJurkatRichertLowerBound` (constants precede `∀ N`) and the
-  finite seam `siftedSum_lower_bound_of_mainTerm` from the main-term estimate
-  to the explicit-error sifted lower bound.
+- [x] **Legacy JR algebra record (#5):** formalize
+  `UniformJurkatRichertLowerBound` (constants precede `∀ N`) and the finite
+  seam `siftedSum_lower_bound_of_mainTerm`. These declarations preserve useful
+  finite algebra, but use the refuted `D/z` parameter and all-divisor error,
+  so they are not source-valid Chen inputs.
+- [ ] **Compact-support repair (#66):** revise the lower-sieve consumer so a
+  supported lower Möbius sequence keeps `errSum(μ⁻)` (hence only `d ≤ D`)
+  instead of being widened to all-divisor `errSum(1)`; the written
+  specification and source-audit gates are in
+  `COMPACT_SUPPORT_LOWER_SIEVE_AUDIT.md`.
+- [ ] **Correct linear-sieve ratio:** migrate the JR function argument from
+  the false scale `D/z` to `log D/log z`, then prove the Chen rounded scales
+  lie in the source-valid interval before applying the lower sieve; see
+  `SIEVE_RATIO_PARAMETER_AUDIT.md`.
+- [ ] **Genuine Li normalization:** replace the working `x/log x` sieve main
+  term before asking for arbitrary-log-saving distribution estimates; the
+  exact modulus-one obstruction and migration order are recorded in
+  `SIEVE_MAIN_TERM_NORMALIZATION_AUDIT.md`.
+- [ ] **Quantitative `pi-Li` facade:** promote the genuine interval integral
+  already used by PNTAnd and formalize the medium-PNT-to-`pi-Li` transfer for
+  the modulus-one Chen term; the written derivation is in
+  `PNT_TO_PI_LI_WRITTEN_PROOF.md`.
+- [ ] **Chen `a = 1` weighted BV seam:** after the Li migration, expose the
+  source-matched weighted statement at the delta weight `f = 1_{a=1}` and
+  transport it only to compactly supported lower-sieve moduli. This is not the
+  current generic Pan principal-part chain; see `A1_WEIGHTED_BV_SOURCE_MATCH.md`.
 - [x] **Selberg upper-bound sieve (#6):** add
   `AnalyticNumberTheory/Sieve/SelbergUpperBound.lean` with the generic
   Selberg weights, the Mathlib Λ²-sieve bridges, and the optimal-weight
   theorem `selberg_upper_bound_optimal`
   (`siftedSum ≤ totalMass · (Σ selbergTerms)⁻¹ + errSum(Λ²w*)`), plus the
   uniform target `UniformSelbergUpperBound`.
-- [ ] Prove the uniform main-term estimate
-  `UniformJurkatRichertMainTerm` (`mainSum(μ⁻) ≥ V(z)·(f(s) - η)`), the
-  analytic core of issue #5.
+- [ ] Prove the uniform supported main-term estimate
+  `UniformSupportedJurkatRichertMainTerm`
+  (`mainSum(μ⁻) ≥ V(z)·(f(log D/log z) - η)`), the analytic core of issue #5.
 - [ ] Plug the Mertens/singular-series main-term estimate and the weighted
   Pan error into the Selberg upper bound for the Chen constant
   `3.9404·𝔖(N)·N/log²N` (issue #6 acceptance).

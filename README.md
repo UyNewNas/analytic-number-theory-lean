@@ -30,6 +30,35 @@ The foundation currently provides:
 
 Chen-specific sieve consequences remain in `chen-theorem-lean`.
 
+The lower-sieve error interface is under a source-faithfulness audit:
+[`COMPACT_SUPPORT_LOWER_SIEVE_AUDIT.md`](COMPACT_SUPPORT_LOWER_SIEVE_AUDIT.md)
+records why a compactly supported lower coefficient sequence must retain its
+own `errSum`, rather than be widened to the all-divisor `errSum(1)`, before a
+Chen/Pan consumer is formalized.
+
+A second audit, [`SIEVE_MAIN_TERM_NORMALIZATION_AUDIT.md`](SIEVE_MAIN_TERM_NORMALIZATION_AUDIT.md),
+records that the working `x/log x` definition is not an admissible
+arbitrary-log-saving distribution main term; the genuine `Li` normalization
+must be introduced before a Chen/Pan error theorem can be claimed.
+
+For the actual Chen lower-sieve consumer, [`A1_WEIGHTED_BV_SOURCE_MATCH.md`](A1_WEIGHTED_BV_SOURCE_MATCH.md)
+records the narrower, source-matched `a = 1` weighted BV supply. It separates
+that theorem from the unsuitable generic Pan principal-part chain, and lists
+the three remaining independent supplies: the modulus-one `pi-Li` bound,
+signed MainB correction, and compact lower-sieve coefficients.
+
+[`PNT_TO_PI_LI_WRITTEN_PROOF.md`](PNT_TO_PI_LI_WRITTEN_PROOF.md) gives the
+paper derivation of that modulus-one `pi-Li` bound from ANT's existing medium
+PNT and exact partial-summation identities; it is the next reusable API seam.
+
+A third audit, [`SIEVE_RATIO_PARAMETER_AUDIT.md`](SIEVE_RATIO_PARAMETER_AUDIT.md),
+records that the linear-sieve parameter is `log D / log z`, not `D / z`; the
+current latter interface cannot source-match a Chen Jurkat--Richert main term.
+
+[`SIEVE_INTERFACE_STATUS.md`](SIEVE_INTERFACE_STATUS.md) is the authoritative
+ledger separating kernel-clean legacy interfaces from source-valid future
+Chen consumers.
+
 ## Status and trust
 
 This repository is under development. A commit is release-ready only when its
