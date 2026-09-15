@@ -1,6 +1,6 @@
 # Maintenance and reuse roadmap
 
-Direction adopted 2026-09-14; status refreshed 2026-09-15. The library retains
+Direction adopted 2026-09-14; status refreshed 2026-09-16. The library retains
 its prime-distribution, Mertens, and reusable sieve foundations. Work is selected
 by a concrete theorem consumer, not by the size of the historical Chen/Pan backlog.
 
@@ -106,28 +106,58 @@ theorem. Activate one only when a named consumer requires the exact statement an
 the source/type comparison matches its weights, support, main term, level, maxima,
 and quantifier order.
 
-## Next small maintenance candidate: neutral LCM de-duplication
+## Second bounded maintenance slice: neutral LCM de-duplication (PR #75)
 
 A downstream delta check through
 `subfish-zhou/goldbach-lean@f688a96b31750c1295ae05db63f88bc80f089154`
-found one concrete reuse pattern with existing ANT consumers. Commit
-`c222da0a14ffbac061ee930f779fc7046215d2ae` factors duplicated LCM-weight bounds
-used by Pan V1/V3 into a shared downstream module. ANT itself still has the
-corresponding duplicated finite LCM/harmonic estimates in `PanV1SquareMean.lean`
-and `PanV3SquareMean.lean`.
+identified a concrete proof-reuse pattern with existing ANT consumers. Downstream
+commit `c222da0a14ffbac061ee930f779fc7046215d2ae` factors duplicated LCM-weight
+bounds used by Pan V1/V3. ANT implemented the analogous refactor locally without
+copying downstream application dependencies.
 
-The baseline and #70-verification prerequisites are now satisfied. A future code
-refactor should extract only a neutral shared helper provable from ANT's existing
-dependencies, preserve the current V1/V3 public theorem names as wrappers/aliases,
-and run the unchanged repository-wide build and trust audit. Do **not** copy the
-downstream module wholesale: its current implementation imports
-`LiLiuPrereqFouvryDivisorMean`, which would pull application-specific Fouvry/Li–Liu
-dependencies upstream.
+[PR #75](https://github.com/UyNewNas/analytic-number-theory-lean/pull/75), head
+`9ff29473a55044b0e26a2cabf29c0af59142105c`, adds an ANT-native neutral shared
+layer for:
 
-Fresh branch inspection on 2026-09-15 found no existing `lcm*` maintenance branch.
-Do not mix this refactor into `pi-li-api` or this documentation branch. Later
-downstream `LogGridEstimates` and derivative automation have no named ANT consumer
-and remain unscheduled.
+- `LcmWeightBounds.harmonic_Icc_le`;
+- `LcmWeightBounds.card_multiples_Icc`;
+- `LcmWeightBounds.lcm_inv_sum_le`;
+- `LcmWeightBounds.divisorCountSq_sum_le`.
+
+The existing V1 public names `harmonic_Icc_le`, `card_multiples_Icc`,
+`lcm_inv_sum_le`, and `divisorCountSq_sum_le` are preserved as thin wrappers. The
+existing V3 public names `v3_harmonic_Icc_le`, `v3_card_multiples_Icc`,
+`v3_lcm_inv_sum_le`, and `v3_divisorCountSq_sum_le` are likewise preserved.
+`Audit.lean` continues to audit both families, `W1Assembly` still consumes
+`v3_card_multiples_Icc`, and `NonCoprimeDensity` still consumes the unprefixed
+`divisorCountSq_sum_le`.
+
+The shared layer depends only on ANT/Mathlib-neutral inputs; no downstream
+`LiLiuPrereqFouvryDivisorMean`, Li–Liu application code, weighted-BV theorem, or
+general-Pan specialization was imported. Across the two Pan files the conversion
+removes roughly 900 lines of duplicated proof implementation while retaining all
+public declarations.
+
+Incremental runs #302 through #306 were green. Final workflow run
+[`35021692159`](https://github.com/UyNewNas/analytic-number-theory-lean/actions/runs/35021692159)
+(run #307) completed **success** on the exact PR #75 head for the executable
+`sorry`/`admit` scan, repository-wide Lean build, and public theorem axiom audit.
+PR #75 is ready for review, mergeable, and remains unmerged; merge is an explicit
+owner decision.
+
+## Current engineering stop
+
+There is no further code slice in the current work register that simultaneously
+has a named ANT consumer and an already-audited exact type boundary. Later
+downstream `LogGridEstimates` and derivative automation still have no named ANT
+consumer and remain unscheduled. Do not manufacture stronger pi-Li, weighted BV,
+supported transport, or general Pan work merely because PR #70 and PR #75 are
+green.
+
+Current repository-state decisions are therefore integration decisions for the
+green code PRs (#70 and #75) plus this documentation PR (#74). Maintenance should
+resume with a new code slice only when a concrete consumer or exact required
+interface is identified.
 
 ## Existing results and historical detail
 
