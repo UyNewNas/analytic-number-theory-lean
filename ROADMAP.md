@@ -34,10 +34,10 @@ proved downstream instances.
 
 ## First bounded reuse slice: genuine Li API (#69 / PR #70)
 
-This source comparison has now produced a bounded neutral ANT implementation; it
-is not a second Chen application project. Existing
-[PR #70](https://github.com/UyNewNas/analytic-number-theory-lean/pull/70), head
-`6d7297966e8c2d3634a4265f6eba4b58d9ce3e30`, preserves the public convention
+This source comparison has produced a bounded neutral ANT implementation; it is
+not a second Chen application project. Existing
+[PR #70](https://github.com/UyNewNas/analytic-number-theory-lean/pull/70), current
+head `e9d85e063bcad470e16f36326e86b325b0313f96`, preserves the public convention
 
 ```text
 primeLogIntegral(x) = integral from 2 to x of 1/log(t),
@@ -60,7 +60,7 @@ verification therefore covers the ANT-side API and proofs, not a cross-project
 symbol bridge. ANT keeps the zero-at-two convention and does not depend on the
 downstream Goldbach/Liu application layer.
 
-PR #70 now contains the neutral slice required by #69:
+PR #70 contains the neutral slice required by #69:
 
 - definition/unfolding, zero-at-two, additive normalization, and nonnegativity;
 - exact prime-counting partial summation;
@@ -80,20 +80,23 @@ No `LiuWeightPaperQ` or other Goldbach application dependency is imported into A
 
 ### Verification boundary
 
-At PR #70 head `6d7297966e8c2d3634a4265f6eba4b58d9ce3e30`, workflow run
-`34824232102` reports the executable `sorry`/`admit` scan and the additive
-`Audit genuine Li slice` gate as **success**. The repository-wide build still
-fails later in the pre-existing `LargeSieve/BombieriDavenport.lean` dev baseline.
-The focused gate is additive; it does not replace or weaken the normal full build
-and trust audit.
+The independent Bombieri–Davenport baseline repair
+[PR #73](https://github.com/UyNewNas/analytic-number-theory-lean/pull/73) was merged
+into `dev` as `b326ecbe03daf16916e9f3f9f632c45eeef6aa32`. PR #70 was then synchronized
+non-forced to that repaired baseline at
+`e9d85e063bcad470e16f36326e86b325b0313f96`.
 
-The baseline repair remains separate in
-[PR #73](https://github.com/UyNewNas/analytic-number-theory-lean/pull/73): it is an
-exact restoration of the previously verified Bombieri–Davenport file, has a
-successful repository-wide build/trust audit on head
-`28df7a866bf4c1cafd791ffdf2a64cb9e3cafae5`, and is ready for review but unmerged.
-After an explicit #73 integration, re-run/rebase #70 against the resulting `dev`
-and require the normal repository-wide checks before integration.
+Combined workflow run
+[`34923846194`](https://github.com/UyNewNas/analytic-number-theory-lean/actions/runs/34923846194)
+(run #300) completed **success** on that exact PR #70 head. The executable
+`sorry`/`admit` scan, repository-wide Lean build, focused `Audit genuine Li slice`,
+and repository-wide public theorem axiom audit all passed. The focused gate remains
+additive; it does not replace or weaken the normal full build and trust audit.
+
+The old pre-integration Bombieri–Davenport failure is therefore historical only.
+Issue #71 is completed and diagnostic-only PR #72 is closed unmerged. PR #70 is
+integration-ready from the currently required build/trust perspective, but remains
+open and unmerged.
 
 ### Dormant stronger interfaces
 
@@ -103,7 +106,7 @@ theorem. Activate one only when a named consumer requires the exact statement an
 the source/type comparison matches its weights, support, main term, level, maxima,
 and quantifier order.
 
-## Next small maintenance candidate after the CI baseline is settled
+## Next small maintenance candidate: neutral LCM de-duplication
 
 A downstream delta check through
 `subfish-zhou/goldbach-lean@f688a96b31750c1295ae05db63f88bc80f089154`
@@ -113,13 +116,18 @@ used by Pan V1/V3 into a shared downstream module. ANT itself still has the
 corresponding duplicated finite LCM/harmonic estimates in `PanV1SquareMean.lean`
 and `PanV3SquareMean.lean`.
 
-If this refactor is activated after the baseline is green, extract only a neutral
-shared helper provable from ANT's existing dependencies and preserve the current
-V1/V3 public theorem names as wrappers/aliases where needed. Do **not** copy the
+The baseline and #70-verification prerequisites are now satisfied. A future code
+refactor should extract only a neutral shared helper provable from ANT's existing
+dependencies, preserve the current V1/V3 public theorem names as wrappers/aliases,
+and run the unchanged repository-wide build and trust audit. Do **not** copy the
 downstream module wholesale: its current implementation imports
 `LiLiuPrereqFouvryDivisorMean`, which would pull application-specific Fouvry/Li–Liu
-dependencies upstream. Later downstream `LogGridEstimates` and derivative
-automation have no named ANT consumer and remain unscheduled.
+dependencies upstream.
+
+Fresh branch inspection on 2026-09-15 found no existing `lcm*` maintenance branch.
+Do not mix this refactor into `pi-li-api` or this documentation branch. Later
+downstream `LogGridEstimates` and derivative automation have no named ANT consumer
+and remain unscheduled.
 
 ## Existing results and historical detail
 
