@@ -162,7 +162,7 @@ theorem norm_characterSumOn_dyadicPrimeWindow_le_vonMangoldt
         (‖dyadicVonMangoldtCharacterSum N P χ‖ +
           2 * Real.sqrt (((2 * P : ℕ) : ℝ)) * Real.log (((2 * P : ℕ) : ℝ))) +
           Real.log 2 * ((dyadicPrimeWindow P).card : ℝ) :=
-    add_le_add_right hprime _
+    add_le_add hprime le_rfl
   have hlog : 0 ≤ Real.log (P : ℝ) :=
     (Real.log_pos (by exact_mod_cast hP)).le
   exact hremove.trans (div_le_div_of_nonneg_right hnum hlog)
