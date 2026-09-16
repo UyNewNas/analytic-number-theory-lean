@@ -74,7 +74,8 @@ theorem ringInverse_eq_inv {q : ℕ} {a : ZMod q} (ha : IsUnit a) :
     Ring.inverse a = a⁻¹ := by
   calc
     Ring.inverse a = (↑ha.unit⁻¹ : ZMod q) := Ring.inverse_of_isUnit ha
-    _ = ((↑ha.unit : ZMod q)⁻¹) := Units.val_inv_eq_inv_val ha.unit
+    _ = ((↑ha.unit : ZMod q)⁻¹) := by
+      simpa using (Units.val_inv_eq_inv_val ha.unit)
     _ = a⁻¹ := by rw [ha.unit_spec]
 
 /-- Dirichlet-character orthogonality in conjugated form on unit residue classes. -/
