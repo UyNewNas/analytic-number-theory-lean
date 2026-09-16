@@ -117,6 +117,68 @@ theorem characterSumOn_nonprincipal_secondMoment_prime
   rw [htotal, hprincipal] at hnonprincipal
   exact hnonprincipal
 
+/-- A weighted finite Dirichlet-character sum.  This is the project-neutral form needed when
+character orthogonality is applied to arithmetic coefficients such as Liouville or Möbius values. -/
+def weightedCharacterSumOn (N : ℕ) (A : Finset ℕ) (w : ℕ → ℂ)
+    (χ : DirichletCharacter ℂ N) : ℂ :=
+  ∑ a ∈ A, w a * χ (a : ZMod N)
+
+/-- Exact weighted character second moment at a prime modulus.  The only arithmetic input is that
+`A` consists of distinct positive standard representatives below `N`; no analytic estimate enters.
+This is the weighted finite Plancherel identity used by character-sum arguments. -/
+theorem weightedCharacterSumOn_secondMoment_prime
+    {N : ℕ} (hN : N.Prime) {A : Finset ℕ}
+    (hA : ∀ a ∈ A, 0 < a ∧ a < N) (w : ℕ → ℂ) :
+    (∑ χ : DirichletCharacter ℂ N,
+      weightedCharacterSumOn N A w χ * star (weightedCharacterSumOn N A w χ)) =
+      (∑ a ∈ A, w a * star (w a)) * (((N - 1 : ℕ) : ℂ)) := by
+  classical
+  calc
+    (∑ χ : DirichletCharacter ℂ N,
+      weightedCharacterSumOn N A w χ * star (weightedCharacterSumOn N A w χ)) =
+        ∑ χ : DirichletCharacter ℂ N,
+          ∑ a ∈ A, ∑ b ∈ A,
+            (w a * χ (a : ZMod N)) * (star (w b) * star (χ (b : ZMod N))) := by
+              apply Finset.sum_congr rfl
+              intro χ _hχ
+              simp [weightedCharacterSumOn, Finset.sum_mul, Finset.mul_sum]
+              rw [Finset.sum_comm]
+    _ = ∑ a ∈ A, ∑ b ∈ A,
+          ∑ χ : DirichletCharacter ℂ N,
+            (w a * χ (a : ZMod N)) * (star (w b) * star (χ (b : ZMod N))) := by
+              rw [Finset.sum_comm]
+              apply Finset.sum_congr rfl
+              intro a _ha
+              rw [Finset.sum_comm]
+    _ = ∑ a ∈ A, ∑ b ∈ A,
+          (w a * star (w b)) *
+            (∑ χ : DirichletCharacter ℂ N,
+              χ (a : ZMod N) * star (χ (b : ZMod N))) := by
+              apply Finset.sum_congr rfl
+              intro a _ha
+              apply Finset.sum_congr rfl
+              intro b _hb
+              rw [Finset.mul_sum]
+              apply Finset.sum_congr rfl
+              intro χ _hχ
+              ring
+    _ = ∑ a ∈ A, ∑ b ∈ A,
+          (w a * star (w b)) *
+            (if a = b then (((N - 1 : ℕ) : ℂ)) else 0) := by
+              apply Finset.sum_congr rfl
+              intro a ha
+              apply Finset.sum_congr rfl
+              intro b hb
+              rw [charOrthKernel_prime_two hN
+                (hA a ha).1 (hA a ha).2
+                (hA b hb).1 (hA b hb).2]
+    _ = ∑ a ∈ A, (w a * star (w a)) * (((N - 1 : ℕ) : ℂ)) := by
+          apply Finset.sum_congr rfl
+          intro a ha
+          simp [ha]
+    _ = (∑ a ∈ A, w a * star (w a)) * (((N - 1 : ℕ) : ℂ)) := by
+          rw [Finset.sum_mul]
+
 end
 end Dirichlet
 end AnalyticNumberTheory
