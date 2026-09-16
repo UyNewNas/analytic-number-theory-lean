@@ -17,7 +17,7 @@ def dyadicPrimeWindow (P : ℕ) : Finset ℕ :=
 
 /-- The dyadic prime window is exactly the difference between the two standard prime finsets. -/
 theorem dyadicPrimeWindow_eq_primesLE_sdiff (P : ℕ) :
-    dyadicPrimeWindow P = Nat.primesLE (2 * P) \\ Nat.primesLE P := by
+    dyadicPrimeWindow P = Nat.primesLE (2 * P) \ Nat.primesLE P := by
   ext p
   simp only [mem_dyadicPrimeWindow, Finset.mem_sdiff, Nat.mem_primesLE]
   constructor
@@ -65,7 +65,8 @@ theorem eventually_dyadicPrimeWindow_card_lower_bound :
   have hc2P_abs : |c (2 * P)| ≤ (1 / 8 : ℝ) := by
     simpa [Real.norm_eq_abs] using hc2P
   have hP1 : (1 : ℝ) < P := by exact_mod_cast (by omega : 1 < P)
-  have h2P1 : (1 : ℝ) < 2 * P := by exact_mod_cast (by omega : 1 < 2 * P)
+  have h2P1 : (1 : ℝ) < ((2 * P : ℕ) : ℝ) := by
+    exact_mod_cast (by omega : 1 < 2 * P)
   have hlogP : 0 < log (P : ℝ) := log_pos hP1
   have hlog2P : 0 < log ((2 * P : ℕ) : ℝ) := log_pos h2P1
   have h4P : (4 : ℝ) ≤ P := by exact_mod_cast hP4
@@ -88,13 +89,13 @@ theorem eventually_dyadicPrimeWindow_card_lower_bound :
     linarith
   have hcP_low : (7 / 8 : ℝ) ≤ 1 + c P := by
     have hneg : -(1 / 8 : ℝ) ≤ c P := by
-      linarith [neg_abs_le (c P)]
+      linarith [neg_abs_le (c P), hcP_abs]
     linarith
   have hcP_high : 1 + c P ≤ (9 / 8 : ℝ) := by
-    linarith [le_abs_self (c P)]
+    linarith [le_abs_self (c P), hcP_abs]
   have hc2P_low : (7 / 8 : ℝ) ≤ 1 + c (2 * P) := by
     have hneg : -(1 / 8 : ℝ) ≤ c (2 * P) := by
-      linarith [neg_abs_le (c (2 * P))]
+      linarith [neg_abs_le (c (2 * P)), hc2P_abs]
     linarith
   have hpiP_upper :
       (Nat.primeCounting P : ℝ) ≤ (9 / 8 : ℝ) * (P : ℝ) / log (P : ℝ) := by
