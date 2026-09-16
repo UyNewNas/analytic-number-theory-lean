@@ -1,13 +1,14 @@
 import AnalyticNumberTheory.Dirichlet.GRH
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
+import AnalyticNumberTheory.Dirichlet.Moments
 
 /-!
 # Reusable Dirichlet core trust audit
 
 This focused audit covers every public theorem added by the extracted downstream-neutral
-GRH, character-orthogonality, and principal/nonprincipal decomposition layers. CI enforces
-the same exact axiom whitelist as the repository-wide audit.
+GRH, character-orthogonality, principal/nonprincipal decomposition, and finite-moment layers.
+CI enforces the same exact axiom whitelist as the repository-wide audit.
 -/
 
 #print axioms AnalyticNumberTheory.Dirichlet.GRH.at
@@ -23,3 +24,7 @@ the same exact axiom whitelist as the repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharKernelCollapse_prime
 #print axioms AnalyticNumberTheory.Dirichlet.weightedPrincipalKernel_prime
 #print axioms AnalyticNumberTheory.Dirichlet.weightedNonprincipalKernelCollapse_prime
+#print axioms AnalyticNumberTheory.Dirichlet.characterSumOn_principal_prime
+#print axioms AnalyticNumberTheory.Dirichlet.characterSumOn_secondMoment_prime
+#print axioms AnalyticNumberTheory.Dirichlet.characterSumOn_principal_secondMoment_prime
+#print axioms AnalyticNumberTheory.Dirichlet.characterSumOn_nonprincipal_secondMoment_prime
