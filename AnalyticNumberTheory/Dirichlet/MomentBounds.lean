@@ -36,7 +36,6 @@ theorem weightedCharacterSumOn_nonprincipal_normSq_prime
     exact hz
   simp_rw [hmul] at h
   norm_cast at h
-  exact h
 
 end
 end Dirichlet
