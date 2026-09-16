@@ -1,5 +1,6 @@
 import AnalyticNumberTheory.PrimeDistribution.PrimeNumberTheorem
 import AnalyticNumberTheory.PrimeDistribution.ChebyshevTheta
+import AnalyticNumberTheory.PrimeDistribution.DyadicPrimeWindow
 import AnalyticNumberTheory.Mertens.Basic
 import AnalyticNumberTheory.Mertens.PartialSummation
 import AnalyticNumberTheory.Mertens.Product
