@@ -1,4 +1,5 @@
 import Mathlib.Analysis.Complex.CauchyIntegral
+import Mathlib.Analysis.Normed.Group.Bounded
 import AnalyticNumberTheory.Dirichlet.GRH
 
 open scoped LSeries.notation ArithmeticFunction
@@ -52,6 +53,24 @@ theorem GRHAt.analyticOnNhd_negLogDerivLFunction_halfPlane
       {s : ℂ | (1 / 2 : ℝ) < s.re} := by
   intro s hs
   exact hGRH.analyticAt_negLogDerivLFunction χ hχ hs
+
+/-- Under GRH, the negative logarithmic derivative is uniformly bounded on every fixed
+compact subset of the zero-free half-plane `Re(s) > 1/2`.
+
+This is the compact-contour boundedness needed before a quantitative contour argument.  The
+bound is qualitative: it does not give effective dependence on the modulus, the compact set,
+or the contour height, and therefore does not by itself imply a GRH error term. -/
+theorem GRHAt.exists_norm_negLogDerivLFunction_bound_on_compact
+    {N : ℕ} [NeZero N] (hGRH : GRHAt N)
+    (χ : DirichletCharacter ℂ N) (hχ : χ ≠ 1)
+    {K : Set ℂ} (hK : IsCompact K)
+    (hKhalf : K ⊆ {s : ℂ | (1 / 2 : ℝ) < s.re}) :
+    ∃ C : ℝ, ∀ s ∈ K,
+      ‖-deriv (DirichletCharacter.LFunction χ) s /
+          DirichletCharacter.LFunction χ s‖ ≤ C := by
+  apply hK.exists_bound_of_continuousOn
+  exact
+    (hGRH.analyticOnNhd_negLogDerivLFunction_halfPlane χ hχ).continuousOn.mono hKhalf
 
 end Dirichlet
 end AnalyticNumberTheory
