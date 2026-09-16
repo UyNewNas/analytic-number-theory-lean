@@ -51,6 +51,7 @@ theorem characterSumOn_secondMoment_prime
               apply Finset.sum_congr rfl
               intro χ _hχ
               simp [characterSumOn, Finset.sum_mul, Finset.mul_sum]
+              rw [Finset.sum_comm]
     _ = ∑ a ∈ A, ∑ b ∈ A,
           ∑ χ : DirichletCharacter ℂ N,
             χ (a : ZMod N) * star (χ (b : ZMod N)) := by
@@ -90,7 +91,7 @@ theorem characterSumOn_nonprincipal_secondMoment_prime
     (∑ χ ∈ nonprincipalCharacters N,
       characterSumOn N A χ * star (characterSumOn N A χ)) =
       (A.card : ℂ) * (((N - 1 : ℕ) : ℂ) -
-        (A.card : ℂ) * (A.card : ℂ) := by
+        (A.card : ℂ) * (A.card : ℂ)) := by
   let F : DirichletCharacter ℂ N → ℂ := fun χ =>
     characterSumOn N A χ * star (characterSumOn N A χ)
   have hsplit := sum_chars_eq_principal_add_nonprincipal (N := N) F
@@ -101,10 +102,7 @@ theorem characterSumOn_nonprincipal_secondMoment_prime
       (∑ χ ∈ nonprincipalCharacters N, F χ) + F 1 =
           F 1 + ∑ χ ∈ nonprincipalCharacters N, F χ := by rw [add_comm]
       _ = ∑ χ : DirichletCharacter ℂ N, F χ := hsplit.symm
-  have hnonprincipal :
-      (∑ χ ∈ nonprincipalCharacters N, F χ) =
-        (∑ χ : DirichletCharacter ℂ N, F χ) - F 1 :=
-    eq_sub_of_add_eq hrev
+  have hnonprincipal := eq_sub_of_add_eq hrev
   simpa [F,
     characterSumOn_secondMoment_prime hN hA,
     characterSumOn_principal_secondMoment_prime hN hA] using hnonprincipal
