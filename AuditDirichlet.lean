@@ -61,3 +61,4 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.dyadicVonMangoldtNonprimeMass_le
 #print axioms AnalyticNumberTheory.Dirichlet.norm_dyadicVonMangoldtNonprimeRemainder_le_sqrtLog
 #print axioms AnalyticNumberTheory.Dirichlet.norm_dyadicPrimeLogCharacterSum_le_vonMangoldt_add_sqrtLog
+#print axioms AnalyticNumberTheory.Dirichlet.norm_characterSumOn_dyadicPrimeWindow_le_vonMangoldt
