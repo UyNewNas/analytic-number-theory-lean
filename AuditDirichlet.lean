@@ -22,6 +22,8 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.LFunction_ne_zero_of_half_lt_re
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.zeroFreeRectangle
 #print axioms AnalyticNumberTheory.Dirichlet.twistedVonMangoldtLSeries_eq_negLogDerivLFunction
+#print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticAt_negLogDerivLFunction
+#print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticOnNhd_negLogDerivLFunction_halfPlane
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthSumUnit
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthMulKernel
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthMulKernel_prime
