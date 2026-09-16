@@ -103,5 +103,53 @@ theorem GRHAt.exists_norm_negLogDerivLFunction_bound_on_verticalSegment
   intro t ht
   exact hC (φ t) ⟨t, ht, rfl⟩
 
+/-- The absolute-convergence majorant for the von Mangoldt L-series on a real line
+`Re(s) = σ`.  It depends only on `σ`, so it is uniform in the contour height and in the
+Dirichlet-character modulus. -/
+noncomputable def vonMangoldtLSeriesMajorant (σ : ℝ) : ℝ :=
+  ∑' n : ℕ, ‖LSeries.term (↗Λ) (σ : ℂ) n‖
+
+/-- On the absolutely convergent half-plane `Re(s) > 1`, the negative logarithmic
+derivative of every Dirichlet `LFunction` is bounded by the untwisted von Mangoldt
+majorant at the same real part.
+
+Unlike the compactness bounds above, this is an effective right-half-plane majorant: the
+right-hand side is an explicit convergent series depending only on `Re(s)` and is independent
+of both the modulus and the imaginary part.  It is intended for the right edge of Perron or
+explicit-formula contours; it does not control lines with `Re(s) ≤ 1`. -/
+theorem norm_negLogDerivLFunction_le_vonMangoldtLSeriesMajorant
+    {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N) {s : ℂ} (hs : 1 < s.re) :
+    ‖-deriv (DirichletCharacter.LFunction χ) s /
+        DirichletCharacter.LFunction χ s‖ ≤ vonMangoldtLSeriesMajorant s.re := by
+  rw [← twistedVonMangoldtLSeries_eq_negLogDerivLFunction χ hs]
+  rw [vonMangoldtLSeriesMajorant, LSeries]
+  have hχΛ := DirichletCharacter.LSeriesSummable_twist_vonMangoldt χ hs
+  have hΛ : LSeriesSummable (↗Λ) (s.re : ℂ) :=
+    ArithmeticFunction.LSeriesSummable_vonMangoldt (by simpa using hs)
+  refine (norm_tsum_le_tsum_norm hχΛ).trans ?_
+  exact hχΛ.norm.tsum_le_tsum (fun n => ?_) hΛ.norm
+  calc
+    ‖LSeries.term (↗χ * ↗Λ) s n‖ ≤ ‖LSeries.term (↗Λ) s n‖ := by
+      apply LSeries.norm_term_le
+      simpa only [Pi.mul_apply, norm_mul] using
+        mul_le_of_le_one_left (norm_nonneg (↗Λ n)) (χ.norm_le_one n)
+    _ = ‖LSeries.term (↗Λ) (s.re : ℂ) n‖ := by
+      rw [LSeries.norm_term_eq, LSeries.norm_term_eq]
+      simp
+
+/-- Vertical-line form of `norm_negLogDerivLFunction_le_vonMangoldtLSeriesMajorant`.
+For every fixed `σ > 1`, the same explicit majorant works uniformly for all heights `t`
+and all Dirichlet moduli. -/
+theorem norm_negLogDerivLFunction_le_vonMangoldtLSeriesMajorant_vertical
+    {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N)
+    {σ t : ℝ} (hσ : 1 < σ) :
+    ‖-deriv (DirichletCharacter.LFunction χ)
+          ((σ : ℂ) + (t : ℂ) * Complex.I) /
+        DirichletCharacter.LFunction χ
+          ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ vonMangoldtLSeriesMajorant σ := by
+  have hs : 1 < (((σ : ℂ) + (t : ℂ) * Complex.I).re) := by
+    simpa using hσ
+  simpa using norm_negLogDerivLFunction_le_vonMangoldtLSeriesMajorant χ hs
+
 end Dirichlet
 end AnalyticNumberTheory
