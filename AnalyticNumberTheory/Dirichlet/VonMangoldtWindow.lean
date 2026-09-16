@@ -102,7 +102,7 @@ theorem dyadicVonMangoldtNonprimeMass_le
         Chebyshev.psi (((2 * P : ℕ) : ℝ)) -
           Chebyshev.theta (((2 * P : ℕ) : ℝ)) := by
     symm
-    simpa [B] using
+    simpa only [B, Nat.floor_natCast] using
       (Chebyshev.psi_sub_theta_eq_sum_not_prime (((2 * P : ℕ) : ℝ)))
   have hx : (1 : ℝ) ≤ ((2 * P : ℕ) : ℝ) := by
     exact_mod_cast (show 1 ≤ 2 * P by omega)
@@ -140,7 +140,7 @@ theorem norm_dyadicPrimeLogCharacterSum_le_vonMangoldt_add_sqrtLog
     ring
   rw [hrearr]
   exact le_trans (norm_sub_le _ _)
-    (add_le_add_left (norm_dyadicVonMangoldtNonprimeRemainder_le_sqrtLog χ hP) _)
+    (add_le_add le_rfl (norm_dyadicVonMangoldtNonprimeRemainder_le_sqrtLog χ hP))
 
 end
 
