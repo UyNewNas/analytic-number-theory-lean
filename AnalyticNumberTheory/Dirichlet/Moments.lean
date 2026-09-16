@@ -103,6 +103,7 @@ theorem characterSumOn_nonprincipal_secondMoment_prime
           F 1 + ∑ χ ∈ nonprincipalCharacters N, F χ := by rw [add_comm]
       _ = ∑ χ : DirichletCharacter ℂ N, F χ := hsplit.symm
   have hnonprincipal := eq_sub_of_add_eq hrev
+  dsimp [F] at hnonprincipal
   rw [characterSumOn_secondMoment_prime hN hA,
     characterSumOn_principal_secondMoment_prime hN hA] at hnonprincipal
   exact hnonprincipal
