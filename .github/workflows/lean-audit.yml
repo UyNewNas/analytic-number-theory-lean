@@ -115,9 +115,8 @@ jobs:
 
           # Verify the exact pinned downstream declaration against this ANT head
           # without compiling or importing the downstream LiuWeightPaperQ / Goldbach
-          # application layer.  The declaration text below is extracted from the
-          # checked-out source, so this gate fails if the pinned source no longer
-          # contains the audited definition.
+          # application layer. The declaration is extracted from the checked-out
+          # source, so the gate also checks the pinned-source provenance boundary.
           python3 - "$downstream/MathlibNt/SieveTheory/Arithmetic/LiuLogarithmicIntegral.lean" \
             > CrossProjectLiBridge.lean <<'PY'
           import pathlib
@@ -158,7 +157,33 @@ jobs:
           PY
 
           lake env lean CrossProjectLiBridge.lean 2>&1 | tee /tmp/cross-project-li-bridge.txt
-          grep -F 'depends on axioms: []' /tmp/cross-project-li-bridge.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/cross-project-li-bridge.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          if len(reports) != 1:
+              print(f'Expected one Li-bridge axiom report, found {len(reports)}.', file=sys.stderr)
+              sys.exit(1)
+
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+          used = {
+              axiom.strip()
+              for axiom in reports[0].split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Pinned Li bridge uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+          print('Pinned Li bridge axiom whitelist passed: ' + ', '.join(sorted(used)))
+          PY
           rm CrossProjectLiBridge.lean
 
       - name: Audit genuine Li slice
@@ -204,6 +229,7 @@ jobs:
           PY
 
       - name: Audit public theorem axioms
+        if: ${{ always() }}
         shell: bash
         run: |
           set -o pipefail
