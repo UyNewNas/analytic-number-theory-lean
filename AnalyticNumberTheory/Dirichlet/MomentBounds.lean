@@ -23,13 +23,15 @@ theorem weightedCharacterSumOn_nonprincipal_normSq_prime
       (∑ a ∈ A, ‖w a‖ ^ 2) * (((N - 1 : ℕ) : ℝ)) -
         ‖∑ a ∈ A, w a‖ ^ 2 := by
   have h := weightedCharacterSumOn_nonprincipal_secondMoment_prime hN hA w
-  have hmul (z : ℂ) : z * star z = (‖z‖ ^ 2 : ℂ) := by
+  have hmul (z : ℂ) :
+      z * (starRingEnd ℂ) z = (((‖z‖ ^ 2 : ℝ) : ℂ)) := by
     have hz := Complex.mul_conj z
     rw [Complex.normSq_eq_norm_sq] at hz
     exact hz
   simp_rw [hmul] at h
   have hre := congrArg Complex.re h
-  simpa using hre
+  norm_num at hre
+  exact hre
 
 end
 end Dirichlet
