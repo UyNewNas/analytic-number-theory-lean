@@ -155,7 +155,7 @@ jobs:
           output = pathlib.Path('/tmp/reusable-axioms.txt').read_text(encoding='utf-8')
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
           empty_reports = re.findall(r'does not depend on any axioms', output)
-          expected_reports = 47
+          expected_reports = 48
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           found = len(reports) + len(empty_reports)
