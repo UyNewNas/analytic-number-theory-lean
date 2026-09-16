@@ -34,4 +34,5 @@ twisted-moment layers. CI enforces the same exact axiom whitelist as the reposit
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_principal_prime
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_nonprincipal_secondMoment_prime
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_nonprincipal_normSq_prime
+#print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_nonprincipal_normSq_le_prime
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_twistedSecondMoment_prime
