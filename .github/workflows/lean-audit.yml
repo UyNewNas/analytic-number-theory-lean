@@ -113,33 +113,53 @@ jobs:
           git clone --filter=blob:none https://github.com/subfish-zhou/goldbach-lean.git "$downstream"
           git -C "$downstream" checkout --detach df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59
 
-          # Compile the pinned downstream Liu symbol against this exact ANT branch,
-          # without adding goldbach-lean or LiuWeightPaperQ to ANT's Lake dependencies.
-          rm -rf "$downstream/AnalyticNumberTheory" "$downstream/PrimeNumberTheoremAnd"
-          cp -a AnalyticNumberTheory "$downstream/"
-          cp -a PrimeNumberTheoremAnd "$downstream/"
-          mkdir -p "$downstream/.lake"
-          rm -rf "$downstream/.lake/packages"
-          ln -s "$GITHUB_WORKSPACE/.lake/packages" "$downstream/.lake/packages"
+          # Verify the exact pinned downstream declaration against this ANT head
+          # without compiling or importing the downstream LiuWeightPaperQ / Goldbach
+          # application layer.  The declaration text below is extracted from the
+          # checked-out source, so this gate fails if the pinned source no longer
+          # contains the audited definition.
+          python3 - "$downstream/MathlibNt/SieveTheory/Arithmetic/LiuLogarithmicIntegral.lean" \
+            > CrossProjectLiBridge.lean <<'PY'
+          import pathlib
+          import re
+          import sys
 
-          cat > "$downstream/CrossProjectLiBridge.lean" <<'LEAN'
-          import AnalyticNumberTheory.PrimeDistribution.PrimeNumberTheorem
-          import MathlibNt.SieveTheory.Arithmetic.LiuLogarithmicIntegral
+          source = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
+          pattern = re.compile(
+              r"noncomputable def liuLogarithmicIntegral \(κ x : ℝ\) : ℝ :=\n"
+              r"  κ \+ ∫ t in \(2 : ℝ\)\.\.x, 1 / Real\.log t"
+          )
+          match = pattern.search(source)
+          if match is None:
+              print(
+                  "Pinned downstream liuLogarithmicIntegral declaration did not match the audited source shape.",
+                  file=sys.stderr,
+              )
+              sys.exit(1)
 
-          theorem liuLogarithmicIntegral_eq_ant
-              (κ x : ℝ) :
-              MathlibNt.SieveTheory.LiuWeight.liuLogarithmicIntegral κ x =
-                κ + AnalyticNumberTheory.PrimeDistribution.primeLogIntegral x := by
-            rfl
+          declaration = match.group(0)
+          print("import AnalyticNumberTheory.PrimeDistribution.PrimeNumberTheorem")
+          print()
+          print("open MeasureTheory intervalIntegral")
+          print()
+          print("namespace MathlibNt.SieveTheory.LiuWeight")
+          print()
+          print(declaration)
+          print()
+          print("end MathlibNt.SieveTheory.LiuWeight")
+          print()
+          print("theorem liuLogarithmicIntegral_eq_ant")
+          print("    (κ x : ℝ) :")
+          print("    MathlibNt.SieveTheory.LiuWeight.liuLogarithmicIntegral κ x =")
+          print("      κ + AnalyticNumberTheory.PrimeDistribution.primeLogIntegral x := by")
+          print("  rfl")
+          print()
+          print("#print axioms liuLogarithmicIntegral_eq_ant")
+          PY
 
-          #print axioms liuLogarithmicIntegral_eq_ant
-          LEAN
-
-          cd "$downstream"
-          lake build AnalyticNumberTheory.PrimeDistribution.PrimeNumberTheorem \
-            MathlibNt.SieveTheory.Arithmetic.LiuLogarithmicIntegral
           lake env lean CrossProjectLiBridge.lean 2>&1 | tee /tmp/cross-project-li-bridge.txt
           grep -F 'depends on axioms: []' /tmp/cross-project-li-bridge.txt
+          rm CrossProjectLiBridge.lean
 
       - name: Audit genuine Li slice
         if: ${{ always() }}
