@@ -2,6 +2,7 @@ import AnalyticNumberTheory.Dirichlet.GRH
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
 import AnalyticNumberTheory.Dirichlet.Moments
+import AnalyticNumberTheory.Dirichlet.MomentBounds
 import AnalyticNumberTheory.Dirichlet.TwistedMoments
 
 /-!
@@ -32,4 +33,5 @@ twisted-moment layers. CI enforces the same exact axiom whitelist as the reposit
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_secondMoment_prime
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_principal_prime
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_nonprincipal_secondMoment_prime
+#print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_nonprincipal_normSq_prime
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_twistedSecondMoment_prime
