@@ -104,6 +104,43 @@ jobs:
           build: true
           build-args: PrimeNumberTheoremAnd AnalyticNumberTheory
 
+      - name: Compile pinned downstream Li normalization bridge
+        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 70 }}
+        shell: bash
+        run: |
+          set -euxo pipefail
+          downstream="$RUNNER_TEMP/goldbach-lean"
+          git clone --filter=blob:none https://github.com/subfish-zhou/goldbach-lean.git "$downstream"
+          git -C "$downstream" checkout --detach df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59
+
+          # Compile the pinned downstream Liu symbol against this exact ANT branch,
+          # without adding goldbach-lean or LiuWeightPaperQ to ANT's Lake dependencies.
+          rm -rf "$downstream/AnalyticNumberTheory" "$downstream/PrimeNumberTheoremAnd"
+          cp -a AnalyticNumberTheory "$downstream/"
+          cp -a PrimeNumberTheoremAnd "$downstream/"
+          mkdir -p "$downstream/.lake"
+          rm -rf "$downstream/.lake/packages"
+          ln -s "$GITHUB_WORKSPACE/.lake/packages" "$downstream/.lake/packages"
+
+          cat > "$downstream/CrossProjectLiBridge.lean" <<'LEAN'
+          import AnalyticNumberTheory.PrimeDistribution.PrimeNumberTheorem
+          import MathlibNt.SieveTheory.Arithmetic.LiuLogarithmicIntegral
+
+          theorem liuLogarithmicIntegral_eq_ant
+              (κ x : ℝ) :
+              MathlibNt.SieveTheory.LiuWeight.liuLogarithmicIntegral κ x =
+                κ + AnalyticNumberTheory.PrimeDistribution.primeLogIntegral x := by
+            rfl
+
+          #print axioms liuLogarithmicIntegral_eq_ant
+          LEAN
+
+          cd "$downstream"
+          lake build AnalyticNumberTheory.PrimeDistribution.PrimeNumberTheorem \
+            MathlibNt.SieveTheory.Arithmetic.LiuLogarithmicIntegral
+          lake env lean CrossProjectLiBridge.lean 2>&1 | tee /tmp/cross-project-li-bridge.txt
+          grep -F 'depends on axioms: []' /tmp/cross-project-li-bridge.txt
+
       - name: Audit genuine Li slice
         if: ${{ always() }}
         shell: bash
