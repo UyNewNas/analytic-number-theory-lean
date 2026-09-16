@@ -11,6 +11,8 @@ import AnalyticNumberTheory.Mertens.LogChange
 import AnalyticNumberTheory.Mertens.AbelianRemainder
 import AnalyticNumberTheory.Mertens.ConstantIdentity
 import AnalyticNumberTheory.Mertens.Theorems
+import AnalyticNumberTheory.Dirichlet.GRH
+import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Sieve.GoldbachDensity
 import AnalyticNumberTheory.Sieve.SelbergIdentities
 import AnalyticNumberTheory.Sieve.Distribution
