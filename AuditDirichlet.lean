@@ -19,6 +19,7 @@ repository-wide audit.
 
 #print axioms AnalyticNumberTheory.Dirichlet.GRH.at
 #print axioms AnalyticNumberTheory.Dirichlet.grhAt_iff
+#print axioms AnalyticNumberTheory.Dirichlet.GRHAt.LFunction_ne_zero_of_half_lt_re
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.zeroFreeRectangle
 #print axioms AnalyticNumberTheory.Dirichlet.twistedVonMangoldtLSeries_eq_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthSumUnit
