@@ -23,6 +23,12 @@ theorem weightedCharacterSumOn_nonprincipal_normSq_prime
       (∑ a ∈ A, ‖w a‖ ^ 2) * (((N - 1 : ℕ) : ℝ)) -
         ‖∑ a ∈ A, w a‖ ^ 2 := by
   have h := weightedCharacterSumOn_nonprincipal_secondMoment_prime hN hA w
+  change
+    (∑ χ ∈ nonprincipalCharacters N,
+      weightedCharacterSumOn N A w χ *
+        (starRingEnd ℂ) (weightedCharacterSumOn N A w χ)) =
+      (∑ a ∈ A, w a * (starRingEnd ℂ) (w a)) * (((N - 1 : ℕ) : ℂ)) -
+        (∑ a ∈ A, w a) * (starRingEnd ℂ) (∑ a ∈ A, w a) at h
   have hmul (z : ℂ) :
       z * (starRingEnd ℂ) z = (((‖z‖ ^ 2 : ℝ) : ℂ)) := by
     have hz := Complex.mul_conj z
