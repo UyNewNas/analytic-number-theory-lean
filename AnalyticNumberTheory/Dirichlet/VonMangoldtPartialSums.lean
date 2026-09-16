@@ -49,6 +49,17 @@ theorem dyadicVonMangoldtCharacterSum_eq_partial_sub_partial
   rw [← hsum]
   ring
 
+/-- Any quantitative estimate for the cumulative twisted von-Mangoldt sum transfers to the
+dyadic interval with only the triangle-inequality loss at the two endpoints.  This packages
+the exact consumer boundary expected from a future Perron / explicit-formula estimate. -/
+theorem norm_dyadicVonMangoldtCharacterSum_le_partial_add_partial
+    (N P : ℕ) (χ : DirichletCharacter ℂ N) :
+    ‖dyadicVonMangoldtCharacterSum N P χ‖ ≤
+      ‖vonMangoldtCharacterPartialSum N (2 * P) χ‖ +
+        ‖vonMangoldtCharacterPartialSum N P χ‖ := by
+  rw [dyadicVonMangoldtCharacterSum_eq_partial_sub_partial]
+  exact norm_sub_le _ _
+
 end
 
 end Dirichlet
