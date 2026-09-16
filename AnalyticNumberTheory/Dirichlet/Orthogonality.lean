@@ -69,6 +69,14 @@ theorem star_char_eq_char_ringInverse
     star (χ a) = (χ a)⁻¹ := conj_eq_inv_of_norm_eq_one hnorm
     _ = χ (Ring.inverse a) := (char_apply_ringInverse χ ha).symm
 
+/-- On units, mathlib's total ring inverse agrees with the native inverse in `ZMod`. -/
+theorem ringInverse_eq_inv {q : ℕ} {a : ZMod q} (ha : IsUnit a) :
+    Ring.inverse a = a⁻¹ := by
+  calc
+    Ring.inverse a = (↑ha.unit⁻¹ : ZMod q) := Ring.inverse_of_isUnit ha
+    _ = ((↑ha.unit : ZMod q)⁻¹) := Units.val_inv_eq_inv_val ha.unit
+    _ = a⁻¹ := by rw [ha.unit_spec]
+
 /-- Dirichlet-character orthogonality in conjugated form on unit residue classes. -/
 theorem charOrthSumUnit
     {q : ℕ} (hq : 0 < q) {a b : ZMod q} (ha : IsUnit a) (hb : IsUnit b) :
@@ -80,6 +88,7 @@ theorem charOrthSumUnit
     complexHasEnoughRootsOfUnity (Monoid.exponent (ZMod q)ˣ)
       (Monoid.exponent_ne_zero_of_finite (G := (ZMod q)ˣ))
   have hsum := DirichletCharacter.sum_char_inv_mul_char_eq ℂ (a := b) hb a
+  have hrinv : Ring.inverse b = b⁻¹ := ringInverse_eq_inv hb
   calc
     (∑ χ : DirichletCharacter ℂ q, χ a * star (χ b)) =
         ∑ χ : DirichletCharacter ℂ q, χ (Ring.inverse b) * χ a := by
@@ -87,7 +96,8 @@ theorem charOrthSumUnit
           intro χ _hχ
           rw [star_char_eq_char_ringInverse χ hb]
           ring
-    _ = if b = a then (q.totient : ℂ) else 0 := hsum
+    _ = if b = a then (q.totient : ℂ) else 0 := by
+      simpa [hrinv] using hsum
     _ = if a = b then (q.totient : ℂ) else 0 := by
       by_cases hab : a = b
       · simp [hab]
