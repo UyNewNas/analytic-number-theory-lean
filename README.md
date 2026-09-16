@@ -1,78 +1,50 @@
-# Analytic Number Theory for Lean
+# analytic-number-theory-lean
 
-A reusable Lean foundation for prime distribution and its analytic
-consequences.
+Reusable analytic number theory infrastructure in Lean 4.
 
-The foundation currently provides:
+This repository is maintained as a demand-driven foundation for downstream formalizations.  It
+contains reusable prime-distribution, sieve, large-sieve, Mertens, and Dirichlet-character
+infrastructure rather than application-specific theorem statements.
 
-- a medium-strength error estimate for Chebyshev's psi function;
-- quantitative Chebyshev-theta interfaces, retaining the standard square-root
-  prime-power correction and exposing an `O(x / log x)` form for partial
-  summation, plus its Abel-endpoint error;
-- the standard prime-counting asymptotic `pi(x) ~ x / log x`;
-- a natural-number prime-counting interface for downstream theorem projects.
-- elementary finite prime sums/products and logarithmic estimates that form
-  the neutral starting point for reusable Mertens theorems.
-- an Abel-summation identity expressing reciprocal-prime sums through
-  Chebyshev's theta function, including its positive-kernel form, exact
-  identity main term, and a natural-number Mertens-II estimate with
-  `O(1 / log x)` error.
-- Mertens' product formula with exact constant `exp (-gamma) / log x` and
-  `O(1 / log^2 x)` error, including a uniform natural-number interface;
-- the audited zeta/Euler-log, Abel/Mellin, scaled Gamma-kernel, and finite-part
-  chain identifying the canonical product constant with Euler's constant.
-- the reusable sieve layer, including the Goldbach local density
-  `ν(d) = 1/φ(d)` on squarefree moduli, generic Selberg main-term identities,
-  and the **weighted Pan--Bombieri--Vinogradov input**: the uniform
-  `3^{ω(d)}`-weighted distribution condition consumed by additive sieve
-  proofs, its lcm-pair weight origin, the `errSum` seam, and the precise
-  classical Pan mean-value statement as an explicitly-marked open target.
+## Stable public entry point
 
-Chen-specific sieve consequences remain in `chen-theorem-lean`.
+Downstream projects should import `AnalyticNumberTheory` or the specific child module they need.
+The historical `PrimeNumberTheoremAnd` tree is retained as a compatibility implementation layer;
+new reusable APIs live under `AnalyticNumberTheory/`.
 
-## Status and trust
+## Dirichlet core
 
-This repository is under development. A commit is release-ready only when its
-CI passes all three gates:
+The reusable Dirichlet layer currently includes:
 
-- every tracked Lean source is free of executable `sorry` and `admit` tokens;
-- both `PrimeNumberTheoremAnd` and `AnalyticNumberTheory` build successfully;
-- the declarations listed in `Audit.lean` do not depend on `sorryAx`.
+- concrete GRH predicates for mathlib's analytically continued Dirichlet `LFunction`;
+- generic zero-free rectangles and the GRH implication;
+- two- and three-factor character orthogonality at prime moduli;
+- principal/nonprincipal finite-sum decomposition;
+- finite unweighted character second moments;
+- exact weighted finite character second moments
+  `weightedCharacterSumOn_secondMoment_prime`.
 
-Passing the audit does not mean that Lean uses no axioms. The standard mathlib
-foundation (`propext`, `Classical.choice`, and `Quot.sound`) is allowed and is
-reported by `#print axioms`. CI status, rather than this README, is the source
-of truth for the current commit.
+The weighted moment theorem is intentionally coefficient-agnostic: applications such as Liouville
+or Möbius character sums supply their own weights downstream.  This keeps application-specific
+defect, phase, or Goldbach statements out of the foundation layer.
 
-## Public API
+## Trust boundary
 
-Downstream projects should use:
+Tracked Lean sources are built in CI with executable `sorry` / `admit` rejection.  Public theorem
+axioms are audited against the repository whitelist:
 
-```lean
-import AnalyticNumberTheory
-```
+- `propext`
+- `Classical.choice`
+- `Quot.sound`
 
-Lake dependency:
+Focused reusable slices may add dedicated audits, but they do not weaken the repository-wide build
+or axiom checks.
 
-```toml
-[[require]]
-name = "analytic_number_theory"
-git = "https://github.com/UyNewNas/analytic-number-theory-lean.git"
-rev = "v0.1.0"
-```
+## Development policy
 
-The `PrimeNumberTheoremAnd` namespace is retained as a provenance-preserving
-implementation layer and is not the stable API.
+New work should have a named downstream consumer or fill a clearly reusable mathematical gap.
+Prefer neutral interfaces with explicit hypotheses and constants.  Do not import application
+projects back into ANT merely to prove an application theorem; instead expose the general lemma
+here and specialize it downstream.
 
-## Build and audit
-
-```sh
-lake build PrimeNumberTheoremAnd AnalyticNumberTheory
-lake env lean Audit.lean
-```
-
-For a release, run the same source scan as CI in addition to these commands.
-The repository policy applies to every tracked `.lean` file, including root
-modules and audit files.
-
-See `UPSTREAM.md` for the exact source revision and port boundary.
+See `ROADMAP.md`, `UPSTREAM.md`, and the open issues/PRs for current maintenance work and provenance.
