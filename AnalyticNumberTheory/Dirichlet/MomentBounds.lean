@@ -30,7 +30,6 @@ theorem weightedCharacterSumOn_nonprincipal_normSq_prime
     exact hz
   simp_rw [hmul] at h
   have hre := congrArg Complex.re h
-  norm_num at hre
   exact hre
 
 end
