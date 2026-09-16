@@ -179,6 +179,54 @@ theorem weightedCharacterSumOn_secondMoment_prime
     _ = (∑ a ∈ A, w a * star (w a)) * (((N - 1 : ℕ) : ℂ)) := by
           rw [Finset.sum_mul]
 
+/-- At a prime modulus the principal weighted character sum is the ordinary weighted sum, provided
+all representatives are positive and below the modulus. -/
+theorem weightedCharacterSumOn_principal_prime
+    {N : ℕ} (hN : N.Prime) {A : Finset ℕ}
+    (hA : ∀ a ∈ A, 0 < a ∧ a < N) (w : ℕ → ℂ) :
+    weightedCharacterSumOn N A w (1 : DirichletCharacter ℂ N) =
+      ∑ a ∈ A, w a := by
+  classical
+  unfold weightedCharacterSumOn
+  apply Finset.sum_congr rfl
+  intro a ha
+  have haunit : IsUnit (a : ZMod N) := by
+    rw [ZMod.isUnit_iff_coprime]
+    exact ((Nat.Prime.coprime_iff_not_dvd hN).2
+      (Nat.not_dvd_of_pos_of_lt (hA a ha).1 (hA a ha).2)).symm
+  rw [MulChar.one_apply haunit, mul_one]
+
+/-- Exact nonprincipal weighted `L²` mass.  This is the coefficient-agnostic identity obtained by
+subtracting the ordinary weighted sum (the principal character) from weighted Plancherel. -/
+theorem weightedCharacterSumOn_nonprincipal_secondMoment_prime
+    {N : ℕ} (hN : N.Prime) {A : Finset ℕ}
+    (hA : ∀ a ∈ A, 0 < a ∧ a < N) (w : ℕ → ℂ) :
+    (∑ χ ∈ nonprincipalCharacters N,
+      weightedCharacterSumOn N A w χ * star (weightedCharacterSumOn N A w χ)) =
+      (∑ a ∈ A, w a * star (w a)) * (((N - 1 : ℕ) : ℂ)) -
+        (∑ a ∈ A, w a) * star (∑ a ∈ A, w a) := by
+  let F : DirichletCharacter ℂ N → ℂ := fun χ =>
+    weightedCharacterSumOn N A w χ * star (weightedCharacterSumOn N A w χ)
+  have hsplit := sum_chars_eq_principal_add_nonprincipal (N := N) F
+  have hrev :
+      (∑ χ ∈ nonprincipalCharacters N, F χ) + F 1 =
+        ∑ χ : DirichletCharacter ℂ N, F χ := by
+    calc
+      (∑ χ ∈ nonprincipalCharacters N, F χ) + F 1 =
+          F 1 + ∑ χ ∈ nonprincipalCharacters N, F χ := by rw [add_comm]
+      _ = ∑ χ : DirichletCharacter ℂ N, F χ := hsplit.symm
+  have hnonprincipal := eq_sub_of_add_eq hrev
+  dsimp [F] at hnonprincipal
+  have htotal := weightedCharacterSumOn_secondMoment_prime hN hA w
+  change
+    (∑ χ : DirichletCharacter ℂ N,
+      weightedCharacterSumOn N A w χ *
+        (starRingEnd ℂ) (weightedCharacterSumOn N A w χ)) =
+      (∑ a ∈ A, w a * (starRingEnd ℂ) (w a)) * (((N - 1 : ℕ) : ℂ)) at htotal
+  have hprincipal := weightedCharacterSumOn_principal_prime hN hA w
+  rw [htotal, hprincipal] at hnonprincipal
+  exact hnonprincipal
+
 end
 end Dirichlet
 end AnalyticNumberTheory
