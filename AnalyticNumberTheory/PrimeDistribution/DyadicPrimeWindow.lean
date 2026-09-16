@@ -18,8 +18,17 @@ def dyadicPrimeWindow (P : ℕ) : Finset ℕ :=
 theorem dyadicPrimeWindow_eq_primesLE_sdiff (P : ℕ) :
     dyadicPrimeWindow P = Nat.primesLE (2 * P) \ Nat.primesLE P := by
   ext p
-  simp [mem_dyadicPrimeWindow, Nat.mem_primesLE]
-  omega
+  simp only [mem_dyadicPrimeWindow, Finset.mem_sdiff, Nat.mem_primesLE]
+  constructor
+  · rintro ⟨hPp, hp2P, hpprime⟩
+    refine ⟨⟨hp2P, hpprime⟩, ?_⟩
+    intro hpP
+    exact (Nat.not_lt_of_ge hpP.1) hPp
+  · rintro ⟨⟨hp2P, hpprime⟩, hpP⟩
+    have hPp : P < p := by
+      by_contra h
+      exact hpP ⟨Nat.le_of_not_gt h, hpprime⟩
+    exact ⟨hPp, hp2P, hpprime⟩
 
 /-- Exact prime-counting formula for the size of a dyadic prime window. -/
 theorem card_dyadicPrimeWindow (P : ℕ) :
