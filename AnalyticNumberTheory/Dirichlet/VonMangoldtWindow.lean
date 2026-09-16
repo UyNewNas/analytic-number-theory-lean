@@ -142,6 +142,31 @@ theorem norm_dyadicPrimeLogCharacterSum_le_vonMangoldt_add_sqrtLog
   exact le_trans (norm_sub_le _ _)
     (add_le_add le_rfl (norm_dyadicVonMangoldtNonprimeRemainder_le_sqrtLog χ hP))
 
+/-- Complete deterministic reduction from the unweighted dyadic prime-character sum to the
+finite von-Mangoldt character sum.  The two explicit losses are exactly the higher-prime-power
+Chebyshev term and the `log p - log P` dyadic weight-removal term. -/
+theorem norm_characterSumOn_dyadicPrimeWindow_le_vonMangoldt
+    {N P : ℕ} (χ : DirichletCharacter ℂ N) (hP : 1 < P) :
+    ‖characterSumOn N (dyadicPrimeWindow P) χ‖ ≤
+      (‖dyadicVonMangoldtCharacterSum N P χ‖ +
+          2 * Real.sqrt (((2 * P : ℕ) : ℝ)) * Real.log (((2 * P : ℕ) : ℝ)) +
+          Real.log 2 * ((dyadicPrimeWindow P).card : ℝ)) /
+        Real.log (P : ℝ) := by
+  have hprime :=
+    norm_dyadicPrimeLogCharacterSum_le_vonMangoldt_add_sqrtLog
+      χ (Nat.zero_lt_of_lt hP)
+  have hremove := norm_characterSumOn_dyadicPrimeWindow_le_div_log χ hP
+  have hnum :
+      ‖dyadicPrimeLogCharacterSum N P χ‖ +
+          Real.log 2 * ((dyadicPrimeWindow P).card : ℝ) ≤
+        (‖dyadicVonMangoldtCharacterSum N P χ‖ +
+          2 * Real.sqrt (((2 * P : ℕ) : ℝ)) * Real.log (((2 * P : ℕ) : ℝ))) +
+          Real.log 2 * ((dyadicPrimeWindow P).card : ℝ) :=
+    add_le_add_right hprime _
+  have hlog : 0 ≤ Real.log (P : ℝ) :=
+    (Real.log_pos (by exact_mod_cast hP)).le
+  exact hremove.trans (div_le_div_of_nonneg_right hnum hlog)
+
 end
 
 end Dirichlet
