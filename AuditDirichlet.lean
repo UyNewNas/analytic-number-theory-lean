@@ -6,6 +6,7 @@ import AnalyticNumberTheory.Dirichlet.Moments
 import AnalyticNumberTheory.Dirichlet.MomentBounds
 import AnalyticNumberTheory.Dirichlet.TwistedMoments
 import AnalyticNumberTheory.Dirichlet.PrimeWindowWeights
+import AnalyticNumberTheory.Dirichlet.VonMangoldtWindow
 import AnalyticNumberTheory.PrimeDistribution.DyadicPrimeWindow
 
 /-!
@@ -55,3 +56,8 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.norm_dyadicPrimeLogRemainder_le
 #print axioms AnalyticNumberTheory.Dirichlet.log_mul_norm_characterSumOn_dyadicPrimeWindow_le
 #print axioms AnalyticNumberTheory.Dirichlet.norm_characterSumOn_dyadicPrimeWindow_le_div_log
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicVonMangoldtCharacterSum_eq_primeLog_add_nonprime
+#print axioms AnalyticNumberTheory.Dirichlet.norm_dyadicVonMangoldtNonprimeRemainder_le
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicVonMangoldtNonprimeMass_le
+#print axioms AnalyticNumberTheory.Dirichlet.norm_dyadicVonMangoldtNonprimeRemainder_le_sqrtLog
+#print axioms AnalyticNumberTheory.Dirichlet.norm_dyadicPrimeLogCharacterSum_le_vonMangoldt_add_sqrtLog
