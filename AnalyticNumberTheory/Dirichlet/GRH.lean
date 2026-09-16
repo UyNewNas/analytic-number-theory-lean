@@ -52,7 +52,7 @@ theorem GRHAt.zeroFreeRectangle
       linarith
     have hhalf := hGRH χ s hs0 hslt hz
     have hstrict : (1 / 2 : ℝ) < s.re := lt_of_le_of_lt hα hαs
-    exact (ne_of_lt hstrict) hhalf
+    exact (ne_of_lt hstrict) hhalf.symm
   · have hsge : (1 : ℝ) ≤ s.re := le_of_not_gt hslt
     exact DirichletCharacter.LFunction_ne_zero_of_one_le_re χ (.inl hχ) hsge
 
