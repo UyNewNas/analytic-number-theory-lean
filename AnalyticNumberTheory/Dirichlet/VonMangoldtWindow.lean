@@ -1,6 +1,6 @@
 import AnalyticNumberTheory.Dirichlet.PrimeWindowWeights
 import AnalyticNumberTheory.Dirichlet.VonMangoldtLSeries
-import Mathlib.NumberTheory.ArithmeticFunction.VonMangoldt
+import Mathlib.NumberTheory.Chebyshev
 import Mathlib.Tactic
 
 open scoped BigOperators ArithmeticFunction
@@ -80,6 +80,67 @@ theorem norm_dyadicVonMangoldtNonprimeRemainder_le
       have hχ := χ.norm_le_one (n : ZMod N)
       have hΛ := ArithmeticFunction.vonMangoldt_nonneg (n := n)
       nlinarith
+
+/-- The scalar mass of higher prime powers in a dyadic interval has the standard explicit
+Chebyshev bound `O(sqrt(P) log P)`.  This packages mathlib's `ψ - θ` estimate in exactly
+the finite interval shape needed for character sums. -/
+theorem dyadicVonMangoldtNonprimeMass_le
+    {P : ℕ} (hP : 0 < P) :
+    (∑ n ∈ (Finset.Ioc P (2 * P)).filter (fun n => ¬ n.Prime), Λ n) ≤
+      2 * Real.sqrt (((2 * P : ℕ) : ℝ)) * Real.log (((2 * P : ℕ) : ℝ)) := by
+  let A := (Finset.Ioc P (2 * P)).filter (fun n => ¬ n.Prime)
+  let B := (Finset.Ioc 0 (2 * P)).filter (fun n => ¬ n.Prime)
+  have hAB : A ⊆ B := by
+    intro n hn
+    simp only [A, B, Finset.mem_filter, Finset.mem_Ioc] at hn ⊢
+    exact ⟨⟨by omega, hn.1.2⟩, hn.2⟩
+  have hsum : (∑ n ∈ A, Λ n) ≤ ∑ n ∈ B, Λ n := by
+    exact Finset.sum_le_sum_of_subset_of_nonneg hAB
+      (fun n _hn _hnot => ArithmeticFunction.vonMangoldt_nonneg)
+  have hB :
+      (∑ n ∈ B, Λ n) =
+        Chebyshev.psi (((2 * P : ℕ) : ℝ)) -
+          Chebyshev.theta (((2 * P : ℕ) : ℝ)) := by
+    symm
+    simpa [B] using
+      (Chebyshev.psi_sub_theta_eq_sum_not_prime (((2 * P : ℕ) : ℝ)))
+  have hx : (1 : ℝ) ≤ ((2 * P : ℕ) : ℝ) := by
+    exact_mod_cast (show 1 ≤ 2 * P by omega)
+  have hcheb := Chebyshev.psi_sub_theta_le (x := (((2 * P : ℕ) : ℝ))) hx
+  change (∑ n ∈ A, Λ n) ≤ _
+  calc
+    (∑ n ∈ A, Λ n) ≤ ∑ n ∈ B, Λ n := hsum
+    _ = Chebyshev.psi (((2 * P : ℕ) : ℝ)) -
+          Chebyshev.theta (((2 * P : ℕ) : ℝ)) := hB
+    _ ≤ 2 * Real.sqrt (((2 * P : ℕ) : ℝ)) * Real.log (((2 * P : ℕ) : ℝ)) := hcheb
+
+/-- Uniform prime-power removal for a Dirichlet-character twist: the non-prime part costs at
+most the same explicit `O(sqrt(P) log P)` Chebyshev term. -/
+theorem norm_dyadicVonMangoldtNonprimeRemainder_le_sqrtLog
+    {N P : ℕ} (χ : DirichletCharacter ℂ N) (hP : 0 < P) :
+    ‖dyadicVonMangoldtNonprimeRemainder N P χ‖ ≤
+      2 * Real.sqrt (((2 * P : ℕ) : ℝ)) * Real.log (((2 * P : ℕ) : ℝ)) :=
+  le_trans (norm_dyadicVonMangoldtNonprimeRemainder_le χ)
+    (dyadicVonMangoldtNonprimeMass_le hP)
+
+/-- Removing higher prime powers from a dyadic von-Mangoldt character sum loses only the
+explicit Chebyshev `O(sqrt(P) log P)` term.  Thus a future GRH bound for the total
+von-Mangoldt sum transfers directly to the log-weighted prime sum. -/
+theorem norm_dyadicPrimeLogCharacterSum_le_vonMangoldt_add_sqrtLog
+    {N P : ℕ} (χ : DirichletCharacter ℂ N) (hP : 0 < P) :
+    ‖dyadicPrimeLogCharacterSum N P χ‖ ≤
+      ‖dyadicVonMangoldtCharacterSum N P χ‖ +
+        2 * Real.sqrt (((2 * P : ℕ) : ℝ)) * Real.log (((2 * P : ℕ) : ℝ)) := by
+  have hsplit := dyadicVonMangoldtCharacterSum_eq_primeLog_add_nonprime N P χ
+  have hrearr :
+      dyadicPrimeLogCharacterSum N P χ =
+        dyadicVonMangoldtCharacterSum N P χ -
+          dyadicVonMangoldtNonprimeRemainder N P χ := by
+    rw [hsplit]
+    ring
+  rw [hrearr]
+  exact le_trans (norm_sub_le _ _)
+    (add_le_add_left (norm_dyadicVonMangoldtNonprimeRemainder_le_sqrtLog χ hP) _)
 
 end
 
