@@ -29,3 +29,5 @@ CI enforces the same exact axiom whitelist as the repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.characterSumOn_principal_secondMoment_prime
 #print axioms AnalyticNumberTheory.Dirichlet.characterSumOn_nonprincipal_secondMoment_prime
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_secondMoment_prime
+#print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_principal_prime
+#print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_nonprincipal_secondMoment_prime
