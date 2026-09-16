@@ -13,7 +13,7 @@ This is a neutral interface seam for explicit-formula arguments: it only identif
 already-convergent twisted von-Mangoldt series with the analytic `LFunction`. It does not
 supply a contour shift, a GRH error term, or a prime-character-sum estimate. -/
 theorem twistedVonMangoldtLSeries_eq_negLogDerivLFunction
-    {N : ℕ} (χ : DirichletCharacter ℂ N) {s : ℂ} (hs : 1 < s.re) :
+    {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N) {s : ℂ} (hs : 1 < s.re) :
     L (↗χ * ↗Λ) s =
       -deriv (DirichletCharacter.LFunction χ) s /
         DirichletCharacter.LFunction χ s := by
