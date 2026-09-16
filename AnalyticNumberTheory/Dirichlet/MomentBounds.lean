@@ -35,8 +35,8 @@ theorem weightedCharacterSumOn_nonprincipal_normSq_prime
     rw [Complex.normSq_eq_norm_sq] at hz
     exact hz
   simp_rw [hmul] at h
-  have hre := congrArg Complex.re h
-  exact hre
+  norm_cast at h
+  exact h
 
 end
 end Dirichlet
