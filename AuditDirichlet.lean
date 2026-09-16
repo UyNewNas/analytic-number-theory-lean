@@ -1,4 +1,5 @@
 import AnalyticNumberTheory.Dirichlet.GRH
+import AnalyticNumberTheory.Dirichlet.VonMangoldtLSeries
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
 import AnalyticNumberTheory.Dirichlet.Moments
@@ -19,6 +20,7 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.GRH.at
 #print axioms AnalyticNumberTheory.Dirichlet.grhAt_iff
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.zeroFreeRectangle
+#print axioms AnalyticNumberTheory.Dirichlet.twistedVonMangoldtLSeries_eq_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthSumUnit
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthMulKernel
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthMulKernel_prime
