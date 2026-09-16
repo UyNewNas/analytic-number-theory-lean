@@ -37,6 +37,17 @@ theorem weightedCharacterSumOn_nonprincipal_normSq_prime
   simp_rw [hmul] at h
   norm_cast at h
 
+/-- Dropping the nonnegative principal square gives a reusable upper bound for the complete
+nonprincipal weighted `L²` mass. -/
+theorem weightedCharacterSumOn_nonprincipal_normSq_le_prime
+    {N : ℕ} (hN : N.Prime) {A : Finset ℕ}
+    (hA : ∀ a ∈ A, 0 < a ∧ a < N) (w : ℕ → ℂ) :
+    (∑ χ ∈ nonprincipalCharacters N,
+      ‖weightedCharacterSumOn N A w χ‖ ^ 2) ≤
+      (∑ a ∈ A, ‖w a‖ ^ 2) * (((N - 1 : ℕ) : ℝ)) := by
+  rw [weightedCharacterSumOn_nonprincipal_normSq_prime hN hA w]
+  exact sub_le_self _ (sq_nonneg _)
+
 end
 end Dirichlet
 end AnalyticNumberTheory
