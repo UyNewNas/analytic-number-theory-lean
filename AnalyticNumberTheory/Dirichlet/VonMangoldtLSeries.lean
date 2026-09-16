@@ -12,7 +12,7 @@ L-series is the negative logarithmic derivative of mathlib's analytically contin
 Dirichlet `LFunction`.
 
 This is a neutral interface seam for explicit-formula arguments: it only identifies the
-already-convergent twisted von-Mangoldt series with the analytic `LFunction`. It does not
+already-convergent twisted-von-Mangoldt series with the analytic `LFunction`. It does not
 supply a contour shift, a GRH error term, or a prime-character-sum estimate. -/
 theorem twistedVonMangoldtLSeries_eq_negLogDerivLFunction
     {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N) {s : ℂ} (hs : 1 < s.re) :
@@ -71,6 +71,37 @@ theorem GRHAt.exists_norm_negLogDerivLFunction_bound_on_compact
   apply hK.exists_bound_of_continuousOn
   exact
     (hGRH.analyticOnNhd_negLogDerivLFunction_halfPlane χ hχ).continuousOn.mono hKhalf
+
+/-- Under GRH, the negative logarithmic derivative of a fixed non-principal Dirichlet
+`LFunction` is uniformly bounded on every finite vertical segment lying strictly to the
+right of the critical line.
+
+This packages the compact-contour theorem in the parameterization used by Perron and
+explicit-formula contours. The bound is still qualitative in the height `T`; no vertical
+growth estimate is asserted. -/
+theorem GRHAt.exists_norm_negLogDerivLFunction_bound_on_verticalSegment
+    {N : ℕ} [NeZero N] (hGRH : GRHAt N)
+    (χ : DirichletCharacter ℂ N) (hχ : χ ≠ 1)
+    {σ T : ℝ} (hσ : (1 / 2 : ℝ) < σ) :
+    ∃ C : ℝ, ∀ t ∈ Set.Icc (-T) T,
+      ‖-deriv (DirichletCharacter.LFunction χ)
+            ((σ : ℂ) + (t : ℂ) * Complex.I) /
+          DirichletCharacter.LFunction χ
+            ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤ C := by
+  let φ : ℝ → ℂ := fun t => (σ : ℂ) + (t : ℂ) * Complex.I
+  let K : Set ℂ := φ '' Set.Icc (-T) T
+  have hφ : Continuous φ := by
+    fun_prop
+  have hK : IsCompact K := isCompact_Icc.image hφ
+  have hKhalf : K ⊆ {s : ℂ | (1 / 2 : ℝ) < s.re} := by
+    intro s hs
+    rcases hs with ⟨t, ht, rfl⟩
+    simpa [φ] using hσ
+  obtain ⟨C, hC⟩ :=
+    hGRH.exists_norm_negLogDerivLFunction_bound_on_compact χ hχ hK hKhalf
+  refine ⟨C, ?_⟩
+  intro t ht
+  exact hC (φ t) ⟨t, ht, rfl⟩
 
 end Dirichlet
 end AnalyticNumberTheory
