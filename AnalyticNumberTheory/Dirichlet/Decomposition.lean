@@ -22,7 +22,7 @@ def nonprincipalCharacters (N : ℕ) : Finset (DirichletCharacter ℂ N) :=
 theorem sum_chars_eq_principal_add_nonprincipal
     {N : ℕ} (F : DirichletCharacter ℂ N → ℂ) :
     (∑ χ : DirichletCharacter ℂ N, F χ) =
-      F 1 + ∑ χ in nonprincipalCharacters N, F χ := by
+      F 1 + ∑ χ ∈ nonprincipalCharacters N, F χ := by
   classical
   rw [← Finset.sum_erase_add (Finset.univ : Finset (DirichletCharacter ℂ N)) F
     (Finset.mem_univ (1 : DirichletCharacter ℂ N)), add_comm]
@@ -35,7 +35,7 @@ theorem charOrthMulKernel_prime_nonprincipal
     (hp0 : 0 < p) (hpN : p < N)
     (hn0 : 0 < n) (hnN : n < N)
     (hm0 : 0 < m) (hmN : m < N) :
-    (∑ χ in nonprincipalCharacters N,
+    (∑ χ ∈ nonprincipalCharacters N,
       χ (p : ZMod N) * χ (n : ZMod N) * star (χ (m : ZMod N))) =
       (if p * n ≡ m [MOD N] then ((N - 1 : ℕ) : ℂ) else 0) - 1 := by
   have hpunit : IsUnit (p : ZMod N) := by
@@ -61,7 +61,7 @@ theorem charOrthMulKernel_prime_nonprincipal
     MulChar.one_apply hmunit
   have hprincipal : F 1 = 1 := by simp [F, hpone, hnone, hmone]
   have hsum :
-      (∑ χ in nonprincipalCharacters N, F χ) + 1 =
+      (∑ χ ∈ nonprincipalCharacters N, F χ) + 1 =
         ∑ χ : DirichletCharacter ℂ N, F χ := by
     rw [← hprincipal]
     simpa [add_comm] using hsplit.symm
@@ -149,7 +149,7 @@ theorem weightedNonprincipalKernelCollapse_prime
     (w : ℕ → ℕ → ℕ → ℂ) :
     (∑ p ∈ S, ∑ n ∈ T, ∑ m ∈ U,
       w p n m *
-        (∑ χ in nonprincipalCharacters N,
+        (∑ χ ∈ nonprincipalCharacters N,
           χ (p : ZMod N) * χ (n : ZMod N) * star (χ (m : ZMod N)))) =
       ∑ p ∈ S, ∑ n ∈ T, ∑ m ∈ U,
         w p n m *
