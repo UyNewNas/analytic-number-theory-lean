@@ -160,19 +160,44 @@ Incremental runs #302 through #306 were green. Final workflow run
 PR #75 is ready for review, mergeable, and remains unmerged; merge is an explicit
 owner decision.
 
+## Independent demand-backed reuse lane: Dirichlet core (PR #76)
+
+A separate downstream consumer, `UyNewNas/liouville-reflection-lean`, now provides
+a concrete reason to extract project-neutral Dirichlet infrastructure into ANT.
+This is not a continuation of the Goldbach/Li/Pan maintenance slice and does not
+reactivate the retired Chen-completion programme.
+
+[PR #76](https://github.com/UyNewNas/analytic-number-theory-lean/pull/76), current
+observed head `be8d8927c51d636a74f85f38527d56ffa5cafc45`, provides neutral GRH,
+character orthogonality/decomposition, and exact finite weighted second-moment
+interfaces while leaving Liouville defects, Mangerel-specific parameters, and
+application theorem statements downstream. Workflow run
+[`35078861322`](https://github.com/UyNewNas/analytic-number-theory-lean/actions/runs/35078861322)
+(run #355) completed **success** on that exact head: executable `sorry`/`admit`
+rejection, repository-wide Lean build, repository-wide public theorem axiom audit,
+and the focused 20-declaration reusable Dirichlet audit all passed.
+
+This roadmap records #76 because it is a real demand-backed ANT reuse lane and
+therefore changes the repository integration topology. The Goldbach/Li maintenance
+plan does not take ownership of, rewrite, or broaden that PR. Its merge remains an
+explicit owner decision.
+
 ## Current engineering stop
 
-There is no further code slice in the current work register that simultaneously
-has a named ANT consumer and an already-audited exact type boundary. Later
-downstream `LogGridEstimates` and derivative automation still have no named ANT
-consumer and remain unscheduled. Do not manufacture stronger pi-Li, weighted BV,
-supported transport, or general Pan work merely because PR #70 and PR #75 are
-green.
+There is no further **Goldbach/Li/Pan maintenance** code slice in the current work
+register that simultaneously has a named ANT consumer and an already-audited exact
+type boundary. Later downstream `LogGridEstimates` and derivative automation still
+have no named ANT consumer and remain unscheduled. Do not manufacture stronger
+pi-Li, weighted BV, supported transport, or general Pan work merely because PR #70
+and PR #75 are green.
 
+A separate named-consumer lane is active in PR #76 and is independently green.
 Current repository-state decisions are therefore integration decisions for the
-green code PRs (#70 and #75) plus this documentation PR (#74). Maintenance should
-resume with a new code slice only when a concrete consumer or exact required
-interface is identified.
+green `dev` code PRs (#70, #75, and #76) plus this distinct `main`-based
+documentation PR (#74). Because `main` and `dev` are diverged, the documentation
+CI does not substitute for a hypothetical combined `dev` tree. Maintenance should
+resume with another Goldbach/Li/Pan code slice only when a concrete consumer or
+exact required interface is identified.
 
 ## Existing results and historical detail
 
