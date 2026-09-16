@@ -69,7 +69,7 @@ theorem charOrthMulKernel_prime_nonprincipal
   have hall := charOrthMulKernel_prime
     (N := N) (p := p) (n := n) (m := m) hN
     hp0 hpN hn0 hnN hm0 hmN
-  rw [all] at hnonprincipal
+  rw [hall] at hnonprincipal
   exact hnonprincipal
 
 /-- Weighted finite collapse of the full three-factor character kernel at a prime modulus. -/
