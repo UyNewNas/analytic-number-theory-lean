@@ -4,6 +4,7 @@ import AnalyticNumberTheory.Dirichlet.Decomposition
 import AnalyticNumberTheory.Dirichlet.Moments
 import AnalyticNumberTheory.Dirichlet.MomentBounds
 import AnalyticNumberTheory.Dirichlet.TwistedMoments
+import AnalyticNumberTheory.Dirichlet.PrimeWindowWeights
 import AnalyticNumberTheory.PrimeDistribution.DyadicPrimeWindow
 
 /-!
@@ -43,3 +44,9 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.PrimeDistribution.card_dyadicPrimeWindow
 #print axioms AnalyticNumberTheory.PrimeDistribution.dyadicPrimeWindow_nonempty
 #print axioms AnalyticNumberTheory.PrimeDistribution.eventually_dyadicPrimeWindow_card_lower_bound
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicPrime_log_sub_log_nonneg
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicPrime_log_sub_log_le_log_two
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicPrimeLogCharacterSum_eq_log_mul_add_remainder
+#print axioms AnalyticNumberTheory.Dirichlet.norm_dyadicPrimeLogRemainder_le
+#print axioms AnalyticNumberTheory.Dirichlet.log_mul_norm_characterSumOn_dyadicPrimeWindow_le
+#print axioms AnalyticNumberTheory.Dirichlet.norm_characterSumOn_dyadicPrimeWindow_le_div_log
