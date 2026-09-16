@@ -42,3 +42,4 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.PrimeDistribution.dyadicPrimeWindow_eq_primesLE_sdiff
 #print axioms AnalyticNumberTheory.PrimeDistribution.card_dyadicPrimeWindow
 #print axioms AnalyticNumberTheory.PrimeDistribution.dyadicPrimeWindow_nonempty
+#print axioms AnalyticNumberTheory.PrimeDistribution.eventually_dyadicPrimeWindow_card_lower_bound
