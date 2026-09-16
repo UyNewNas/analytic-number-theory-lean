@@ -143,3 +143,45 @@ jobs:
 
           print('Public API axiom whitelist passed: ' + ', '.join(sorted(used)))
           PY
+
+      - name: Audit reusable Dirichlet core axioms
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean AuditDirichlet.lean 2>&1 | tee /tmp/dirichlet-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/dirichlet-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          empty_reports = re.findall(r'does not depend on any axioms', output)
+          expected_reports = 11
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          found = len(reports) + len(empty_reports)
+          if found != expected_reports:
+              print(
+                  f'Expected {expected_reports} Dirichlet axiom reports, found {found}.',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Dirichlet core uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print('Dirichlet core axiom whitelist passed: ' + ', '.join(sorted(used)))
+          PY
