@@ -127,7 +127,7 @@ theorem norm_negLogDerivLFunction_le_vonMangoldtLSeriesMajorant
   have hΛ : LSeriesSummable (↗Λ) (s.re : ℂ) :=
     ArithmeticFunction.LSeriesSummable_vonMangoldt (by simpa using hs)
   refine (norm_tsum_le_tsum_norm hχΛ.norm).trans ?_
-  exact hχΛ.norm.tsum_le_tsum (fun n => ?_) hΛ.norm
+  refine hχΛ.norm.tsum_le_tsum (fun n => ?_) hΛ.norm
   calc
     ‖LSeries.term (↗χ * ↗Λ) s n‖ ≤ ‖LSeries.term (↗Λ) s n‖ := by
       apply LSeries.norm_term_le
