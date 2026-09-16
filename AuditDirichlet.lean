@@ -27,6 +27,7 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticAt_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticOnNhd_negLogDerivLFunction_halfPlane
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.exists_norm_negLogDerivLFunction_bound_on_compact
+#print axioms AnalyticNumberTheory.Dirichlet.GRHAt.exists_norm_negLogDerivLFunction_bound_on_verticalSegment
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthSumUnit
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthMulKernel
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthMulKernel_prime
