@@ -104,88 +104,6 @@ jobs:
           build: true
           build-args: PrimeNumberTheoremAnd AnalyticNumberTheory
 
-      - name: Compile pinned downstream Li normalization bridge
-        if: ${{ github.event_name == 'pull_request' && github.event.pull_request.number == 70 }}
-        shell: bash
-        run: |
-          set -euxo pipefail
-          downstream="$RUNNER_TEMP/goldbach-lean"
-          git clone --filter=blob:none https://github.com/subfish-zhou/goldbach-lean.git "$downstream"
-          git -C "$downstream" checkout --detach df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59
-
-          # Verify the exact pinned downstream declaration against this ANT head
-          # without compiling or importing the downstream LiuWeightPaperQ / Goldbach
-          # application layer. The declaration is extracted from the checked-out
-          # source, so the gate also checks the pinned-source provenance boundary.
-          python3 - "$downstream/MathlibNt/SieveTheory/Arithmetic/LiuLogarithmicIntegral.lean" \
-            > CrossProjectLiBridge.lean <<'PY'
-          import pathlib
-          import re
-          import sys
-
-          source = pathlib.Path(sys.argv[1]).read_text(encoding="utf-8")
-          pattern = re.compile(
-              r"noncomputable def liuLogarithmicIntegral \(κ x : ℝ\) : ℝ :=\n"
-              r"  κ \+ ∫ t in \(2 : ℝ\)\.\.x, 1 / Real\.log t"
-          )
-          match = pattern.search(source)
-          if match is None:
-              print(
-                  "Pinned downstream liuLogarithmicIntegral declaration did not match the audited source shape.",
-                  file=sys.stderr,
-              )
-              sys.exit(1)
-
-          declaration = match.group(0)
-          print("import AnalyticNumberTheory.PrimeDistribution.PrimeNumberTheorem")
-          print()
-          print("open MeasureTheory intervalIntegral")
-          print()
-          print("namespace MathlibNt.SieveTheory.LiuWeight")
-          print()
-          print(declaration)
-          print()
-          print("end MathlibNt.SieveTheory.LiuWeight")
-          print()
-          print("theorem liuLogarithmicIntegral_eq_ant")
-          print("    (κ x : ℝ) :")
-          print("    MathlibNt.SieveTheory.LiuWeight.liuLogarithmicIntegral κ x =")
-          print("      κ + AnalyticNumberTheory.PrimeDistribution.primeLogIntegral x := by")
-          print("  rfl")
-          print()
-          print("#print axioms liuLogarithmicIntegral_eq_ant")
-          PY
-
-          lake env lean CrossProjectLiBridge.lean 2>&1 | tee /tmp/cross-project-li-bridge.txt
-          python3 - <<'PY'
-          import pathlib
-          import re
-          import sys
-
-          output = pathlib.Path('/tmp/cross-project-li-bridge.txt').read_text(encoding='utf-8')
-          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
-          if len(reports) != 1:
-              print(f'Expected one Li-bridge axiom report, found {len(reports)}.', file=sys.stderr)
-              sys.exit(1)
-
-          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
-          used = {
-              axiom.strip()
-              for axiom in reports[0].split(',')
-              if axiom.strip()
-          }
-          unexpected = used - allowed
-          if unexpected:
-              print(
-                  'Pinned Li bridge uses non-whitelisted axioms: '
-                  + ', '.join(sorted(unexpected)),
-                  file=sys.stderr,
-              )
-              sys.exit(1)
-          print('Pinned Li bridge axiom whitelist passed: ' + ', '.join(sorted(used)))
-          PY
-          rm CrossProjectLiBridge.lean
-
       - name: Audit genuine Li slice
         if: ${{ always() }}
         shell: bash
@@ -229,7 +147,6 @@ jobs:
           PY
 
       - name: Audit public theorem axioms
-        if: ${{ always() }}
         shell: bash
         run: |
           set -o pipefail
