@@ -37,14 +37,14 @@ proved downstream instances.
 This source comparison has produced a bounded neutral ANT implementation; it is
 not a second Chen application project. Existing
 [PR #70](https://github.com/UyNewNas/analytic-number-theory-lean/pull/70), current
-head `e9d85e063bcad470e16f36326e86b325b0313f96`, preserves the public convention
+head `299836966ed5f953cf2b00673ee570524d2813b3`, preserves the public convention
 
 ```text
 primeLogIntegral(x) = integral from 2 to x of 1/log(t),
 primeLogIntegral(2) = 0.
 ```
 
-The inspected downstream
+The pinned downstream
 [`Arithmetic/LiuLogarithmicIntegral.lean`](https://github.com/subfish-zhou/goldbach-lean/blob/df1f3b3b721c9a0b5e38ba39d5c0e3c2a1d72f59/MathlibNt/SieveTheory/Arithmetic/LiuLogarithmicIntegral.lean)
 uses
 
@@ -52,13 +52,28 @@ uses
 liuLogarithmicIntegral(kappa, x) = kappa + integral from 2 to x of 1/log(t).
 ```
 
-Thus `liuLogarithmicIntegral kappa x = kappa + primeLogIntegral x` at the source
-normalization level. This correspondence is established by inspecting the pinned
-downstream definition and ANT's compiled local definition; it has **not** been
-compiled in a Lean environment importing both projects at once. PR #70's machine
-verification therefore covers the ANT-side API and proofs, not a cross-project
-symbol bridge. ANT keeps the zero-at-two convention and does not depend on the
-downstream Goldbach/Liu application layer.
+The exact pinned-source normalization bridge is now machine-verified. Temporary
+verification commit `a937f8ebb713c08d7c8305698e55a1b5e2f7c111` checked out
+`goldbach-lean@df1f3b3b...`, extracted that exact declaration from the pinned
+source, compiled it against ANT's `primeLogIntegral`, and proved
+
+```text
+liuLogarithmicIntegral kappa x = kappa + primeLogIntegral x
+```
+
+by definitional equality. Workflow run
+[`35053020347`](https://github.com/UyNewNas/analytic-number-theory-lean/actions/runs/35053020347)
+(run #311) completed **success** for the repository build, pinned-source bridge,
+focused genuine-Li audit, and repository-wide public theorem axiom audit. This is
+stronger than source inspection but deliberately narrower than importing or
+compiling the full downstream Goldbach/Liu application project. No
+`LiuWeightPaperQ` or application dependency was added to ANT.
+
+The one-off downstream-network probe was removed in cleanup commit
+`299836966ed5f953cf2b00673ee570524d2813b3`; ordinary workflow run
+[`35053222263`](https://github.com/UyNewNas/analytic-number-theory-lean/actions/runs/35053222263)
+(run #312) completed **success** on that current head. Thus the bridge evidence is
+retained without making `goldbach-lean` a permanent ANT dependency or CI input.
 
 PR #70 contains the neutral slice required by #69:
 
@@ -83,15 +98,15 @@ No `LiuWeightPaperQ` or other Goldbach application dependency is imported into A
 The independent Bombieri–Davenport baseline repair
 [PR #73](https://github.com/UyNewNas/analytic-number-theory-lean/pull/73) was merged
 into `dev` as `b326ecbe03daf16916e9f3f9f632c45eeef6aa32`. PR #70 was then synchronized
-non-forced to that repaired baseline at
-`e9d85e063bcad470e16f36326e86b325b0313f96`.
+non-forced to that repaired baseline.
 
 Combined workflow run
 [`34923846194`](https://github.com/UyNewNas/analytic-number-theory-lean/actions/runs/34923846194)
-(run #300) completed **success** on that exact PR #70 head. The executable
+(run #300) completed **success** on the repaired-baseline PR #70 state. The executable
 `sorry`/`admit` scan, repository-wide Lean build, focused `Audit genuine Li slice`,
-and repository-wide public theorem axiom audit all passed. The focused gate remains
-additive; it does not replace or weaken the normal full build and trust audit.
+and repository-wide public theorem axiom audit all passed. Runs #311 and #312 add
+the pinned-source normalization evidence and confirm that removing the temporary
+probe leaves the ordinary audit regime fully green.
 
 The old pre-integration Bombieri–Davenport failure is therefore historical only.
 Issue #71 is completed and diagnostic-only PR #72 is closed unmerged. PR #70 is
