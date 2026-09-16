@@ -4,13 +4,15 @@ import AnalyticNumberTheory.Dirichlet.Decomposition
 import AnalyticNumberTheory.Dirichlet.Moments
 import AnalyticNumberTheory.Dirichlet.MomentBounds
 import AnalyticNumberTheory.Dirichlet.TwistedMoments
+import AnalyticNumberTheory.PrimeDistribution.DyadicPrimeWindow
 
 /-!
-# Reusable Dirichlet core trust audit
+# Reusable analytic core trust audit
 
-This focused audit covers every public theorem added by the extracted downstream-neutral
-GRH, character-orthogonality, principal/nonprincipal decomposition, finite-moment, and
-twisted-moment layers. CI enforces the same exact axiom whitelist as the repository-wide audit.
+This focused audit covers the public theorems added by the extracted downstream-neutral
+Dirichlet GRH/character layers together with the reusable dyadic prime-window layer used by
+downstream analytic applications. CI enforces the same exact axiom whitelist as the
+repository-wide audit.
 -/
 
 #print axioms AnalyticNumberTheory.Dirichlet.GRH.at
@@ -36,3 +38,7 @@ twisted-moment layers. CI enforces the same exact axiom whitelist as the reposit
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_nonprincipal_normSq_prime
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_nonprincipal_normSq_le_prime
 #print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_twistedSecondMoment_prime
+#print axioms AnalyticNumberTheory.PrimeDistribution.mem_dyadicPrimeWindow
+#print axioms AnalyticNumberTheory.PrimeDistribution.dyadicPrimeWindow_eq_primesLE_sdiff
+#print axioms AnalyticNumberTheory.PrimeDistribution.card_dyadicPrimeWindow
+#print axioms AnalyticNumberTheory.PrimeDistribution.dyadicPrimeWindow_nonempty
