@@ -1,6 +1,7 @@
 import AnalyticNumberTheory.Dirichlet.GRH
 import AnalyticNumberTheory.Dirichlet.LocalLogDerivative
 import AnalyticNumberTheory.Dirichlet.CharacterPrefix
+import AnalyticNumberTheory.Dirichlet.AbelWeightVariation
 import AnalyticNumberTheory.Dirichlet.VonMangoldtLSeries
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
@@ -34,6 +35,22 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.sum_mul_period_eq_zero
 #print axioms AnalyticNumberTheory.Dirichlet.norm_sum_range_character_le_modulus
 #print axioms AnalyticNumberTheory.Dirichlet.abel_Ico
+#print axioms AnalyticNumberTheory.Dirichlet.hasDerivAt_cpowWeight
+#print axioms AnalyticNumberTheory.Dirichlet.norm_cpowWeightDeriv
+#print axioms AnalyticNumberTheory.Dirichlet.norm_cpowWeight_succ_sub_le_integral
+#print axioms AnalyticNumberTheory.Dirichlet.norm_cpowWeight_succ_sub_le
+#print axioms AnalyticNumberTheory.Dirichlet.sum_norm_cpowWeight_sub_le_sub
+#print axioms AnalyticNumberTheory.Dirichlet.sum_norm_cpowWeight_sub_le
+#print axioms AnalyticNumberTheory.Dirichlet.summable_norm_cpowWeight_sub
+#print axioms AnalyticNumberTheory.Dirichlet.tsum_norm_cpowWeight_sub_le
+#print axioms AnalyticNumberTheory.Dirichlet.hasDerivAt_logCpowWeight
+#print axioms AnalyticNumberTheory.Dirichlet.norm_logCpowWeightDeriv_le
+#print axioms AnalyticNumberTheory.Dirichlet.hasDerivAt_logVariationBudget
+#print axioms AnalyticNumberTheory.Dirichlet.norm_logCpowWeight_succ_sub_le
+#print axioms AnalyticNumberTheory.Dirichlet.sum_norm_logCpowWeight_sub_le_sub
+#print axioms AnalyticNumberTheory.Dirichlet.sum_norm_logCpowWeight_sub_le
+#print axioms AnalyticNumberTheory.Dirichlet.summable_norm_logCpowWeight_sub
+#print axioms AnalyticNumberTheory.Dirichlet.tsum_norm_logCpowWeight_sub_le
 #print axioms AnalyticNumberTheory.Dirichlet.twistedVonMangoldtLSeries_eq_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticAt_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticOnNhd_negLogDerivLFunction_halfPlane
