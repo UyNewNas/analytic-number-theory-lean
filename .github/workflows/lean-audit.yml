@@ -291,6 +291,55 @@ jobs:
           )
           PY
 
+      - name: Audit Dirichlet GRH facade slice
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean AuditDirichletGRH.lean 2>&1 | tee /tmp/dirichlet-grh-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/dirichlet-grh-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          axiom_free_reports = re.findall(r'does not depend on any axioms', output)
+          report_count = len(reports) + len(axiom_free_reports)
+          expected_reports = 7
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if report_count != expected_reports:
+              print(
+                  f'Expected {expected_reports} Dirichlet-GRH axiom reports, found {report_count} '
+                  f'({len(reports)} with dependencies, {len(axiom_free_reports)} axiom-free).',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Dirichlet-GRH facade uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print(
+              'Dirichlet-GRH axiom whitelist passed for '
+              f'{report_count} reports ({len(reports)} with dependencies, '
+              f'{len(axiom_free_reports)} axiom-free): '
+              + ', '.join(sorted(used))
+          )
+          PY
+
       - name: Audit public theorem axioms
         shell: bash
         run: |
@@ -299,6 +348,7 @@ jobs:
           lake env lean AuditDirichletConditional.lean 2>&1 | tee -a /tmp/axioms.txt
           lake env lean AuditDirichletLogDerivative.lean 2>&1 | tee -a /tmp/axioms.txt
           lake env lean AuditDirichletMoments.lean 2>&1 | tee -a /tmp/axioms.txt
+          lake env lean AuditDirichletGRH.lean 2>&1 | tee -a /tmp/axioms.txt
           python3 - <<'PY'
           import pathlib
           import re
@@ -308,7 +358,7 @@ jobs:
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
           axiom_free_reports = re.findall(r'does not depend on any axioms', output)
           report_count = len(reports) + len(axiom_free_reports)
-          expected_reports = 531
+          expected_reports = 538
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           if report_count != expected_reports:
