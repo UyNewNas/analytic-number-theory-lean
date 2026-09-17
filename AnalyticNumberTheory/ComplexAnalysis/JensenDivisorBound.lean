@@ -121,13 +121,17 @@ theorem jensenZeroMultiplicityBound_normalized {B r R : ℝ} {f : ℂ → ℂ}
     have hnorm : ‖z‖ ≤ r := by
       simpa [Metric.mem_closedBall, dist_zero_right, abs_of_pos r_pos] using hzr
     exact ⟨hnorm, hzero⟩
+  have hsupport_finset :
+      Function.support
+          (fun z => (MeromorphicOn.divisor f (Metric.closedBall (0 : ℂ) |r|) z : ℝ)) ⊆
+        (hfin.toFinset : Set ℂ) := by
+    intro z hz
+    exact hfin.mem_toFinset.mpr (hsupport hz)
   have hsum_eq :
       (∑ᶠ z ∈ SetOfZeros r f, (analyticOrderNatAt f z : ℝ)) =
         ∑ᶠ z, (MeromorphicOn.divisor f (Metric.closedBall (0 : ℂ) |r|) z : ℝ) := by
     rw [finsum_mem_eq_finite_toFinset_sum _ hfin,
-      finsum_eq_sum_of_support_subset_of_finite
-        (fun z => (MeromorphicOn.divisor f (Metric.closedBall (0 : ℂ) |r|) z : ℝ))
-        hsupport hfin]
+      finsum_eq_sum_of_support_subset _ hsupport_finset]
     apply Finset.sum_congr rfl
     intro z hz
     have hzset : z ∈ SetOfZeros r f := hfin.mem_toFinset.mp hz
@@ -139,11 +143,12 @@ theorem jensenZeroMultiplicityBound_normalized {B r R : ℝ} {f : ℂ → ℂ}
     have htop : analyticOrderAt f z ≠ ⊤ :=
       analyticOrderAt_ne_top_of_isPreconnected hfAnalytic Metric.isPreconnected_closedBall
         h0mem hzR h0top
+    have hcast : analyticOrderAt f z = (analyticOrderNatAt f z : ℕ∞) :=
+      (Nat.cast_analyticOrderNatAt htop).symm
     have hd :
         MeromorphicOn.divisor f (Metric.closedBall (0 : ℂ) |r|) z =
           (analyticOrderNatAt f z : ℤ) := by
-      rw [hAnalytic_r.divisor_apply hzr]
-      rw [← Nat.cast_analyticOrderNatAt htop]
+      rw [hAnalytic_r.divisor_apply hzr, hcast]
       simp
     rw [hd]
     norm_cast
