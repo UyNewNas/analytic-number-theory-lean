@@ -20,6 +20,7 @@ import AnalyticNumberTheory.Dirichlet.ConditionalValueSeries
 import AnalyticNumberTheory.Dirichlet.LFunctionGrowth
 import AnalyticNumberTheory.Dirichlet.RightHalfPlaneBounds
 import AnalyticNumberTheory.Dirichlet.LFunctionAnchor
+import AnalyticNumberTheory.Dirichlet.FiniteRectangleLogDerivative
 import AnalyticNumberTheory.Dirichlet.VonMangoldtLSeries
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
