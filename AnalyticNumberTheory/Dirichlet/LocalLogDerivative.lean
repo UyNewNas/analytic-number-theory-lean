@@ -1,7 +1,9 @@
 import Mathlib.Analysis.Complex.BorelCaratheodory
 import Mathlib.Analysis.Complex.CauchyIntegral
 import Mathlib.Analysis.Complex.HasPrimitives
+import Mathlib.Analysis.Complex.Liouville
 import Mathlib.Analysis.Calculus.LogDeriv
+import Mathlib.Analysis.Normed.Module.Connected
 import Mathlib.Tactic
 
 /-!
@@ -180,5 +182,6 @@ theorem norm_logDeriv_le_small_disk
   rw [logDeriv_apply, hderiv, mul_div_cancel_left₀ _ (hg0 z hzmem)]
   exact hd
 
+end
 end Dirichlet
 end AnalyticNumberTheory
