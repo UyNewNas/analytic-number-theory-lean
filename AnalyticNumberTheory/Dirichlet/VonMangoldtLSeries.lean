@@ -181,5 +181,47 @@ theorem norm_intervalIntegral_negLogDerivLFunction_vertical_le
       rw [abs_of_nonneg (by linarith : 0 ≤ T - (-T))]
       ring
 
+/-- Perron's `1/s` kernel gains an explicit `1/σ` factor on the absolutely convergent
+right edge.  This packages the first nontrivial kernel factor needed by a later truncated
+Perron inversion while remaining strictly on `Re(s)=σ>1`.
+
+No inversion or contour shift is asserted here; the hard effective control in
+`1/2 < Re(s) ≤ 1` remains separate. -/
+theorem norm_intervalIntegral_negLogDerivLFunction_div_vertical_le
+    {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N)
+    {σ T : ℝ} (hσ : 1 < σ) (hT : 0 ≤ T) :
+    ‖∫ t in (-T)..T,
+        (-deriv (DirichletCharacter.LFunction χ)
+            ((σ : ℂ) + (t : ℂ) * Complex.I) /
+          DirichletCharacter.LFunction χ
+            ((σ : ℂ) + (t : ℂ) * Complex.I)) /
+          ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤
+      (vonMangoldtLSeriesMajorant σ / σ) * (2 * T) := by
+  have hσ0 : 0 < σ := lt_trans zero_lt_one hσ
+  have hmajorant : 0 ≤ vonMangoldtLSeriesMajorant σ := by
+    exact tsum_nonneg fun n => norm_nonneg _
+  calc
+    ‖∫ t in (-T)..T,
+        (-deriv (DirichletCharacter.LFunction χ)
+            ((σ : ℂ) + (t : ℂ) * Complex.I) /
+          DirichletCharacter.LFunction χ
+            ((σ : ℂ) + (t : ℂ) * Complex.I)) /
+          ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤
+        (vonMangoldtLSeriesMajorant σ / σ) * |T - (-T)| := by
+      apply intervalIntegral.norm_integral_le_of_norm_le_const
+      intro t ht
+      rw [norm_div]
+      have hnum :=
+        norm_negLogDerivLFunction_le_vonMangoldtLSeriesMajorant_vertical χ hσ
+      have hden :
+          σ ≤ ‖(σ : ℂ) + (t : ℂ) * Complex.I‖ := by
+        simpa using Complex.re_le_norm ((σ : ℂ) + (t : ℂ) * Complex.I)
+      exact
+        (div_le_div_of_nonneg_right hnum (norm_nonneg _)).trans
+          (div_le_div_of_nonneg_left hmajorant hσ0 hden)
+    _ = (vonMangoldtLSeriesMajorant σ / σ) * (2 * T) := by
+      rw [abs_of_nonneg (by linarith : 0 ≤ T - (-T))]
+      ring
+
 end Dirichlet
 end AnalyticNumberTheory
