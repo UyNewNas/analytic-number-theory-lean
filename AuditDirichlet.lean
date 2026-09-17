@@ -6,6 +6,7 @@ import AnalyticNumberTheory.Dirichlet.ConditionalValueSeries
 import AnalyticNumberTheory.Dirichlet.LFunctionGrowth
 import AnalyticNumberTheory.Dirichlet.RightHalfPlaneBounds
 import AnalyticNumberTheory.Dirichlet.LFunctionAnchor
+import AnalyticNumberTheory.Dirichlet.FiniteRectangleLogDerivative
 import AnalyticNumberTheory.Dirichlet.VonMangoldtLSeries
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
@@ -75,6 +76,8 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.delta_quarter_le_norm_LFunction_anchor
 #print axioms AnalyticNumberTheory.Dirichlet.anchor_disk_re_lower
 #print axioms AnalyticNumberTheory.Dirichlet.norm_LFunction_le_on_anchor_disk
+#print axioms AnalyticNumberTheory.Dirichlet.anchor_disk_subset_rectangle
+#print axioms AnalyticNumberTheory.Dirichlet.norm_logDeriv_LFunction_le_of_zeroFree_rectangle
 #print axioms AnalyticNumberTheory.Dirichlet.twistedVonMangoldtLSeries_eq_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticAt_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticOnNhd_negLogDerivLFunction_halfPlane
