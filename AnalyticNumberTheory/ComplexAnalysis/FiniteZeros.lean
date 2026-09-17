@@ -15,6 +15,7 @@ Source/API audit:
 -/
 
 import Mathlib.Analysis.Analytic.IsolatedZeros
+import Mathlib.Analysis.Complex.Basic
 import Mathlib.Topology.MetricSpace.ProperSpace
 
 open Filter Set
