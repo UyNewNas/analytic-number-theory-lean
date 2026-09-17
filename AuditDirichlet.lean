@@ -8,7 +8,7 @@ import AnalyticNumberTheory.Dirichlet.RightHalfPlaneBounds
 import AnalyticNumberTheory.Dirichlet.LFunctionAnchor
 import AnalyticNumberTheory.Dirichlet.FiniteRectangleLogDerivative
 import AnalyticNumberTheory.Dirichlet.VonMangoldtLSeries
-import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerron
+import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronRightTail
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
 import AnalyticNumberTheory.Dirichlet.Moments
@@ -73,6 +73,7 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.orderedValueSeries_eq_LFunction
 #print axioms AnalyticNumberTheory.Dirichlet.orderedValueSeries_eq_LFunction_of_re_pos
 #print axioms AnalyticNumberTheory.Dirichlet.norm_LFunction_le_growth
+#print axioms AnalyticNumberTheory.Dirichlet.tsum_nat_rpow_neg_le
 #print axioms AnalyticNumberTheory.Dirichlet.norm_dirichletLFunction_le
 #print axioms AnalyticNumberTheory.Dirichlet.delta_quarter_le_norm_LFunction_anchor
 #print axioms AnalyticNumberTheory.Dirichlet.anchor_disk_re_lower
@@ -89,6 +90,8 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.norm_intervalIntegral_negLogDerivLFunction_vertical_le
 #print axioms AnalyticNumberTheory.Dirichlet.norm_intervalIntegral_negLogDerivLFunction_div_vertical_le
 #print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPerron
+#print axioms AnalyticNumberTheory.Dirichlet.twistedVonMangoldtRightMajorant_le
+#print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPerron_right_tails_quantitative
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthSumUnit
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthMulKernel
 #print axioms AnalyticNumberTheory.Dirichlet.charOrthMulKernel_prime
