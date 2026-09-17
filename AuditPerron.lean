@@ -2,6 +2,7 @@ import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronRightTail
 import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronHorizontal
 import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronVertical
 import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronContour
+import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPsiCloseUniform
 
 /-!
 # Public axiom audit extension for the smoothed Perron API
@@ -23,3 +24,7 @@ whitelist without duplicating the repository-wide audit source.
 #print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPerron_finiteContourIdentity_of_holomorphicOn
 #print axioms AnalyticNumberTheory.Dirichlet.integral_lower_middle_upper
 #print axioms AnalyticNumberTheory.Dirichlet.norm_verticalIntegral'_le_of_finite_contour_bounds
+#print axioms AnalyticNumberTheory.Dirichlet.vonMangoldtCharacterPartialSum_eq_twistedCoeff_range
+#print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPsiClose_aux
+#print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPsiClose
+#print axioms AnalyticNumberTheory.Dirichlet.exists_uniform_twistedSmoothedPsiClose
