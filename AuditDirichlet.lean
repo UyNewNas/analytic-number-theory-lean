@@ -4,6 +4,7 @@ import AnalyticNumberTheory.Dirichlet.CharacterPrefix
 import AnalyticNumberTheory.Dirichlet.AbelWeightVariation
 import AnalyticNumberTheory.Dirichlet.ConditionalValueSeries
 import AnalyticNumberTheory.Dirichlet.LFunctionGrowth
+import AnalyticNumberTheory.Dirichlet.RightHalfPlaneBounds
 import AnalyticNumberTheory.Dirichlet.VonMangoldtLSeries
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
@@ -69,6 +70,7 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.orderedValueSeries_eq_LFunction
 #print axioms AnalyticNumberTheory.Dirichlet.orderedValueSeries_eq_LFunction_of_re_pos
 #print axioms AnalyticNumberTheory.Dirichlet.norm_LFunction_le_growth
+#print axioms AnalyticNumberTheory.Dirichlet.norm_dirichletLFunction_le
 #print axioms AnalyticNumberTheory.Dirichlet.twistedVonMangoldtLSeries_eq_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticAt_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticOnNhd_negLogDerivLFunction_halfPlane
