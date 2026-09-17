@@ -33,15 +33,15 @@ namespace AnalyticNumberTheory.ComplexAnalysis
 `f 0 = 1`.
 
 This is a thin adapter around pinned mathlib's
-`AnalyticOnNhd.sum_divisor_le`.  In particular, multiplicities are carried by
-mathlib's analytic divisor rather than by a project-specific zero-count
-axiom. -/
+`AnalyticOnNhd.sum_divisor_le`.  We deliberately retain mathlib's canonical
+`|r|` in the divisor support; downstream positive-radius callers may simplify
+it with `abs_of_pos` at their application boundary. -/
 theorem jensenDivisorBound_normalized {B r R : ℝ} {f : ℂ → ℂ}
     (r_pos : 0 < r) (r_lt_R : r < R) (one_le_B : 1 ≤ B)
     (hfAnalytic : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) R))
     (hf0_eq_one : f 0 = 1)
     (fz_bound : ∀ z ∈ Metric.sphere (0 : ℂ) R, ‖f z‖ ≤ B) :
-    ∑ᶠ u, MeromorphicOn.divisor f (Metric.closedBall (0 : ℂ) r) u ≤
+    ∑ᶠ u, MeromorphicOn.divisor f (Metric.closedBall (0 : ℂ) |r|) u ≤
       Real.log B / Real.log (R / r) := by
   have R_pos : 0 < R := lt_trans r_pos r_lt_R
   have h := AnalyticOnNhd.sum_divisor_le
