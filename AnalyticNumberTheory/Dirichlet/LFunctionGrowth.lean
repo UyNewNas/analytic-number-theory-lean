@@ -46,4 +46,6 @@ theorem norm_LFunction_le_growth {q : ℕ} [NeZero q]
   rw [orderedValueSeries_eq_LFunction_of_re_pos χ hχ z hz] at h
   simpa [hzero] using h
 
+end
+
 end AnalyticNumberTheory.Dirichlet
