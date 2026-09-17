@@ -1,4 +1,5 @@
 import AnalyticNumberTheory.Dirichlet.GRH
+import AnalyticNumberTheory.Dirichlet.LocalLogDerivative
 import AnalyticNumberTheory.Dirichlet.VonMangoldtLSeries
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
@@ -23,6 +24,9 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.grhAt_iff
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.LFunction_ne_zero_of_half_lt_re
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.zeroFreeRectangle
+#print axioms AnalyticNumberTheory.Dirichlet.exists_holomorphicLog_on_ball
+#print axioms AnalyticNumberTheory.Dirichlet.norm_deriv_le_small_disk
+#print axioms AnalyticNumberTheory.Dirichlet.norm_logDeriv_le_small_disk
 #print axioms AnalyticNumberTheory.Dirichlet.twistedVonMangoldtLSeries_eq_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticAt_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticOnNhd_negLogDerivLFunction_halfPlane
