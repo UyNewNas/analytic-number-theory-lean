@@ -1,0 +1,8 @@
+import AnalyticNumberTheory.ComplexAnalysis.IntegerWindowSummability
+
+#print axioms AnalyticNumberTheory.ComplexAnalysis.integerLogWeight_le
+#print axioms AnalyticNumberTheory.ComplexAnalysis.summable_integerLogWeight
+#print axioms AnalyticNumberTheory.ComplexAnalysis.integerWindowKey
+#print axioms AnalyticNumberTheory.ComplexAnalysis.integerWindowKey_lt
+#print axioms AnalyticNumberTheory.ComplexAnalysis.le_integerWindowKey_add_one
+#print axioms AnalyticNumberTheory.ComplexAnalysis.one_add_sq_ge_integerWindow
