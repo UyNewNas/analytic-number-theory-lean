@@ -40,7 +40,9 @@ theorem norm_LFunction_le_growth_right_uniform
   have h2 : 1 + ‖s‖ / s.re ≤ 2 + (0.15 : ℝ)⁻¹ * |s.im| := by
     calc
       1 + ‖s‖ / s.re ≤ 1 + (s.re + |s.im|) / s.re := by gcongr
-      _ = 2 + |s.im| / s.re := by field_simp
+      _ = 2 + |s.im| / s.re := by
+        field_simp [ne_of_gt hσpos]
+        ring
       _ ≤ 2 + |s.im| / (0.15 : ℝ) := by gcongr
       _ = 2 + (0.15 : ℝ)⁻¹ * |s.im| := by rw [div_eq_inv_mul]
   have hinside : 2 + (0.15 : ℝ)⁻¹ * |s.im| ≤ 8 * (|s.im| + 3) := by
