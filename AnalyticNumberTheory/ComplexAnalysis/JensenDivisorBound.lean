@@ -52,6 +52,9 @@ theorem jensenDivisorBound_normalized {B r R : ℝ} {f : ℂ → ℂ}
     (by simpa [abs_of_pos R_pos] using hfAnalytic)
     (by rw [hf0_eq_one]; exact one_ne_zero)
     (by simpa [abs_of_pos R_pos] using fz_bound)
-  simpa [abs_of_pos r_pos, abs_of_pos R_pos, hf0_eq_one] using h
+  have habsr : |r| = r := abs_of_pos r_pos
+  have habsR : |R| = R := abs_of_pos R_pos
+  rw [habsr, habsR] at h
+  simpa [hf0_eq_one] using h
 
 end AnalyticNumberTheory.ComplexAnalysis
