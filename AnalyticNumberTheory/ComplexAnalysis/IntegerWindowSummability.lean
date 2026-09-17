@@ -5,8 +5,9 @@ SPDX-License-Identifier: Apache-2.0
 
 Source/API audit:
 * pinned mathlib @ e4c91783ca8e6a7c693ae624ade32fd22d4e43c1,
-  especially `Mathlib/Analysis/PSeries.lean` (`Real.summable_abs_int_rpow`) and
-  `Mathlib/Analysis/SpecialFunctions/Pow/Real.lean` (`Real.log_le_rpow_div`);
+  especially `Mathlib/Analysis/PSeries.lean` (`Real.summable_abs_int_rpow`),
+  `Mathlib/Analysis/SpecialFunctions/Pow/Real.lean` (`Real.log_le_rpow_div`),
+  and `Mathlib/Order/Filter/Cofinite.lean` (`Filter.eventually_cofinite_ne`);
 * anthropics/formal-math
   @ fbdc36bbf17d20af3fd0447c6d1a8a02773c9844,
   `zeta23/Zeta23/WeilEF/ZeroSummability.lean`, declarations `weight_le`,
@@ -22,6 +23,7 @@ object is imported.
 
 import Mathlib.Analysis.PSeries
 import Mathlib.Analysis.SpecialFunctions.Pow.Real
+import Mathlib.Order.Filter.Cofinite
 import Mathlib.Tactic
 
 namespace AnalyticNumberTheory.ComplexAnalysis
@@ -75,7 +77,7 @@ theorem summable_integerLogWeight :
       Real.log (|(n : ℝ)| + 3) / (1 + (n : ℝ) ^ 2)) := by
   refine Summable.of_norm_bounded_eventually
     ((Real.summable_abs_int_rpow (show (1 : ℝ) < 3 / 2 by norm_num)).mul_left 4) ?_
-  filter_upwards [eventually_cofinite_ne 0] with n hn
+  filter_upwards [Filter.eventually_cofinite_ne 0] with n hn
   have h0 : 0 ≤ Real.log (|(n : ℝ)| + 3) / (1 + (n : ℝ) ^ 2) :=
     div_nonneg
       (Real.log_nonneg (by linarith [abs_nonneg (n : ℝ)]))
@@ -84,7 +86,7 @@ theorem summable_integerLogWeight :
   exact integerLogWeight_le n hn
 
 /-- Integer window key `⌈y⌉ - 1`; it puts `y` in `(key y, key y + 1]`. -/
-def integerWindowKey (y : ℝ) : ℤ := ⌈y⌉ - 1
+noncomputable def integerWindowKey (y : ℝ) : ℤ := ⌈y⌉ - 1
 
 /-- Lower endpoint inequality for `integerWindowKey`. -/
 theorem integerWindowKey_lt (y : ℝ) : (integerWindowKey y : ℝ) < y := by
