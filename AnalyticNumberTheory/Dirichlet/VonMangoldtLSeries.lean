@@ -212,7 +212,7 @@ theorem norm_intervalIntegral_negLogDerivLFunction_div_vertical_le
       intro t ht
       rw [norm_div]
       have hnum :=
-        norm_negLogDerivLFunction_le_vonMangoldtLSeriesMajorant_vertical χ hσ
+        norm_negLogDerivLFunction_le_vonMangoldtLSeriesMajorant_vertical χ (t := t) hσ
       have hden :
           σ ≤ ‖(σ : ℂ) + (t : ℂ) * Complex.I‖ := by
         simpa using Complex.re_le_norm ((σ : ℂ) + (t : ℂ) * Complex.I)
