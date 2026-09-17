@@ -1,0 +1,6 @@
+import AnalyticNumberTheory.Analysis.IntegerWindowSummability
+
+#print axioms AnalyticNumberTheory.Analysis.integerWindowKey
+#print axioms AnalyticNumberTheory.Analysis.integerWindowKey_lt
+#print axioms AnalyticNumberTheory.Analysis.le_integerWindowKey_add_one
+#print axioms AnalyticNumberTheory.Analysis.summable_of_integerWindow_sum_le
