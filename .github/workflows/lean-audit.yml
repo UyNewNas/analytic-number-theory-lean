@@ -113,6 +113,7 @@ jobs:
             lake env lean AuditLFunctionGrowthUniform.lean
             lake env lean AuditLFunctionTwoBounds.lean
             lake env lean AuditFiniteZeros.lean
+            lake env lean AuditAffineMultiplicity.lean
           } 2>&1 | tee /tmp/axioms.txt
           python3 - <<'PY'
           import pathlib
@@ -122,7 +123,7 @@ jobs:
           output = pathlib.Path('/tmp/axioms.txt').read_text(encoding='utf-8')
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
           empty_reports = re.findall(r'does not depend on any axioms', output)
-          expected_reports = 448
+          expected_reports = 449
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           found = len(reports) + len(empty_reports)
@@ -162,6 +163,7 @@ jobs:
             lake env lean AuditLFunctionGrowthUniform.lean
             lake env lean AuditLFunctionTwoBounds.lean
             lake env lean AuditFiniteZeros.lean
+            lake env lean AuditAffineMultiplicity.lean
           } 2>&1 | tee /tmp/reusable-axioms.txt
           python3 - <<'PY'
           import pathlib
@@ -171,7 +173,7 @@ jobs:
           output = pathlib.Path('/tmp/reusable-axioms.txt').read_text(encoding='utf-8')
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
           empty_reports = re.findall(r'does not depend on any axioms', output)
-          expected_reports = 119
+          expected_reports = 120
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           found = len(reports) + len(empty_reports)
