@@ -85,7 +85,7 @@ theorem summable_of_integerWindow_sum_le
       symm
       exact Finset.sum_fiberwise_of_maps_to
         (g := κ) (t := s.image κ)
-        (fun x hx => Finset.mem_image_of_mem κ hx)
+        (fun x hx => Finset.mem_image_of_mem κ hx) f
     _ ≤ ∑ n ∈ s.image κ, bound n := by
       apply Finset.sum_le_sum
       intro n hn
