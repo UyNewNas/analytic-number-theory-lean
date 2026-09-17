@@ -1,0 +1,29 @@
+import AnalyticNumberTheory.Dirichlet.Moments
+
+/-!
+# Dirichlet orthogonality and moment trust audit
+
+Focused kernel audit for the reusable finite character-orthogonality,
+principal/nonprincipal decomposition, and exact second-moment block.
+-/
+
+#print axioms AnalyticNumberTheory.Dirichlet.charOrthSumUnit
+#print axioms AnalyticNumberTheory.Dirichlet.charOrthMulKernel
+#print axioms AnalyticNumberTheory.Dirichlet.charOrthMulKernel_prime
+#print axioms AnalyticNumberTheory.Dirichlet.charOrthKernel_prime_two
+#print axioms AnalyticNumberTheory.Dirichlet.nonprincipalCharacters
+#print axioms AnalyticNumberTheory.Dirichlet.mem_nonprincipalCharacters
+#print axioms AnalyticNumberTheory.Dirichlet.sum_chars_eq_principal_add_nonprincipal
+#print axioms AnalyticNumberTheory.Dirichlet.charOrthMulKernel_prime_nonprincipal
+#print axioms AnalyticNumberTheory.Dirichlet.weightedCharKernelCollapse_prime
+#print axioms AnalyticNumberTheory.Dirichlet.weightedPrincipalKernel_prime
+#print axioms AnalyticNumberTheory.Dirichlet.weightedNonprincipalKernelCollapse_prime
+#print axioms AnalyticNumberTheory.Dirichlet.characterSumOn
+#print axioms AnalyticNumberTheory.Dirichlet.characterSumOn_principal_prime
+#print axioms AnalyticNumberTheory.Dirichlet.characterSumOn_secondMoment_prime
+#print axioms AnalyticNumberTheory.Dirichlet.characterSumOn_principal_secondMoment_prime
+#print axioms AnalyticNumberTheory.Dirichlet.characterSumOn_nonprincipal_secondMoment_prime
+#print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn
+#print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_secondMoment_prime
+#print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_principal_prime
+#print axioms AnalyticNumberTheory.Dirichlet.weightedCharacterSumOn_nonprincipal_secondMoment_prime
