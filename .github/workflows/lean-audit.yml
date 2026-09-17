@@ -36,8 +36,6 @@ jobs:
           token = re.compile(r"\b(?:sorry|admit)\b")
           failures = []
 
-          # Preserve newlines while removing strings and nested comments.
-          # This catches `by sorry` without rejecting words in documentation.
           def executable_text(source: str) -> str:
               out = []
               i = 0
@@ -146,11 +144,61 @@ jobs:
           print('Genuine-Li axiom whitelist passed: ' + ', '.join(sorted(used)))
           PY
 
+      - name: Audit conditional Dirichlet-series slice
+        if: ${{ always() }}
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean AuditDirichletConditional.lean 2>&1 | tee /tmp/dirichlet-conditional-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/dirichlet-conditional-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          axiom_free_reports = re.findall(r'does not depend on any axioms', output)
+          report_count = len(reports) + len(axiom_free_reports)
+          expected_reports = 37
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if report_count != expected_reports:
+              print(
+                  f'Expected {expected_reports} conditional-series axiom reports, found {report_count} '
+                  f'({len(reports)} with dependencies, {len(axiom_free_reports)} axiom-free).',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Conditional-series API uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print(
+              'Conditional-series axiom whitelist passed for '
+              f'{report_count} reports ({len(reports)} with dependencies, '
+              f'{len(axiom_free_reports)} axiom-free): '
+              + ', '.join(sorted(used))
+          )
+          PY
+
       - name: Audit public theorem axioms
         shell: bash
         run: |
           set -o pipefail
           lake env lean Audit.lean 2>&1 | tee /tmp/axioms.txt
+          lake env lean AuditDirichletConditional.lean 2>&1 | tee -a /tmp/axioms.txt
           python3 - <<'PY'
           import pathlib
           import re
@@ -160,7 +208,7 @@ jobs:
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
           axiom_free_reports = re.findall(r'does not depend on any axioms', output)
           report_count = len(reports) + len(axiom_free_reports)
-          expected_reports = 463
+          expected_reports = 500
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           if report_count != expected_reports:

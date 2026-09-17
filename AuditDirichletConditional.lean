@@ -1,0 +1,49 @@
+import AnalyticNumberTheory.Dirichlet.CharacterPrefix
+import AnalyticNumberTheory.Dirichlet.AbelWeightVariation
+import AnalyticNumberTheory.Dirichlet.ConditionalValueSeries
+
+/-!
+# Conditional Dirichlet-series trust audit
+
+Focused audit for the first stable block extracted from PR #76. The declarations
+come from the provenance-preserving Goldbach adaptations in the three imported
+modules. CI applies the same axiom whitelist as the repository-wide audit.
+-/
+
+#print axioms AnalyticNumberTheory.Dirichlet.character_norm_le_one
+#print axioms AnalyticNumberTheory.Dirichlet.sum_one_period_eq_zero
+#print axioms AnalyticNumberTheory.Dirichlet.sum_aligned_period_eq_zero
+#print axioms AnalyticNumberTheory.Dirichlet.sum_mul_period_eq_zero
+#print axioms AnalyticNumberTheory.Dirichlet.norm_sum_range_character_le_modulus
+#print axioms AnalyticNumberTheory.Dirichlet.abel_Ico
+#print axioms AnalyticNumberTheory.Dirichlet.hasDerivAt_cpowWeight
+#print axioms AnalyticNumberTheory.Dirichlet.norm_cpowWeightDeriv
+#print axioms AnalyticNumberTheory.Dirichlet.norm_cpowWeight_succ_sub_le_integral
+#print axioms AnalyticNumberTheory.Dirichlet.norm_cpowWeight_succ_sub_le
+#print axioms AnalyticNumberTheory.Dirichlet.sum_norm_cpowWeight_sub_le_sub
+#print axioms AnalyticNumberTheory.Dirichlet.sum_norm_cpowWeight_sub_le
+#print axioms AnalyticNumberTheory.Dirichlet.summable_norm_cpowWeight_sub
+#print axioms AnalyticNumberTheory.Dirichlet.tsum_norm_cpowWeight_sub_le
+#print axioms AnalyticNumberTheory.Dirichlet.hasDerivAt_logCpowWeight
+#print axioms AnalyticNumberTheory.Dirichlet.norm_logCpowWeightDeriv_le
+#print axioms AnalyticNumberTheory.Dirichlet.hasDerivAt_logVariationBudget
+#print axioms AnalyticNumberTheory.Dirichlet.norm_logCpowWeight_succ_sub_le
+#print axioms AnalyticNumberTheory.Dirichlet.sum_norm_logCpowWeight_sub_le_sub
+#print axioms AnalyticNumberTheory.Dirichlet.sum_norm_logCpowWeight_sub_le
+#print axioms AnalyticNumberTheory.Dirichlet.summable_norm_logCpowWeight_sub
+#print axioms AnalyticNumberTheory.Dirichlet.tsum_norm_logCpowWeight_sub_le
+#print axioms AnalyticNumberTheory.Dirichlet.character_nat_zero_of_ne_one
+#print axioms AnalyticNumberTheory.Dirichlet.cpowWeight_nat_eq
+#print axioms AnalyticNumberTheory.Dirichlet.norm_sum_Ico_cpowWeight_character_le
+#print axioms AnalyticNumberTheory.Dirichlet.tendsto_norm_cpowWeight_nat_atTop
+#print axioms AnalyticNumberTheory.Dirichlet.tendsto_cpowVariationBudget_nat_atTop
+#print axioms AnalyticNumberTheory.Dirichlet.cauchySeq_sum_range_cpowWeight_character
+#print axioms AnalyticNumberTheory.Dirichlet.exists_tendsto_sum_range_cpowWeight_character
+#print axioms AnalyticNumberTheory.Dirichlet.tendsto_sum_range_orderedValueSeries
+#print axioms AnalyticNumberTheory.Dirichlet.norm_orderedValueSeries_sub_sum_range_le
+#print axioms AnalyticNumberTheory.Dirichlet.orderedValueSeries_proof_irrel
+#print axioms AnalyticNumberTheory.Dirichlet.orderedValueFunction_eq
+#print axioms AnalyticNumberTheory.Dirichlet.tendstoLocallyUniformlyOn_valuePartialSum
+#print axioms AnalyticNumberTheory.Dirichlet.differentiableOn_orderedValueFunction
+#print axioms AnalyticNumberTheory.Dirichlet.orderedValueSeries_eq_LFunction
+#print axioms AnalyticNumberTheory.Dirichlet.orderedValueSeries_eq_LFunction_of_re_pos

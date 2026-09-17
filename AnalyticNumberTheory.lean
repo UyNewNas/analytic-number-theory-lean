@@ -41,6 +41,9 @@ import AnalyticNumberTheory.LargeSieve.Duality
 import AnalyticNumberTheory.Sieve.W1LemmaB
 import AnalyticNumberTheory.Sieve.W2Transfer
 import AnalyticNumberTheory.Sieve.W1Assembly
+import AnalyticNumberTheory.Dirichlet.CharacterPrefix
+import AnalyticNumberTheory.Dirichlet.AbelWeightVariation
+import AnalyticNumberTheory.Dirichlet.ConditionalValueSeries
 
 /-!
 # Analytic Number Theory
