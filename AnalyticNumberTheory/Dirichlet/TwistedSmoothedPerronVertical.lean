@@ -32,14 +32,16 @@ theorem norm_twistedSmoothedPerron_vertical_le_of_logDeriv_bound
     ‖VIntegral (twistedSmoothedPerronIntegrand χ ν ε X) a (-T) T‖ ≤
       8 * M * J * T * X ^ a / ε := by
   have hX0 : 0 < X := lt_of_lt_of_le zero_lt_one hX
+  have ha' : (2 : ℝ)⁻¹ ≤ a := by
+    simpa [one_div] using ha
   have hpoint (t : ℝ) (ht : |t| ≤ T) :
       ‖twistedSmoothedPerronIntegrand χ ν ε X (a + t * I)‖ ≤
         J * (4 * M / ε) * X ^ a := by
-    have hm := hMellin (a + t * I) (by simp; exact ha) (by simp; exact ha2)
+    have hm := hMellin (a + t * I) (by simpa using ha') (by simp; exact ha2)
     have hnormsq : (1 / 4 : ℝ) ≤ ‖(a : ℂ) + t * I‖ ^ 2 := by
       rw [Complex.sq_norm]
       simp [Complex.normSq_apply]
-      nlinarith [sq_nonneg t]
+      nlinarith [sq_nonneg (a - 1 / 2), sq_nonneg t]
     have hinv : (ε * ‖(a : ℂ) + t * I‖ ^ 2)⁻¹ ≤ 4 / ε := by
       rw [mul_inv_rev]
       have hi : (‖(a : ℂ) + t * I‖ ^ 2)⁻¹ ≤ (4 : ℝ) := by
