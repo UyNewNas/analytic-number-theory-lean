@@ -42,28 +42,28 @@ private lemma negLogDerivLFunction_eq_tsum_twistedVonMangoldtCoeff_tail
       simp [LSeries.term, twistedVonMangoldtCoeff, hn, mul_comm]
 
 /-- The natural absolute twisted von-Mangoldt Dirichlet-series majorant on
-`re s = 1 + δ`. -/
+`re s = 1 + d`. -/
 noncomputable def twistedVonMangoldtRightMajorant
-    (χ : DirichletCharacter ℂ q) (δ t : ℝ) : ℝ :=
+    (χ : DirichletCharacter ℂ q) (d t : ℝ) : ℝ :=
   ∑' n : ℕ,
     ‖twistedVonMangoldtCoeff χ n /
-      (n : ℂ) ^ ((1 + δ : ℝ) + t * I)‖
+      (n : ℂ) ^ ((1 + d : ℝ) + t * I)‖
 
 omit [NeZero q] in
 /-- Explicit character- and height-independent bound for the right-line absolute
 von-Mangoldt series. -/
 theorem twistedVonMangoldtRightMajorant_le
-    (χ : DirichletCharacter ℂ q) {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1) (t : ℝ) :
-    twistedVonMangoldtRightMajorant χ δ t ≤ 6 * (1 + δ⁻¹ ^ 2) := by
-  let s : ℂ := (1 + δ : ℝ) + t * I
+    (χ : DirichletCharacter ℂ q) {d : ℝ} (hd : 0 < d) (hd1 : d ≤ 1) (t : ℝ) :
+    twistedVonMangoldtRightMajorant χ d t ≤ 6 * (1 + d⁻¹ ^ 2) := by
+  let s : ℂ := (1 + d : ℝ) + t * I
   have hs : 1 < s.re := by simp [s]; linarith
   have hright : Summable (fun n : ℕ =>
-      (2 / δ) * (n : ℝ) ^ (-(1 + δ / 2))) := by
+      (2 / d) * (n : ℝ) ^ (-(1 + d / 2))) := by
     apply Summable.mul_left
     exact Real.summable_nat_rpow.mpr (by linarith)
   have hterm (n : ℕ) :
       ‖twistedVonMangoldtCoeff χ n / (n : ℂ) ^ s‖ ≤
-        (2 / δ) * (n : ℝ) ^ (-(1 + δ / 2)) := by
+        (2 / d) * (n : ℝ) ^ (-(1 + d / 2)) := by
     by_cases hn : n = 0
     · subst n
       rw [show twistedVonMangoldtCoeff χ 0 = 0 by
@@ -71,16 +71,16 @@ theorem twistedVonMangoldtRightMajorant_le
       simp only [zero_div, norm_zero]
       exact mul_nonneg (by positivity) (Real.rpow_nonneg (by norm_num) _)
     have hnpos : (0 : ℝ) < n := by exact_mod_cast Nat.pos_of_ne_zero hn
-    have hlog := Real.log_natCast_le_rpow_div n (show 0 < δ / 2 by positivity)
+    have hlog := Real.log_natCast_le_rpow_div n (show 0 < d / 2 by positivity)
     have hΛlog : Λ n ≤ Real.log n := ArithmeticFunction.vonMangoldt_le_log
     have hpow :
-        (n : ℝ) ^ (δ / 2) / (δ / 2) / (n : ℝ) ^ (1 + δ) =
-          (2 / δ) * (n : ℝ) ^ (-(1 + δ / 2)) := by
+        (n : ℝ) ^ (d / 2) / (d / 2) / (n : ℝ) ^ (1 + d) =
+          (2 / d) * (n : ℝ) ^ (-(1 + d / 2)) := by
       calc
-        (n : ℝ) ^ (δ / 2) / (δ / 2) / (n : ℝ) ^ (1 + δ) =
-            (2 / δ) * ((n : ℝ) ^ (δ / 2) / (n : ℝ) ^ (1 + δ)) := by
-              field_simp [hδ.ne']
-        _ = (2 / δ) * (n : ℝ) ^ (δ / 2 - (1 + δ)) := by
+        (n : ℝ) ^ (d / 2) / (d / 2) / (n : ℝ) ^ (1 + d) =
+            (2 / d) * ((n : ℝ) ^ (d / 2) / (n : ℝ) ^ (1 + d)) := by
+              field_simp [hd.ne']
+        _ = (2 / d) * (n : ℝ) ^ (d / 2 - (1 + d)) := by
               rw [Real.rpow_sub hnpos]
         _ = _ := by congr 2; ring
     rw [norm_div, twistedVonMangoldtCoeff, norm_mul,
@@ -89,13 +89,13 @@ theorem twistedVonMangoldtRightMajorant_le
     · simp only [s, add_re, ofReal_re, mul_re, I_re, mul_zero, ofReal_im, I_im,
         mul_one, sub_self, add_zero]
       calc
-        Λ n * ‖χ n‖ / (n : ℝ) ^ (1 + δ) ≤
-            Λ n / (n : ℝ) ^ (1 + δ) := by
+        Λ n * ‖χ n‖ / (n : ℝ) ^ (1 + d) ≤
+            Λ n / (n : ℝ) ^ (1 + d) := by
               exact div_le_div_of_nonneg_right
                 (mul_le_of_le_one_right ArithmeticFunction.vonMangoldt_nonneg
                   (χ.norm_le_one n)) (Real.rpow_nonneg hnpos.le _)
-        _ ≤ Real.log n / (n : ℝ) ^ (1 + δ) := by gcongr
-        _ ≤ ((n : ℝ) ^ (δ / 2) / (δ / 2)) / (n : ℝ) ^ (1 + δ) := by
+        _ ≤ Real.log n / (n : ℝ) ^ (1 + d) := by gcongr
+        _ ≤ ((n : ℝ) ^ (d / 2) / (d / 2)) / (n : ℝ) ^ (1 + d) := by
               gcongr
         _ = _ := hpow
     · simp [s]
@@ -103,31 +103,31 @@ theorem twistedVonMangoldtRightMajorant_le
   have hleft : Summable (fun n : ℕ =>
       ‖twistedVonMangoldtCoeff χ n / (n : ℂ) ^ s‖) :=
     Summable.of_nonneg_of_le (fun _ => norm_nonneg _) hterm hright
-  have hseries : twistedVonMangoldtRightMajorant χ δ t ≤
-      (2 / δ) * (1 + 1 / ((1 + δ / 2) - 1)) := by
+  have hseries : twistedVonMangoldtRightMajorant χ d t ≤
+      (2 / d) * (1 + 1 / ((1 + d / 2) - 1)) := by
     unfold twistedVonMangoldtRightMajorant
     change (∑' n : ℕ, ‖twistedVonMangoldtCoeff χ n / (n : ℂ) ^ s‖) ≤ _
     calc
-      _ ≤ ∑' n : ℕ, (2 / δ) * (n : ℝ) ^ (-(1 + δ / 2)) :=
+      _ ≤ ∑' n : ℕ, (2 / d) * (n : ℝ) ^ (-(1 + d / 2)) :=
         hleft.tsum_le_tsum hterm hright
-      _ = (2 / δ) * ∑' n : ℕ, (n : ℝ) ^ (-(1 + δ / 2)) :=
+      _ = (2 / d) * ∑' n : ℕ, (n : ℝ) ^ (-(1 + d / 2)) :=
         tsum_mul_left
-      _ ≤ (2 / δ) * (1 + 1 / ((1 + δ / 2) - 1)) := by
+      _ ≤ (2 / d) * (1 + 1 / ((1 + d / 2) - 1)) := by
         gcongr
-        exact tsum_nat_rpow_neg_le (1 + δ / 2) (by linarith)
+        exact tsum_nat_rpow_neg_le (1 + d / 2) (by linarith)
   calc
-    twistedVonMangoldtRightMajorant χ δ t
-        ≤ (2 / δ) * (1 + 1 / ((1 + δ / 2) - 1)) := hseries
-    _ = 2 / δ + 4 / δ ^ 2 := by field_simp [hδ.ne']; ring
-    _ ≤ 6 * (1 + δ⁻¹ ^ 2) := by
-      have hinv : 1 ≤ δ⁻¹ := by
-        rw [inv_eq_one_div, le_div_iff₀ hδ]
-        simpa using hδ1
-      have hinv0 : 0 ≤ δ⁻¹ := le_of_lt (inv_pos.mpr hδ)
-      have hdivsq : 4 / δ ^ 2 = 4 * δ⁻¹ ^ 2 := by
-        field_simp [hδ.ne']
+    twistedVonMangoldtRightMajorant χ d t
+        ≤ (2 / d) * (1 + 1 / ((1 + d / 2) - 1)) := hseries
+    _ = 2 / d + 4 / d ^ 2 := by field_simp [hd.ne']; ring
+    _ ≤ 6 * (1 + d⁻¹ ^ 2) := by
+      have hinv : 1 ≤ d⁻¹ := by
+        rw [inv_eq_one_div, le_div_iff₀ hd]
+        simpa using hd1
+      have hinv0 : 0 ≤ d⁻¹ := le_of_lt (inv_pos.mpr hd)
+      have hdivsq : 4 / d ^ 2 = 4 * d⁻¹ ^ 2 := by
+        field_simp [hd.ne']
       rw [div_eq_mul_inv, hdivsq]
-      nlinarith [sq_nonneg (δ⁻¹ - 1)]
+      nlinarith [sq_nonneg (d⁻¹ - 1)]
 
 private theorem integral_right_inv_one_add_sq_le_inv
     {T : ℝ} (hT : 1 ≤ T) :
@@ -162,8 +162,8 @@ private theorem integral_left_inv_one_add_sq_le_inv
 
 set_option maxHeartbeats 3000000 in
 set_option backward.isDefEq.respectTransparency false in
-/-- Quantitative lower and upper tails on the standard right line `σ = 1 + δ`.
-The constant is selected before `q, χ, δ, ε, X, T`, hence depends only on the
+/-- Quantitative lower and upper tails on the standard right line `σ = 1 + d`.
+The constant is selected before `q, χ, d, ε, X, T`, hence depends only on the
 smoothing function. -/
 theorem twistedSmoothedPerron_right_tails_quantitative
     {ν : ℝ → ℝ} (diffν : ContDiff ℝ 1 ν)
@@ -171,34 +171,34 @@ theorem twistedSmoothedPerron_right_tails_quantitative
     (suppν : support ν ⊆ Icc (1 / 2) 2)
     (mass_one : ∫ x in Ioi (0 : ℝ), ν x / x = 1) :
     ∃ c > 0, ∀ {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q)
-      {δ ε X T : ℝ}, 0 < δ → δ ≤ 1 → 0 < ε → ε < 1 → 0 < X → 1 ≤ T →
+      {d ε X T : ℝ}, 0 < d → d ≤ 1 → 0 < ε → ε < 1 → 0 < X → 1 ≤ T →
       ‖∫ t in Iic (-T),
-          twistedSmoothedPerronIntegrand χ ν ε X (((1 + δ : ℝ) : ℂ) + t * I)‖ ≤
-          c * X ^ (1 + δ) * (1 + δ⁻¹ ^ 2) / (ε * T) ∧
+          twistedSmoothedPerronIntegrand χ ν ε X (((1 + d : ℝ) : ℂ) + t * I)‖ ≤
+          c * X ^ (1 + d) * (1 + d⁻¹ ^ 2) / (ε * T) ∧
       ‖∫ t in Ici T,
-          twistedSmoothedPerronIntegrand χ ν ε X (((1 + δ : ℝ) : ℂ) + t * I)‖ ≤
-          c * X ^ (1 + δ) * (1 + δ⁻¹ ^ 2) / (ε * T) := by
+          twistedSmoothedPerronIntegrand χ ν ε X (((1 + d : ℝ) : ℂ) + t * I)‖ ≤
+          c * X ^ (1 + d) * (1 + d⁻¹ ^ 2) / (ε * T) := by
   obtain ⟨C, Cpos, hC⟩ := MellinOfSmooth1b diffν suppν
   refine ⟨6 * C, by positivity, ?_⟩
-  intro q _ χ δ ε X T hδ hδ1 hε hε1 hX hT
-  have hσ : 1 < 1 + δ := by linarith
-  have hσ2 : 1 + δ ≤ 2 := by linarith
+  intro q _ χ d ε X T hd hd1 hε hε1 hX hT
+  have hσ : 1 < 1 + d := by linarith
+  have hσ2 : 1 + d ≤ 2 := by linarith
   let f : ℝ → ℂ := fun t =>
-    twistedSmoothedPerronIntegrand χ ν ε X (((1 + δ : ℝ) : ℂ) + t * I)
+    twistedSmoothedPerronIntegrand χ ν ε X (((1 + d : ℝ) : ℂ) + t * I)
   let g : ℝ → ℝ := fun t =>
-    6 * (1 + δ⁻¹ ^ 2) * C / ε * X ^ (1 + δ) * (1 + t ^ 2)⁻¹
+    6 * (1 + d⁻¹ ^ 2) * C / ε * X ^ (1 + d) * (1 + t ^ 2)⁻¹
   have hf : Integrable f := by
     simpa only [f] using
-      (twistedSmoothedPerronIntegrand_integrable_right (q := q) (σ := 1 + δ)
+      (twistedSmoothedPerronIntegrand_integrable_right (q := q) (σ := 1 + d)
         (X := X) (ε := ε) χ diffν νpos suppν mass_one hX hε hε1 hσ hσ2)
   have hg : Integrable g := by
     dsimp [g]
     exact integrable_inv_one_add_sq.const_mul _
   have hpoint (t : ℝ) : ‖f t‖ ≤ g t := by
-    have hsre : 1 < (((1 + δ : ℝ) : ℂ) + t * I).re := by simp; linarith
+    have hsre : 1 < (((1 + d : ℝ) : ℂ) + t * I).re := by simp; linarith
     have hsum : Summable (fun n : ℕ =>
         twistedVonMangoldtCoeff χ n /
-          (n : ℂ) ^ (((1 + δ : ℝ) : ℂ) + t * I)) := by
+          (n : ℂ) ^ (((1 + d : ℝ) : ℂ) + t * I)) := by
       have h := DirichletCharacter.LSeriesSummable_twist_vonMangoldt χ hsre
       rw [LSeriesSummable] at h
       convert h using 1
@@ -207,77 +207,77 @@ theorem twistedSmoothedPerron_right_tails_quantitative
       · simp [LSeries.term, twistedVonMangoldtCoeff, hn]
       · simp [LSeries.term, twistedVonMangoldtCoeff, hn, mul_comm]
     have hseries := norm_tsum_le_tsum_norm hsum.norm
-    have hmellin := hC ((1 + δ) / 2) (by positivity)
-      (((1 + δ : ℝ) : ℂ) + t * I) (by simp; linarith) (by simp; linarith)
+    have hmellin := hC ((1 + d) / 2) (by positivity)
+      (((1 + d : ℝ) : ℂ) + t * I) (by simp; linarith) (by simp; linarith)
       ε hε hε1
-    have hmaj := twistedVonMangoldtRightMajorant_le χ hδ hδ1 t
+    have hmaj := twistedVonMangoldtRightMajorant_le χ hd hd1 t
     dsimp [f, g, twistedSmoothedPerronIntegrand]
     rw [negLogDerivLFunction_eq_tsum_twistedVonMangoldtCoeff_tail χ hsre,
       norm_mul, norm_mul]
     have hseries' :
         ‖∑' n : ℕ, twistedVonMangoldtCoeff χ n /
-          (n : ℂ) ^ (((1 + δ : ℝ) : ℂ) + t * I)‖ ≤
-          twistedVonMangoldtRightMajorant χ δ t := by
+          (n : ℂ) ^ (((1 + d : ℝ) : ℂ) + t * I)‖ ≤
+          twistedVonMangoldtRightMajorant χ d t := by
       simpa [twistedVonMangoldtRightMajorant] using hseries
-    have hmajor0 : 0 ≤ twistedVonMangoldtRightMajorant χ δ t :=
+    have hmajor0 : 0 ≤ twistedVonMangoldtRightMajorant χ d t :=
       tsum_nonneg fun _ => norm_nonneg _
     have hmellinR0 :
-        0 ≤ C * (ε * ‖(((1 + δ : ℝ) : ℂ) + t * I)‖ ^ 2)⁻¹ := by positivity
+        0 ≤ C * (ε * ‖(((1 + d : ℝ) : ℂ) + t * I)‖ ^ 2)⁻¹ := by positivity
     have hXnorm :
-        ‖(X : ℂ) ^ (((1 + δ : ℝ) : ℂ) + t * I)‖ = X ^ (1 + δ) := by
+        ‖(X : ℂ) ^ (((1 + d : ℝ) : ℂ) + t * I)‖ = X ^ (1 + d) := by
       rw [Complex.norm_cpow_eq_rpow_re_of_pos hX]
       simp
-    have hXpow0 : 0 ≤ X ^ (1 + δ) := Real.rpow_nonneg hX.le _
+    have hXpow0 : 0 ≤ X ^ (1 + d) := Real.rpow_nonneg hX.le _
     have hfirst :
         ‖∑' n : ℕ, twistedVonMangoldtCoeff χ n /
-          (n : ℂ) ^ (((1 + δ : ℝ) : ℂ) + t * I)‖ *
-            ‖𝓜 (fun x ↦ (Smooth1 ν ε x : ℂ)) (((1 + δ : ℝ) : ℂ) + t * I)‖ ≤
-          twistedVonMangoldtRightMajorant χ δ t *
-            (C * (ε * ‖(((1 + δ : ℝ) : ℂ) + t * I)‖ ^ 2)⁻¹) := by
+          (n : ℂ) ^ (((1 + d : ℝ) : ℂ) + t * I)‖ *
+            ‖𝓜 (fun x ↦ (Smooth1 ν ε x : ℂ)) (((1 + d : ℝ) : ℂ) + t * I)‖ ≤
+          twistedVonMangoldtRightMajorant χ d t *
+            (C * (ε * ‖(((1 + d : ℝ) : ℂ) + t * I)‖ ^ 2)⁻¹) := by
       calc
-        _ ≤ twistedVonMangoldtRightMajorant χ δ t *
-            ‖𝓜 (fun x ↦ (Smooth1 ν ε x : ℂ)) (((1 + δ : ℝ) : ℂ) + t * I)‖ :=
+        _ ≤ twistedVonMangoldtRightMajorant χ d t *
+            ‖𝓜 (fun x ↦ (Smooth1 ν ε x : ℂ)) (((1 + d : ℝ) : ℂ) + t * I)‖ :=
           mul_le_mul_of_nonneg_right hseries' (norm_nonneg _)
         _ ≤ _ := mul_le_mul_of_nonneg_left hmellin hmajor0
-    have hnormsq : 1 + t ^ 2 ≤ ‖(((1 + δ : ℝ) : ℂ) + t * I)‖ ^ 2 := by
+    have hnormsq : 1 + t ^ 2 ≤ ‖(((1 + d : ℝ) : ℂ) + t * I)‖ ^ 2 := by
       rw [Complex.sq_norm]
       simp [Complex.normSq_apply]
       nlinarith
     have hinvnorm :
-        (ε * ‖(((1 + δ : ℝ) : ℂ) + t * I)‖ ^ 2)⁻¹ ≤
+        (ε * ‖(((1 + d : ℝ) : ℂ) + t * I)‖ ^ 2)⁻¹ ≤
           ε⁻¹ * (1 + t ^ 2)⁻¹ := by
       rw [mul_inv_rev]
       simpa only [mul_comm] using mul_le_mul_of_nonneg_right
         (inv_anti₀ (by nlinarith [sq_nonneg t]) hnormsq) (inv_nonneg.mpr hε.le)
     calc
       ‖∑' n : ℕ, twistedVonMangoldtCoeff χ n /
-          (n : ℂ) ^ (((1 + δ : ℝ) : ℂ) + t * I)‖ *
-            ‖𝓜 (fun x ↦ (Smooth1 ν ε x : ℂ)) (((1 + δ : ℝ) : ℂ) + t * I)‖ *
-              ‖(X : ℂ) ^ (((1 + δ : ℝ) : ℂ) + t * I)‖
-          ≤ (twistedVonMangoldtRightMajorant χ δ t *
-            (C * (ε * ‖(((1 + δ : ℝ) : ℂ) + t * I)‖ ^ 2)⁻¹)) *
-              X ^ (1 + δ) := by rw [← hXnorm]; gcongr
-      _ ≤ (6 * (1 + δ⁻¹ ^ 2) *
-            (C * (ε * ‖(((1 + δ : ℝ) : ℂ) + t * I)‖ ^ 2)⁻¹)) *
-              X ^ (1 + δ) := by
+          (n : ℂ) ^ (((1 + d : ℝ) : ℂ) + t * I)‖ *
+            ‖𝓜 (fun x ↦ (Smooth1 ν ε x : ℂ)) (((1 + d : ℝ) : ℂ) + t * I)‖ *
+              ‖(X : ℂ) ^ (((1 + d : ℝ) : ℂ) + t * I)‖
+          ≤ (twistedVonMangoldtRightMajorant χ d t *
+            (C * (ε * ‖(((1 + d : ℝ) : ℂ) + t * I)‖ ^ 2)⁻¹)) *
+              X ^ (1 + d) := by rw [← hXnorm]; gcongr
+      _ ≤ (6 * (1 + d⁻¹ ^ 2) *
+            (C * (ε * ‖(((1 + d : ℝ) : ℂ) + t * I)‖ ^ 2)⁻¹)) *
+              X ^ (1 + d) := by
                 gcongr
-      _ ≤ (6 * (1 + δ⁻¹ ^ 2) * (C * (ε⁻¹ * (1 + t ^ 2)⁻¹))) *
-              X ^ (1 + δ) := by
+      _ ≤ (6 * (1 + d⁻¹ ^ 2) * (C * (ε⁻¹ * (1 + t ^ 2)⁻¹))) *
+              X ^ (1 + d) := by
                 gcongr
-      _ = 6 * (1 + δ⁻¹ ^ 2) * C / ε * X ^ (1 + δ) * (1 + t ^ 2)⁻¹ := by
+      _ = 6 * (1 + d⁻¹ ^ 2) * C / ε * X ^ (1 + d) * (1 + t ^ 2)⁻¹ := by
         ring
   have htail (s : Set ℝ)
       (hdecay : ∫ t in s, (1 + t ^ 2)⁻¹ ≤ T⁻¹) :
-      ‖∫ t in s, f t‖ ≤ 6 * C * X ^ (1 + δ) * (1 + δ⁻¹ ^ 2) / (ε * T) := by
+      ‖∫ t in s, f t‖ ≤ 6 * C * X ^ (1 + d) * (1 + d⁻¹ ^ 2) / (ε * T) := by
     calc
       ‖∫ t in s, f t‖ ≤ ∫ t in s, ‖f t‖ := norm_integral_le_integral_norm _
       _ ≤ ∫ t in s, g t :=
         integral_mono_ae hf.norm.integrableOn hg.integrableOn (Filter.Eventually.of_forall hpoint)
-      _ = (6 * (1 + δ⁻¹ ^ 2) * C / ε * X ^ (1 + δ)) *
+      _ = (6 * (1 + d⁻¹ ^ 2) * C / ε * X ^ (1 + d)) *
           ∫ t in s, (1 + t ^ 2)⁻¹ := by
         dsimp only [g]
         rw [integral_const_mul]
-      _ ≤ (6 * (1 + δ⁻¹ ^ 2) * C / ε * X ^ (1 + δ)) * T⁻¹ :=
+      _ ≤ (6 * (1 + d⁻¹ ^ 2) * C / ε * X ^ (1 + d)) * T⁻¹ :=
         mul_le_mul_of_nonneg_left hdecay (by positivity)
       _ = _ := by ring
   exact ⟨htail (Iic (-T)) (integral_left_inv_one_add_sq_le_inv hT),
