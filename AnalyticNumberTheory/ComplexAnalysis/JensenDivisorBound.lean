@@ -113,7 +113,7 @@ theorem jensenZeroMultiplicityBound_normalized {B r R : ℝ} {f : ℂ → ℂ}
       have horder0 : analyticOrderAt f z = 0 :=
         (hAnalytic_r z hzr).analyticOrderAt_eq_zero.mpr hfz
       apply hzD
-      rw [AnalyticOnNhd.divisor_apply hAnalytic_r hzr, horder0]
+      rw [MeromorphicOn.AnalyticOnNhd.divisor_apply hAnalytic_r hzr, horder0]
       simp
     have hnorm : ‖z‖ ≤ r := by
       simpa [Metric.mem_closedBall, dist_zero_right, abs_of_pos r_pos] using hzr
@@ -146,7 +146,7 @@ theorem jensenZeroMultiplicityBound_normalized {B r R : ℝ} {f : ℂ → ℂ}
     have hd :
         MeromorphicOn.divisor f (Metric.closedBall (0 : ℂ) |r|) z =
           (analyticOrderNatAt f z : ℤ) := by
-      rw [AnalyticOnNhd.divisor_apply hAnalytic_r hzr, hcast]
+      rw [MeromorphicOn.AnalyticOnNhd.divisor_apply hAnalytic_r hzr, hcast]
       simp
     rw [hd]
     norm_cast
