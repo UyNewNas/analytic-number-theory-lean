@@ -44,6 +44,11 @@ import AnalyticNumberTheory.Sieve.W1Assembly
 import AnalyticNumberTheory.Dirichlet.CharacterPrefix
 import AnalyticNumberTheory.Dirichlet.AbelWeightVariation
 import AnalyticNumberTheory.Dirichlet.ConditionalValueSeries
+import AnalyticNumberTheory.Dirichlet.LFunctionGrowth
+import AnalyticNumberTheory.Dirichlet.RightHalfPlaneBounds
+import AnalyticNumberTheory.Dirichlet.LocalLogDerivative
+import AnalyticNumberTheory.Dirichlet.LFunctionAnchor
+import AnalyticNumberTheory.Dirichlet.FiniteRectangleLogDerivative
 
 /-!
 # Analytic Number Theory
