@@ -106,7 +106,10 @@ jobs:
         shell: bash
         run: |
           set -o pipefail
-          lake env lean Audit.lean 2>&1 | tee /tmp/axioms.txt
+          {
+            lake env lean Audit.lean
+            lake env lean AuditPerron.lean
+          } 2>&1 | tee /tmp/axioms.txt
           python3 - <<'PY'
           import pathlib
           import re
@@ -114,12 +117,14 @@ jobs:
 
           output = pathlib.Path('/tmp/axioms.txt').read_text(encoding='utf-8')
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
-          expected_reports = 420
+          empty_reports = re.findall(r'does not depend on any axioms', output)
+          expected_reports = 421
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
-          if len(reports) != expected_reports:
+          found = len(reports) + len(empty_reports)
+          if found != expected_reports:
               print(
-                  f'Expected {expected_reports} public API axiom reports, found {len(reports)}.',
+                  f'Expected {expected_reports} public API axiom reports, found {found}.',
                   file=sys.stderr,
               )
               sys.exit(1)
