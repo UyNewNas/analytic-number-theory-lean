@@ -37,6 +37,7 @@ import AnalyticNumberTheory.Dirichlet.PrimeWindowWeights
 import AnalyticNumberTheory.Dirichlet.VonMangoldtWindow
 import AnalyticNumberTheory.Dirichlet.VonMangoldtPartialSums
 import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPsiClose
+import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPsiCloseUniform
 import AnalyticNumberTheory.Sieve.GoldbachDensity
 import AnalyticNumberTheory.Sieve.SelbergIdentities
 import AnalyticNumberTheory.Sieve.Distribution
