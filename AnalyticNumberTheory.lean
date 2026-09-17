@@ -16,6 +16,7 @@ import AnalyticNumberTheory.Dirichlet.GRH
 import AnalyticNumberTheory.Dirichlet.LocalLogDerivative
 import AnalyticNumberTheory.Dirichlet.CharacterPrefix
 import AnalyticNumberTheory.Dirichlet.AbelWeightVariation
+import AnalyticNumberTheory.Dirichlet.ConditionalValueSeries
 import AnalyticNumberTheory.Dirichlet.VonMangoldtLSeries
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
