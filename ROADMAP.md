@@ -1,139 +1,125 @@
-# Formal Mathematics Atlas roadmap
+# Maintenance and reuse roadmap
 
-This repository is the reusable **Prime Distribution / Analytic Number Theory**
-foundation. It is upstream of theorem-focused repositories such as Chen and
-future Goldbach developments.
+Direction adopted 2026-09-14; refreshed 2026-09-17 after the main/dev integration sprint.
+
+ANT is maintained as a reusable analytic-number-theory foundation. Work is activated by a concrete theorem consumer and an exact missing interface, not by the size of the historical Chen/Pan backlog.
+
+## Repository roles
+
+- `UyNewNas/analytic-number-theory-lean`: reusable neutral infrastructure.
+- `UyNewNas/chen-theorem-lean`: upstream foundation/provenance/history; the independent Chen-completion effort remains retired.
+- `subfish-zhou/goldbach-lean`: completed downstream Chen/Li–Liu application and an important source of reusable formalized analytic lemmas.
+- `UyNewNas/liouville-reflection-lean`: current named consumer driving selected reusable Dirichlet/GRH extraction through ANT PR #76.
+
+Issue #1 is the authoritative rolling work register. PR descriptions carry exact per-branch verification anchors.
+
+## Completed integration sprint
+
+The long-separated `dev` and historical `main` work was reconciled through bounded slices rather than a branch-precedence merge:
+
+1. #73 repaired the Bombieri–Davenport baseline.
+2. #75 de-duplicated V1/V3 LCM-weight proofs while preserving all public compatibility names.
+3. #70 integrated the genuine logarithmic-integral API, including the full `x ≥ 2` integration-by-parts bridge and the neutral
+   `Nat.primeCounting ⌊x⌋₊ - (2 / log 2 + primeLogIntegral x) = O(x / log^2 x)` consequence.
+4. #79 restored main-only Pan/assembly modules onto the repaired dev baseline.
+5. #80 restored the later `PanVaughanPointwise` / `PanChebyshevMainStep` layer.
+6. #81 restored the isolated Bombieri–Davenport type-II / `vaughanThird` bridge.
+7. #82 reconciled the public axiom-report parser without weakening the whitelist or replacing the fixed-count gate.
+8. #83 built the combined main tree, restored main's complete public audit registry, measured the combined registry, and locked the public expected count at **463**.
+
+PR #83 exact head `32e538c6c3ce386f25751b874a24da905a5b5540` passed ordinary workflow `35200941907` (#470) and focused reconciliation workflow `35200941881` (#30). The default branch's active linear-history rule prevented a merge commit and GitHub could not rebase the merge-shaped integration branch, so the verified tree was integrated through the PR as squash commit `ba74a8771eb34c21fccf9c6230dca71ff943bb2b`. The squash commit's tree SHA is exactly the same as the verified PR head tree.
+
+The integrated trust boundary is:
+
+- executable `sorry` / `admit` rejection;
+- full `PrimeNumberTheoremAnd AnalyticNumberTheory` build;
+- 10-report genuine-Li focused audit;
+- fixed **463-report** public axiom audit;
+- allowed axioms only `propext`, `Classical.choice`, `Quot.sound`.
+
+A post-integration push run on `main` is still the final branch-level verification record for the squash commit; do not substitute the pre-merge PR run for that verdict.
+
+## External-first rule
+
+Before implementing a nontrivial new API, first inspect current pinned Mathlib and relevant existing Lean formalizations. For current Dirichlet-L / Perron / explicit-formula work, mandatory references include:
+
+- `subfish-zhou/goldbach-lean`, pinned provenance snapshots recorded in the consuming PR;
+- canonical `anthropics/formal-math`, project `zeta23/`;
+- any other discoverable Lean repository or PR with a matching theorem surface.
+
+Record the external revision, exact declaration/module, hypotheses and quantifier order, dependency footprint, and whether the result is directly reusable or requires a neutral adaptation. Different Lean/Mathlib revisions are a compatibility problem, not a reason to re-prove an existing theorem from scratch.
+
+In particular, do not independently recreate already-formalized:
+
+- smoothed twisted Perron inversion and its right-line support;
+- effective finite-rectangle Dirichlet `L'/L` estimates;
+- conditional natural-order Dirichlet-series infrastructure;
+- χ-side zero counts, logarithmic-derivative partial fractions, good-height selection, contour estimates, or explicit-formula machinery.
+
+## Integrated bounded reuse: genuine Li (#70)
+
+ANT keeps the normalization
 
 ```text
-analytic-number-theory-lean
-├── prime distribution (PNT and effective psi estimates)
-├── Mertens II and canonical product asymptotics
-└── Abelian constant-identification bridge
-        │
-        ├──> chen-theorem-lean (sieve consumer)
-        ├──> goldbach-lean (future)
-        └──> other prime-distribution consumers
+primeLogIntegral x = ∫ t in 2..x, 1 / log t
+primeLogIntegral 2 = 0
 ```
 
-## Release lines
+while the pinned downstream Li–Liu source uses an additive constant
 
-### v0.1 — prime-distribution foundation
+```text
+liuLogarithmicIntegral κ x = κ + primeLogIntegral x.
+```
 
-- [x] Pin the Chen-compatible Lean/mathlib toolchain.
-- [x] Port and provenance-record the minimal PNTAnd import closure.
-- [x] Expose Chebyshev-psi and prime-counting PNT interfaces.
-- [x] Transfer the effective psi estimate to theta, with its explicit
-  square-root prime-power correction and an `O(x / log x)` partial-summation
-  facade.
-- [x] Provide a natural-number facade used by Chen.
-- [x] Add elementary finite prime sums, products, positivity, monotonicity, and
-  logarithmic-factor estimates.
-- [x] Enforce zero executable `sorry`/`admit`, full builds, and an axiom audit
-  in CI.
+That correspondence was machine-checked against the pinned downstream declaration in a one-off verification probe, then the network/downstream probe was removed again. Goldbach remains provenance/test input rather than a permanent ANT dependency.
 
-### v0.2 — reusable Mertens layer
+Do not automatically promote the neutral `O(x/log^2 x)` result to arbitrary logarithmic saving, `WeightedBVAtOne`, supported transport, or a general Pan theorem without a named consumer and an exact source/type match.
 
-The two independent work lines below may proceed in parallel after agreeing on
-the common asymptotic/error-term API.
+## Integrated bounded maintenance: LCM-weight de-duplication (#75)
 
-- [x] Establish the finite Abel-summation bridge from reciprocal-prime sums
-  to Chebyshev theta.
-- [x] Separate the exact `log log x` main term and the endpoint error of that
-  bridge.
-- [x] Add the generic improper-integral tail estimate for the
-  `1 / (x log² x)` kernel.
-- [x] Prove local integrability and integrable asymptotic domination of the
-  Chebyshev-theta error kernel.
-- [x] Define the generic Mertens-II constant and identify finite error
-  integrals with their improper tails.
-- [x] Derive the exact Mertens-II error decomposition and the error-kernel
-  tail rate.
-- [x] **Mertens II:** prove the reciprocal-prime sum estimate from the PNT
-  facade plus partial/Abel summation, including a natural-number API.
-- [x] **Canonical Mertens product:** build the convergent quadratic correction
-  and derive the `O(1 / log² x)` Euler-product estimate from Mertens II.
-- [x] Add the finite logarithmic product bridge; the limiting correction and
-  its Euler--Mascheroni constant identification remain separate milestones.
-- [x] Define the zero-extended logarithmic correction and prove its absolute
-  convergence to the canonical correction constant.
-- [x] Bound the correction tail by `2 / x` using the integral test.
-- [x] Derive the Mertens product logarithm with its canonical constant and
-  `O(1 / log x)` error; identifying that constant with Euler's constant is
-  still a separate Abelian bridge.
-- [x] Establish the normalized zeta--von Mangoldt bridge at `s = 1`.
-- [x] Specialize the Euler-log expansion to real parameters and split it into
-  the prime Dirichlet term plus the convergent correction.
-- [x] Prove the scaled logarithmic Gamma kernel giving `-γ`.
-- [x] Prove the Abel/Mellin representation of the prime Dirichlet sum for
-  every positive displacement `ε > 0`.
-- [x] Perform the logarithmic change of variables to the exponential Abel
-  kernel and prove a generic `O(1/u)` remainder-vanishing theorem.
-- [x] Prove that the prime finite-part limit implies the required constant
-  identity via the normalized zeta limit.
-- [x] Prove the Abelian finite-part limit and conclude
-  `mertensSecondConstant + logarithmicCorrectionLimit = γ`.
-- [ ] Add namespace-level compatibility lemmas relating the generic finite
-  objects to downstream definitions.
+The neutral shared layer provides
 
-### v0.3 — downstream migration
+- `LcmWeightBounds.harmonic_Icc_le`;
+- `LcmWeightBounds.card_multiples_Icc`;
+- `LcmWeightBounds.lcm_inv_sum_le`;
+- `LcmWeightBounds.divisorCountSq_sum_le`.
 
-- [x] Replace Chen's local PNT placeholder with the public natural-number PNT.
-- [x] Replace Chen's Mertens-II placeholder with the generic theorem.
-- [x] Replace Chen's product-formula placeholder with the generic theorem.
-- [ ] Keep sieve notation and Chen-specific consequences in
-  `chen-theorem-lean`; move only mathematically reusable results here.
+Existing V1 and V3 public theorem names remain wrappers over this layer, and established consumers continue to compile. The refactor removed roughly 900 lines of duplicate proof implementation without adding downstream application dependencies.
 
-### v0.4 — reusable sieve layer
+## Active consumer-backed reuse lane: PR #76
 
-- [x] Migrate the generic sieve layer (Goldbach density, Selberg identities,
-  distribution, singular series, linear sieve, Bombieri--Vinogradov
-  interfaces) from Chen into `AnalyticNumberTheory/Sieve/`.
-- [x] Correct the lower sieve function on `(3, 5]` to the standard Buchstab
-  value `f(s) = 2e^γ·log((s-1)/2)/s`.
-- [x] **Uniform Jurkat--Richert lower bound (#5):** formalize the uniform
-  target `UniformJurkatRichertLowerBound` (constants precede `∀ N`) and the
-  finite seam `siftedSum_lower_bound_of_mainTerm` from the main-term estimate
-  to the explicit-error sifted lower bound.
-- [x] **Selberg upper-bound sieve (#6):** add
-  `AnalyticNumberTheory/Sieve/SelbergUpperBound.lean` with the generic
-  Selberg weights, the Mathlib Λ²-sieve bridges, and the optimal-weight
-  theorem `selberg_upper_bound_optimal`
-  (`siftedSum ≤ totalMass · (Σ selbergTerms)⁻¹ + errSum(Λ²w*)`), plus the
-  uniform target `UniformSelbergUpperBound`.
-- [ ] Prove the uniform main-term estimate
-  `UniformJurkatRichertMainTerm` (`mainSum(μ⁻) ≥ V(z)·(f(s) - η)`), the
-  analytic core of issue #5.
-- [ ] Plug the Mertens/singular-series main-term estimate and the weighted
-  Pan error into the Selberg upper bound for the Chen constant
-  `3.9404·𝔖(N)·N/log²N` (issue #6 acceptance).
-- [x] **Weighted Pan--BV input (#7):** formalize the uniform weighted
-  distribution input `WeightedPanCondition`, the `3^{ω(d)}` lcm-pair weight
-  origin (`lcmPairCount` / `lcmPairWeightedSum`), the generic `errSum` seam,
-  and the precise classical target `PanMeanValueUniform`.
-- [x] **Truncated singular series uniform lower bound (chen #3):**
-  `singularSeriesTruncated_ge_half` — `𝔖(N,z) ≥ 1/2` for every `N` and
-  `z ≥ 2`, the twin-prime-constant-level input for the Chen main-term lower
-  bound (finite-product/telescope argument, no Mertens needed).
-- [x] **Selberg upper bound in sieve-product form:** the optimal Λ² bound
-  re-expressed as `siftedSum ≤ totalMass·V(z) + errSum` via
-  `selbergMainTerm_eq_prod_one_sub_nu` /
-  `selbergMainTerm_eq_sieveProduct` / `selberg_upper_bound_sieveProduct`,
-  the exact main-term shape consumed by the Chen Ω upper bound (chen #7).
-- [x] **Selberg Λ² error-term bridge:** for unit-bounded weights,
-  `errSum(Λ²w) ≤ Σ_{d | P} 3^{ω(d)}·|rem d|`
-  (`errSum_lambdaSquared_le_threeOmegaWeightedPanRemainder`), the exact
-  classical Selberg error form feeding the Pan input into the Ω upper bound.
-- [x] **Optimal Selberg weight = Möbius:** the X-equation
-  `Σ_{d ⊇ l} ν(d)·μ(d) = g(l)·μ(l)·T`, hence `mainSum(Λ²μ) = (Σg)⁻¹`
-  (`mainSum_lambdaSquared_moebius_eq`) and the full classical Selberg bound
-  `siftedSum ≤ totalMass·V + Σ 3^{ω(d)}·|rem d|`
-  (`selberg_upper_bound_moebius_pan`), with the unit-bounded weight `μ`.
-- [ ] Prove `PanMeanValueUniform` (large sieve / Vaughan identity), the
-  analytic core of issue #7, and close the bridge from it to
-  `WeightedPanCondition` with PNT-level main-term estimates.
+PR #76 remains a separate reusable-analytic lane driven by `liouville-reflection-lean`. Its accumulated scope includes neutral pieces of:
 
-## Boundary rule
+- Dirichlet characters / GRH facades;
+- character orthogonality, decomposition, and moment identities;
+- dyadic prime windows and weight-removal interfaces;
+- twisted von-Mangoldt windows and partial sums;
+- `-L'/L` / right-edge majorants;
+- provenance-preserving adaptations of existing finite-rectangle and smoothed-Perron machinery.
 
-A declaration belongs here when its statement is useful without importing a
-particular sieve or target theorem. Definitions tied to Chen's singular series,
-sieve weights, or final theorem remain in the Chen repository.
+Do **not** merge the long historic PR wholesale. The correct integration strategy is to identify stable consumer-backed logical blocks, reconcile each block against current `dev`/`main`, preserve external provenance, and require exact-head build + axiom audit before downstream repinning.
+
+Newer commits on #76 are not considered verified merely because an earlier head was green. Read its actual GitHub head and workflow results each round.
+
+## Work classification
+
+| Class | Treatment |
+| --- | --- |
+| Application completed downstream | Link the application; do not independently rebuild it here. |
+| Neutral theorem already formalized elsewhere | Reuse directly or adapt minimally with provenance and local recompilation. |
+| Reusable theorem with a named ANT consumer | Implement/extract the exact missing interface and audit it. |
+| Historical or superseded route | Preserve findings and provenance, but remove it from the active queue. |
+| Generalization without a concrete consumer | Keep dormant. |
+
+## Current stop / next ordered work
+
+1. Finish verification of the post-#83 `main` push commit.
+2. Refresh and integrate this documentation PR only against that stabilized main tree; its old pre-reconciliation CI is not sufficient.
+3. Keep #76 broad growth frozen while splitting/reconciling stable consumer-backed blocks.
+4. Before any further Perron, zero-count, explicit-formula, effective `L'/L`, weighted-BV, or general-Pan work, perform an external-first API audit and record the exact gap.
+
+Never use `sorry`/`admit`, custom axioms, equal-strength application hypotheses, weakened audit gates, force pushes, or branch deletion to manufacture progress.
+
+## Historical detail
+
+PNT, Mertens II, the exact Mertens product, the constant-identification chain, sieve foundations, and the Pan proof atlas remain part of the repository history. Historical atlas checkboxes are not automatically active tasks. The pre-maintenance roadmap remains available from the old main snapshot `5536c2d8c387d4bb5438478636c25d7b093206d2`.

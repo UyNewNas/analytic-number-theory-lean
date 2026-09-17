@@ -1,68 +1,62 @@
 # Analytic Number Theory for Lean
 
-A reusable Lean foundation for prime distribution and its analytic
-consequences.
+A reusable Lean foundation for prime distribution, sieve infrastructure, and analytic number theory.
 
-The foundation currently provides:
+## Direction — 2026-09-17
 
-- a medium-strength error estimate for Chebyshev's psi function;
-- quantitative Chebyshev-theta interfaces, retaining the standard square-root
-  prime-power correction and exposing an `O(x / log x)` form for partial
-  summation, plus its Abel-endpoint error;
-- the standard prime-counting asymptotic `pi(x) ~ x / log x`;
-- a natural-number prime-counting interface for downstream theorem projects.
-- elementary finite prime sums/products and logarithmic estimates that form
-  the neutral starting point for reusable Mertens theorems.
-- an Abel-summation identity expressing reciprocal-prime sums through
-  Chebyshev's theta function, including its positive-kernel form, exact
-  identity main term, and a natural-number Mertens-II estimate with
-  `O(1 / log x)` error.
-- Mertens' product formula with exact constant `exp (-gamma) / log x` and
-  `O(1 / log^2 x)` error, including a uniform natural-number interface;
-- the audited zeta/Euler-log, Abel/Mellin, scaled Gamma-kernel, and finite-part
-  chain identifying the canonical product constant with Euler's constant.
-- the reusable sieve layer, including the Goldbach local density
-  `ν(d) = 1/φ(d)` on squarefree moduli, generic Selberg main-term identities,
-  and the **weighted Pan--Bombieri--Vinogradov input**: the uniform
-  `3^{ω(d)}`-weighted distribution condition consumed by additive sieve
-  proofs, its lcm-pair weight origin, the `errSum` seam, and the precise
-  classical Pan mean-value statement as an explicitly-marked open target.
+ANT is maintained as a **demand-driven reusable foundation**. It is not an active second implementation of Chen's theorem. Completed application work remains downstream, while project-neutral lemmas are brought back only when a named consumer needs an exact interface.
 
-Chen-specific sieve consequences remain in `chen-theorem-lean`.
+The historical Chen line is preserved in [UyNewNas/chen-theorem-lean](https://github.com/UyNewNas/chen-theorem-lean). A completed downstream application exists in [subfish-zhou/goldbach-lean](https://github.com/subfish-zhou/goldbach-lean), which records provenance from both upstream projects. ANT reuses selected neutral results from that project without importing the Goldbach application layer wholesale.
 
-## Status and trust
+The current work register is [Issue #1](https://github.com/UyNewNas/analytic-number-theory-lean/issues/1). It supersedes the old assumption that every historical Pan/Chen branch must be completed.
 
-This repository is under development. A commit is release-ready only when its
-CI passes all three gates:
+## Integrated maintenance baseline
 
-- every tracked Lean source is free of executable `sorry` and `admit` tokens;
-- both `PrimeNumberTheoremAnd` and `AnalyticNumberTheory` build successfully;
-- the declarations listed in `Audit.lean` do not depend on `sorryAx`.
+The 2026-09 integration sprint reconciled the long-lived `dev` work back into `main` through bounded, exact-head-audited slices:
 
-Passing the audit does not mean that Lean uses no axioms. The standard mathlib
-foundation (`propext`, `Classical.choice`, and `Quot.sound`) is allowed and is
-reported by `#print axioms`. CI status, rather than this README, is the source
-of truth for the current commit.
+- Bombieri–Davenport baseline repair (#73);
+- genuine logarithmic-integral API and neutral `pi-Li` error slice (#70);
+- V1/V3 LCM-weight proof de-duplication with public compatibility wrappers (#75);
+- bounded restoration of the later main Pan/Bombieri interfaces (#79–#81);
+- public `#print axioms` parser reconciliation (#82);
+- clean combined-tree reconciliation (#83).
+
+PR #83's exact head `32e538c6c3ce386f25751b874a24da905a5b5540` passed the ordinary build/trust workflow and focused reconciliation audit before integration. The default branch enforces linear history, so the final integration was performed through the PR as a squash commit `ba74a8771eb34c21fccf9c6230dca71ff943bb2b`. Its Git tree is exactly the same tree that passed the PR-head checks.
+
+The public audit registry is fixed at **463 reports** under the unchanged whitelist `propext`, `Classical.choice`, `Quot.sound`; the genuine-Li focused gate remains a separate 10-report check. Exact CI runs, not this README, are the authority for a particular commit's verification status.
+
+## Existing foundation
+
+- Prime distribution: Chebyshev/PNT interfaces, prime counting, genuine logarithmic-integral normalization, and quantitative prime-distribution utilities.
+- Mertens: finite prime sums/products, Abel summation, Mertens II, the Mertens product, and constant-identification infrastructure.
+- Sieve foundations: local density, Selberg identities/bounds, large-sieve/Bombieri–Davenport infrastructure, Pan helper layers, and neutral LCM-weight bounds.
+- Dirichlet/character infrastructure is being extracted only where concrete consumers require reusable interfaces.
+
+The general Pan/BV interfaces remain distinct from source-specific estimates used in downstream applications. A completed special-purpose application is not automatically evidence for a stronger general ANT theorem.
+
+## External-first reuse rule
+
+Before adding a nontrivial analytic-number-theory API, check current Mathlib and existing formalizations first. In particular:
+
+- [subfish-zhou/goldbach-lean](https://github.com/subfish-zhou/goldbach-lean) already contains substantial Dirichlet-L / smoothed-Perron infrastructure used as a provenance-preserving extraction source;
+- the canonical Anthropic [formal-math](https://github.com/anthropics/formal-math) `zeta23/` project contains Dirichlet-character zero-count, logarithmic-derivative partial-fraction, good-height, contour, and explicit-formula machinery.
+
+If an external result has the needed type, prefer reuse or a minimal neutral adaptation. If the Lean/Mathlib revisions differ, audit the source API and recompile the extracted neutral statement against ANT's pinned environment. Do not create a parallel Perron, zero-count, or effective `L'/L` framework merely because the code lives in another repository.
+
+## Active reusable lane
+
+[PR #76](https://github.com/UyNewNas/analytic-number-theory-lean/pull/76) is a separate consumer-driven lane for project-neutral Dirichlet/GRH, character-moment, prime-window, von-Mangoldt partial-sum, and selected `-L'/L`/Perron interfaces used by `UyNewNas/liouville-reflection-lean`.
+
+Because that PR has a long evolving history, it is **not** intended for wholesale merge. Stable consumer-backed blocks should be reconciled against current `dev`/`main` and independently re-audited. Application-specific Liouville/Mangerel statements remain downstream.
 
 ## Public API
-
-Downstream projects should use:
 
 ```lean
 import AnalyticNumberTheory
 ```
 
-Lake dependency:
-
-```toml
-[[require]]
-name = "analytic_number_theory"
-git = "https://github.com/UyNewNas/analytic-number-theory-lean.git"
-rev = "v0.1.0"
-```
-
-The `PrimeNumberTheoremAnd` namespace is retained as a provenance-preserving
-implementation layer and is not the stable API.
+Consumers should pin a tested tag or commit of
+`https://github.com/UyNewNas/analytic-number-theory-lean.git` in their Lake configuration. `PrimeNumberTheoremAnd` remains the provenance-preserving implementation layer; `AnalyticNumberTheory` is the public facade.
 
 ## Build and audit
 
@@ -71,8 +65,6 @@ lake build PrimeNumberTheoremAnd AnalyticNumberTheory
 lake env lean Audit.lean
 ```
 
-For a release, run the same source scan as CI in addition to these commands.
-The repository policy applies to every tracked `.lean` file, including root
-modules and audit files.
+Use the pinned toolchain and dependencies. Releases and integration heads must pass the executable-placeholder scan, full Lean build, and declaration axiom audit. Do not use `sorry`/`admit`, custom axioms, or weaker audit gates to obtain a green build.
 
-See `UPSTREAM.md` for the exact source revision and port boundary.
+See [UPSTREAM.md](UPSTREAM.md) for the PNTAnd port boundary, [ROADMAP.md](ROADMAP.md) for current maintenance policy, and [LICENSE](LICENSE) for Apache-2.0 licensing. Reused downstream material must retain both its downstream provenance and any original upstream notices.
