@@ -22,6 +22,7 @@ currently pinned mathlib, so consumers need not duplicate the same proof.
 -/
 
 import Mathlib.Analysis.Analytic.Order
+import Mathlib.Analysis.Complex.Basic
 
 namespace AnalyticNumberTheory.ComplexAnalysis
 
