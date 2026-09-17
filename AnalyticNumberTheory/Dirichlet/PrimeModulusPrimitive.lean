@@ -1,4 +1,4 @@
-import Mathlib.NumberTheory.DirichletCharacter.Basic
+import Mathlib.NumberTheory.DirichletCharacter.Orthogonality
 
 /-!
 # Primitive characters at prime modulus
