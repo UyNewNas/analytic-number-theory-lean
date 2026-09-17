@@ -52,6 +52,7 @@ import AnalyticNumberTheory.Dirichlet.FiniteRectangleLogDerivative
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
 import AnalyticNumberTheory.Dirichlet.Moments
+import AnalyticNumberTheory.Dirichlet.GRH
 
 /-!
 # Analytic Number Theory
