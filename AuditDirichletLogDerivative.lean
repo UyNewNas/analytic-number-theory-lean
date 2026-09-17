@@ -1,0 +1,25 @@
+import AnalyticNumberTheory.Dirichlet.LFunctionGrowth
+import AnalyticNumberTheory.Dirichlet.RightHalfPlaneBounds
+import AnalyticNumberTheory.Dirichlet.LocalLogDerivative
+import AnalyticNumberTheory.Dirichlet.LFunctionAnchor
+import AnalyticNumberTheory.Dirichlet.FiniteRectangleLogDerivative
+
+/-!
+# Finite-rectangle Dirichlet logarithmic-derivative trust audit
+
+Focused kernel audit for the externally sourced neutral growth, local complex-analysis,
+anchor, and finite-rectangle logarithmic-derivative block. CI enforces the same exact
+axiom whitelist as the repository-wide audit.
+-/
+
+#print axioms AnalyticNumberTheory.Dirichlet.norm_LFunction_le_growth
+#print axioms AnalyticNumberTheory.Dirichlet.tsum_nat_rpow_neg_le
+#print axioms AnalyticNumberTheory.Dirichlet.norm_dirichletLFunction_le
+#print axioms AnalyticNumberTheory.Dirichlet.exists_holomorphicLog_on_ball
+#print axioms AnalyticNumberTheory.Dirichlet.norm_deriv_le_small_disk
+#print axioms AnalyticNumberTheory.Dirichlet.norm_logDeriv_le_small_disk
+#print axioms AnalyticNumberTheory.Dirichlet.delta_quarter_le_norm_LFunction_anchor
+#print axioms AnalyticNumberTheory.Dirichlet.anchor_disk_re_lower
+#print axioms AnalyticNumberTheory.Dirichlet.norm_LFunction_le_on_anchor_disk
+#print axioms AnalyticNumberTheory.Dirichlet.anchor_disk_subset_rectangle
+#print axioms AnalyticNumberTheory.Dirichlet.norm_logDeriv_LFunction_le_of_zeroFree_rectangle
