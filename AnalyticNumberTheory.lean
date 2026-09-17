@@ -24,6 +24,7 @@ import AnalyticNumberTheory.Dirichlet.FiniteRectangleLogDerivative
 import AnalyticNumberTheory.Dirichlet.VonMangoldtLSeries
 import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerron
 import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronRight
+import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronRightTail
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
 import AnalyticNumberTheory.Dirichlet.Moments
