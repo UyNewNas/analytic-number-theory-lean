@@ -15,9 +15,9 @@ Provenance: adapted from
 The source and ANT pin the same mathlib revision
 `e4c91783ca8e6a7c693ae624ade32fd22d4e43c1`.
 
-Only the final L-function estimate is public here.  The elementary real-series
-majorants used to prove it are kept private so ANT does not unnecessarily grow
-a second public API around standard integral comparison.
+The real-series majorant is exposed because later neutral right-tail Perron estimates need
+exactly the same bound; keeping one proved API avoids re-proving the integral-comparison
+lemma in each contour module.
 -/
 
 open Complex MeasureTheory Set
@@ -57,7 +57,9 @@ private theorem tsum_nat_add_one_rpow_neg_le (σ : ℝ) (hσ : 1 < σ) :
   rw [hid] at htail
   simpa only [Nat.cast_add, Nat.cast_one, add_comm] using add_le_add_left htail 1
 
-private theorem tsum_nat_rpow_neg_le (σ : ℝ) (hσ : 1 < σ) :
+/-- Elementary zeta-tail majorant indexed from zero; the zero term vanishes when `σ > 1`.
+This neutral estimate is shared by the Dirichlet right-half-plane and Perron right-tail APIs. -/
+theorem tsum_nat_rpow_neg_le (σ : ℝ) (hσ : 1 < σ) :
     (∑' n : ℕ, (n : ℝ) ^ (-σ)) ≤ 1 + 1 / (σ - 1) := by
   have hbase : Summable (fun n : ℕ => (n : ℝ) ^ (-σ)) :=
     Real.summable_nat_rpow.mpr (by linarith : -σ < -1)
