@@ -1,4 +1,4 @@
-import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronRightTail
+import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronHorizontal
 
 /-!
 # Public axiom audit extension for the smoothed Perron API
@@ -14,3 +14,4 @@ whitelist without duplicating the repository-wide audit source.
 #print axioms AnalyticNumberTheory.Dirichlet.tsum_nat_rpow_neg_le
 #print axioms AnalyticNumberTheory.Dirichlet.twistedVonMangoldtRightMajorant_le
 #print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPerron_right_tails_quantitative
+#print axioms AnalyticNumberTheory.Dirichlet.norm_twistedSmoothedPerron_horizontal_le_of_logDeriv_bound
