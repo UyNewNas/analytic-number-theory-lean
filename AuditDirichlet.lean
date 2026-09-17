@@ -1,5 +1,6 @@
 import AnalyticNumberTheory.Dirichlet.GRH
 import AnalyticNumberTheory.Dirichlet.LocalLogDerivative
+import AnalyticNumberTheory.Dirichlet.CharacterPrefix
 import AnalyticNumberTheory.Dirichlet.VonMangoldtLSeries
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
@@ -27,6 +28,12 @@ repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.exists_holomorphicLog_on_ball
 #print axioms AnalyticNumberTheory.Dirichlet.norm_deriv_le_small_disk
 #print axioms AnalyticNumberTheory.Dirichlet.norm_logDeriv_le_small_disk
+#print axioms AnalyticNumberTheory.Dirichlet.character_norm_le_one
+#print axioms AnalyticNumberTheory.Dirichlet.sum_one_period_eq_zero
+#print axioms AnalyticNumberTheory.Dirichlet.sum_aligned_period_eq_zero
+#print axioms AnalyticNumberTheory.Dirichlet.sum_mul_period_eq_zero
+#print axioms AnalyticNumberTheory.Dirichlet.norm_sum_range_character_le_modulus
+#print axioms AnalyticNumberTheory.Dirichlet.abel_Ico
 #print axioms AnalyticNumberTheory.Dirichlet.twistedVonMangoldtLSeries_eq_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticAt_negLogDerivLFunction
 #print axioms AnalyticNumberTheory.Dirichlet.GRHAt.analyticOnNhd_negLogDerivLFunction_halfPlane
