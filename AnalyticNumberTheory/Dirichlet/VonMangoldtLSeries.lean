@@ -151,5 +151,35 @@ theorem norm_negLogDerivLFunction_le_vonMangoldtLSeriesMajorant_vertical
     simpa using hσ
   simpa using norm_negLogDerivLFunction_le_vonMangoldtLSeriesMajorant χ hs
 
+/-- Explicit finite-height integral bound for the right vertical edge of a Perron-style
+contour.  On `Re(s) = σ > 1`, integrating the negative logarithmic derivative from height
+`-T` to `T` costs at most the contour length `2T` times the same height- and
+modulus-independent von Mangoldt majorant.
+
+This is deliberately only a right-edge estimate in the absolutely convergent half-plane;
+it does not provide any control in `1/2 < Re(s) ≤ 1` or perform a Perron inversion. -/
+theorem norm_intervalIntegral_negLogDerivLFunction_vertical_le
+    {N : ℕ} [NeZero N] (χ : DirichletCharacter ℂ N)
+    {σ T : ℝ} (hσ : 1 < σ) (hT : 0 ≤ T) :
+    ‖∫ t in (-T)..T,
+        -deriv (DirichletCharacter.LFunction χ)
+            ((σ : ℂ) + (t : ℂ) * Complex.I) /
+          DirichletCharacter.LFunction χ
+            ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤
+      2 * T * vonMangoldtLSeriesMajorant σ := by
+  calc
+    ‖∫ t in (-T)..T,
+        -deriv (DirichletCharacter.LFunction χ)
+            ((σ : ℂ) + (t : ℂ) * Complex.I) /
+          DirichletCharacter.LFunction χ
+            ((σ : ℂ) + (t : ℂ) * Complex.I)‖ ≤
+        vonMangoldtLSeriesMajorant σ * |T - (-T)| := by
+      apply intervalIntegral.norm_integral_le_of_norm_le_const
+      intro t ht
+      exact norm_negLogDerivLFunction_le_vonMangoldtLSeriesMajorant_vertical χ hσ
+    _ = 2 * T * vonMangoldtLSeriesMajorant σ := by
+      rw [abs_of_nonneg (by linarith : 0 ≤ T - (-T))]
+      ring
+
 end Dirichlet
 end AnalyticNumberTheory
