@@ -1,9 +1,10 @@
 import AnalyticNumberTheory
 
--- Focused trust audit for the main→dev reconciliation slice.
--- These declarations come from the exact main blobs staged by integration PRs.
+-- Focused trust audit for the main→dev reconciliation slices.
+-- These declarations come from exact main blobs staged by integration PRs.
 #print axioms AnalyticNumberTheory.Sieve.panChebyshevMainStepLHS_abs_le_corrected
 #print axioms AnalyticNumberTheory.Sieve.not_PanChebyshevMainStep
+#print axioms AnalyticNumberTheory.LargeSieve.bombieriDavenport_vaughanThird
 #print axioms AnalyticNumberTheory.LargeSieve.csSqrtSum_le_card_mul_sum
 #print axioms AnalyticNumberTheory.LargeSieve.panTypeI_totientWeightSum_polylog
 #print axioms AnalyticNumberTheory.LargeSieve.dirichletChar_eq_primitiveCharacter_of_coprime
