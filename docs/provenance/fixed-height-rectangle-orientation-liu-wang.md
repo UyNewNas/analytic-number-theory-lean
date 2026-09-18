@@ -30,7 +30,7 @@ ANT and this source both pin Mathlib
 Exact source files:
 
 - `BombieriVinogradov/Proof/SiegelWalfisz/ExplicitFormula/Contour/Definitions.lean`
-  — blob `42211455ea9487c7b7a2884fbd48cf131968bf2a` at the selected source revision;
+  — blob `616142812e8953f4d4710da3872ab4b723635c9f` at the selected source revision;
 - `BombieriVinogradov/Proof/SiegelWalfisz/ExplicitFormula/Contour/Rectangle.lean`
   — blob `5b89e7f9978c7b616b0cfcdb667b872d59c39eac`.
 
