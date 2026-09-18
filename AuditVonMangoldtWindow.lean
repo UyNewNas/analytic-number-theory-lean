@@ -1,0 +1,41 @@
+import AnalyticNumberTheory.PrimeDistribution.DyadicPrimeWindow
+import AnalyticNumberTheory.Dirichlet.PrimeWindowWeights
+import AnalyticNumberTheory.Dirichlet.VonMangoldtWindow
+import AnalyticNumberTheory.Dirichlet.VonMangoldtPartialSums
+
+/-!
+# Dyadic prime/von-Mangoldt consumer-slice trust audit
+
+This focused audit covers the neutral finite bridge reused by
+`liouville-reflection-lean`: dyadic prime windows, logarithmic weight removal,
+prime-power removal, and the exact cumulative endpoint subtraction.
+-/
+
+#print axioms AnalyticNumberTheory.PrimeDistribution.dyadicPrimeWindow
+#print axioms AnalyticNumberTheory.PrimeDistribution.mem_dyadicPrimeWindow
+#print axioms AnalyticNumberTheory.PrimeDistribution.dyadicPrimeWindow_eq_primesLE_sdiff
+#print axioms AnalyticNumberTheory.PrimeDistribution.card_dyadicPrimeWindow
+#print axioms AnalyticNumberTheory.PrimeDistribution.dyadicPrimeWindow_nonempty
+#print axioms AnalyticNumberTheory.PrimeDistribution.eventually_dyadicPrimeWindow_card_lower_bound
+
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicPrimeLogCharacterSum
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicPrimeLogRemainder
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicPrime_log_sub_log_nonneg
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicPrime_log_sub_log_le_log_two
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicPrimeLogCharacterSum_eq_log_mul_add_remainder
+#print axioms AnalyticNumberTheory.Dirichlet.norm_dyadicPrimeLogRemainder_le
+#print axioms AnalyticNumberTheory.Dirichlet.log_mul_norm_characterSumOn_dyadicPrimeWindow_le
+#print axioms AnalyticNumberTheory.Dirichlet.norm_characterSumOn_dyadicPrimeWindow_le_div_log
+
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicVonMangoldtCharacterSum
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicVonMangoldtNonprimeRemainder
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicVonMangoldtCharacterSum_eq_primeLog_add_nonprime
+#print axioms AnalyticNumberTheory.Dirichlet.norm_dyadicVonMangoldtNonprimeRemainder_le
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicVonMangoldtNonprimeMass_le
+#print axioms AnalyticNumberTheory.Dirichlet.norm_dyadicVonMangoldtNonprimeRemainder_le_sqrtLog
+#print axioms AnalyticNumberTheory.Dirichlet.norm_dyadicPrimeLogCharacterSum_le_vonMangoldt_add_sqrtLog
+#print axioms AnalyticNumberTheory.Dirichlet.norm_characterSumOn_dyadicPrimeWindow_le_vonMangoldt
+
+#print axioms AnalyticNumberTheory.Dirichlet.vonMangoldtCharacterPartialSum
+#print axioms AnalyticNumberTheory.Dirichlet.dyadicVonMangoldtCharacterSum_eq_partial_sub_partial
+#print axioms AnalyticNumberTheory.Dirichlet.norm_dyadicVonMangoldtCharacterSum_le_partial_add_partial
