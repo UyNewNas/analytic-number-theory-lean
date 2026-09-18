@@ -62,6 +62,7 @@ import AnalyticNumberTheory.Dirichlet.LocalLogDerivative
 import AnalyticNumberTheory.Dirichlet.LFunctionAnchor
 import AnalyticNumberTheory.Dirichlet.FiniteRectangleLogDerivative
 import AnalyticNumberTheory.Dirichlet.ExplicitFormulaResidue
+import AnalyticNumberTheory.Dirichlet.ExplicitFormulaDyadicOrigin
 import AnalyticNumberTheory.Dirichlet.LogDerivativeSimplePoles
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
