@@ -19,6 +19,15 @@ rev = "e4c91783ca8e6a7c693ae624ade32fd22d4e43c1"
 name = "PrimeNumberTheoremAnd"
 globs = ["PrimeNumberTheoremAnd"]
 
+# Provenance-preserving exact-same-pin compatibility slice reused from
+# subfish-zhou/liu-wang-ternary-goldbach-lean.  Only the neutral scalar Perron
+# dependency closure is vendored; the upstream package itself is not added as
+# a Lake dependency because it exports colliding AnalyticNumberTheory and
+# PrimeNumberTheoremAnd library roots.
+[[lean_lib]]
+name = "BombieriVinogradov"
+globs = ["BombieriVinogradov.+"]
+
 [[lean_lib]]
 name = "AnalyticNumberTheory"
 globs = ["AnalyticNumberTheory"]
