@@ -13,12 +13,43 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: leanprover/lean-action@v1
+      - id: lean_build
+        continue-on-error: true
+        uses: leanprover/lean-action@v1
         with:
           build: true
           build-args: PrimeNumberTheoremAnd BombieriVinogradov LiuWang AnalyticNumberTheory
 
+      # The GitHub connector exposes job/step state but not raw Actions logs.
+      # On a real Lean build failure, repeat only this bounded target build and
+      # preserve the compiler output as an artifact so the first concrete API
+      # error can be diagnosed without weakening or bypassing the gate.
+      - name: Capture failed bounded build
+        if: steps.lean_build.outcome == 'failure'
+        shell: bash
+        run: |
+          set +e
+          set -o pipefail
+          lake build PrimeNumberTheoremAnd BombieriVinogradov LiuWang AnalyticNumberTheory \
+            2>&1 | tee /tmp/perron-series-build.log
+          echo "diagnostic_exit_code=${PIPESTATUS[0]}" >> /tmp/perron-series-build.log
+          exit 0
+
+      - name: Upload failed bounded build log
+        if: steps.lean_build.outcome == 'failure'
+        uses: actions/upload-artifact@v4
+        with:
+          name: perron-series-build-log
+          path: /tmp/perron-series-build.log
+          if-no-files-found: error
+
+      - name: Preserve build gate failure
+        if: steps.lean_build.outcome == 'failure'
+        shell: bash
+        run: exit 1
+
       - name: Audit generic Perron series slice
+        if: steps.lean_build.outcome == 'success'
         shell: bash
         run: |
           set -o pipefail
