@@ -1,0 +1,125 @@
+name: Character Perron focused and public audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  character-perron-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leanprover/lean-action@v1
+        with:
+          build: true
+          build-args: PrimeNumberTheoremAnd BombieriVinogradov LiuWang AnalyticNumberTheory
+
+      - name: Audit sharp character Perron wrapper
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean AuditCharacterPerron.lean 2>&1 | tee /tmp/character-perron-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/character-perron-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          axiom_free_reports = re.findall(r'does not depend on any axioms', output)
+          report_count = len(reports) + len(axiom_free_reports)
+          expected_reports = 5
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if report_count != expected_reports:
+              print(
+                  f'Expected {expected_reports} character-Perron axiom reports, found {report_count} '
+                  f'({len(reports)} with dependencies, {len(axiom_free_reports)} axiom-free).',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Character-Perron API uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print(
+              'Character-Perron axiom whitelist passed for '
+              f'{report_count} reports ({len(reports)} with dependencies, '
+              f'{len(axiom_free_reports)} axiom-free): '
+              + ', '.join(sorted(used))
+          )
+          PY
+
+      - name: Audit character-Perron augmented public theorem axioms
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean Audit.lean 2>&1 | tee /tmp/character-perron-public-axioms.txt
+          lake env lean AuditDirichletConditional.lean 2>&1 | tee -a /tmp/character-perron-public-axioms.txt
+          lake env lean AuditDirichletLogDerivative.lean 2>&1 | tee -a /tmp/character-perron-public-axioms.txt
+          lake env lean AuditDirichletMoments.lean 2>&1 | tee -a /tmp/character-perron-public-axioms.txt
+          lake env lean AuditDirichletGRH.lean 2>&1 | tee -a /tmp/character-perron-public-axioms.txt
+          lake env lean AuditComplexZeroBookkeeping.lean 2>&1 | tee -a /tmp/character-perron-public-axioms.txt
+          lake env lean AuditPerronDyadic.lean 2>&1 | tee -a /tmp/character-perron-public-axioms.txt
+          lake env lean AuditTwistedMangoldtPerron.lean 2>&1 | tee -a /tmp/character-perron-public-axioms.txt
+          lake env lean AuditCharacterPerron.lean 2>&1 | tee -a /tmp/character-perron-public-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/character-perron-public-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          axiom_free_reports = re.findall(r'does not depend on any axioms', output)
+          report_count = len(reports) + len(axiom_free_reports)
+          expected_reports = 573
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if report_count != expected_reports:
+              print(
+                  f'Expected {expected_reports} character-Perron augmented public axiom reports, found {report_count} '
+                  f'({len(reports)} with dependencies, {len(axiom_free_reports)} axiom-free).',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Character-Perron augmented public API uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print(
+              'Character-Perron augmented public axiom whitelist passed for '
+              f'{report_count} reports ({len(reports)} with dependencies, '
+              f'{len(axiom_free_reports)} axiom-free): '
+              + ', '.join(sorted(used))
+          )
+          PY
