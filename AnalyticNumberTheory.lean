@@ -3,6 +3,7 @@ import AnalyticNumberTheory.ComplexAnalysis.FiniteZeros
 import AnalyticNumberTheory.ComplexAnalysis.JensenZeros
 import AnalyticNumberTheory.ComplexAnalysis.JensenDivisorBound
 import AnalyticNumberTheory.ComplexAnalysis.AffineMultiplicity
+import AnalyticNumberTheory.ComplexAnalysis.LogDerivResidue
 import AnalyticNumberTheory.Sieve.PanTypeIIBoundAudit
 import AnalyticNumberTheory.LargeSieve.PanTypeIIAssembly
 import AnalyticNumberTheory.LargeSieve.NonCoprimeDensity
