@@ -1,7 +1,7 @@
 import Mathlib.Analysis.Meromorphic.RCLike
 import Mathlib.NumberTheory.LSeries.DirichletContinuation
 import Mathlib.NumberTheory.LSeries.Nonvanishing
-import PrimeNumberTheoremAnd.RectangleArgumentPrinciple
+import AnalyticNumberTheory.ComplexAnalysis.LogDerivSimplePoles
 
 /-!
 # Simple poles of nonprincipal Dirichlet logarithmic derivatives
@@ -12,7 +12,7 @@ Liu--Wang explicit-formula pole infrastructure at
 
 It exposes only the finite-order facts needed to conclude that the logarithmic
 derivative of a nonprincipal Dirichlet L-function has at most simple poles on an
-arbitrary set.  No contour theorem, zero count, GRH consequence, endpoint kernel,
+arbitrary set. No contour theorem, zero count, GRH consequence, endpoint kernel,
 or downstream Mangerel/Liouville parameter is introduced.
 -/
 
@@ -61,7 +61,7 @@ theorem hasSimplePolesOn_logDeriv_LFunction
     {N : Nat} [NeZero N] {χ : DirichletCharacter Complex N}
     (hχ : χ ≠ 1) (U : Set Complex) :
     HasSimplePolesOn (logDeriv χ.LFunction) U :=
-  logDeriv_hasSimplePolesOn_of_meromorphicOrderAt_ne_top
+  AnalyticNumberTheory.ComplexAnalysis.logDeriv_hasSimplePolesOn_of_meromorphicOrderAt_ne_top
     (meromorphic_LFunction_of_ne_one hχ).meromorphicOn
     (meromorphic_logDeriv_LFunction hχ).meromorphicOn
     (fun p _ => meromorphicOrderAt_LFunction_ne_top hχ p)

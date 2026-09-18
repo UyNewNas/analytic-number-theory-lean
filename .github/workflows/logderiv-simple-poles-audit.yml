@@ -25,8 +25,9 @@ jobs:
         run: |
           set -euo pipefail
           if grep -RInE --include='*.lean' '\b(sorry|admit)\b' \
+            AnalyticNumberTheory/ComplexAnalysis/LogDerivSimplePoles.lean \
             AnalyticNumberTheory/Dirichlet/LogDerivativeSimplePoles.lean; then
-            echo 'Found forbidden placeholder in Dirichlet log-derivative simple-pole slice.' >&2
+            echo 'Found forbidden placeholder in logarithmic-derivative simple-pole slice.' >&2
             exit 1
           fi
 
@@ -44,7 +45,7 @@ jobs:
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
           axiom_free_reports = re.findall(r'does not depend on any axioms', output)
           report_count = len(reports) + len(axiom_free_reports)
-          expected_reports = 4
+          expected_reports = 5
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           if report_count != expected_reports:
@@ -64,14 +65,14 @@ jobs:
           unexpected = used - allowed
           if unexpected:
               print(
-                  'Dirichlet log-derivative simple-pole API uses non-whitelisted axioms: '
+                  'Logarithmic-derivative simple-pole API uses non-whitelisted axioms: '
                   + ', '.join(sorted(unexpected)),
                   file=sys.stderr,
               )
               sys.exit(1)
 
           print(
-              'Dirichlet log-derivative simple-pole axiom whitelist passed for '
+              'Logarithmic-derivative simple-pole axiom whitelist passed for '
               f'{report_count} reports: ' + ', '.join(sorted(used))
           )
           PY
