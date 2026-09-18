@@ -10,10 +10,12 @@ import Mathlib.NumberTheory.LSeries.Nonvanishing
 This module is the neutral Dirichlet-character specialization of the local residue
 calculation used in a truncated explicit formula.  The source audit is
 `subfish-zhou/liu-wang-ternary-goldbach-lean@b57b7307810c37267e47110d8b5f920e3e681c81`,
-`BombieriVinogradov/Proof/SiegelWalfisz/ExplicitFormula/ZeroResidue.lean`.
+`BombieriVinogradov/Proof/SiegelWalfisz/ExplicitFormula/ZeroResidue.lean` and
+`BombieriVinogradov/Proof/SiegelWalfisz/ExplicitFormula/Residue/Meromorphic/{LFunction,Kernel,Main}.lean`.
 
-Only the local residue calculation is adapted here.  No contour theorem, GRH input,
-Liouville defect, Mangerel parameter choice, or downstream target is assumed.
+Only the reusable meromorphicity and local residue calculations are adapted here.
+No contour theorem, GRH input, Liouville defect, Mangerel parameter choice, or downstream
+target is assumed.
 -/
 
 open Complex
@@ -27,6 +29,38 @@ multiplicity-weighted `x^ρ / ρ` terms of a Dirichlet explicit formula. -/
 def explicitFormulaIntegrand {N : ℕ} [NeZero N]
     (χ : DirichletCharacter ℂ N) (x : ℕ) (s : ℂ) : ℂ :=
   logDeriv χ.LFunction s * (-((x : ℂ) ^ s / s))
+
+/-- For a nonprincipal character and positive natural endpoint, the explicit-formula
+integrand is meromorphic on the whole complex plane.  This is the neutral source-level
+fact needed before applying any finite contour residue theorem. -/
+theorem meromorphic_explicitFormulaIntegrand
+    {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N}
+    (hχ : χ ≠ 1) (x : ℕ) (hx : 0 < x) :
+    Meromorphic (explicitFormulaIntegrand χ x) := by
+  have hLog : Meromorphic (logDeriv χ.LFunction) := by
+    apply Meromorphic.logDeriv
+    intro s
+    exact ((DirichletCharacter.differentiable_LFunction hχ).analyticAt s).meromorphicAt
+  have hxC : (x : ℂ) ≠ 0 := by
+    exact_mod_cast Nat.ne_of_gt hx
+  have hPowDiff : Differentiable ℂ (fun s : ℂ => (x : ℂ) ^ s) :=
+    differentiable_id.const_cpow (Or.inl hxC)
+  have hPow : Meromorphic (fun s : ℂ => (x : ℂ) ^ s) := by
+    intro s
+    exact (hPowDiff.analyticAt s).meromorphicAt
+  have hDenDiff : Differentiable ℂ (fun s : ℂ => s) := by
+    fun_prop
+  have hDen : Meromorphic (fun s : ℂ => s) := by
+    intro s
+    exact (hDenDiff.analyticAt s).meromorphicAt
+  exact hLog.mul (hPow.div hDen).neg
+
+/-- Set-restricted form of `meromorphic_explicitFormulaIntegrand`. -/
+theorem meromorphicOn_explicitFormulaIntegrand
+    {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N}
+    (hχ : χ ≠ 1) (x : ℕ) (hx : 0 < x) (U : Set ℂ) :
+    MeromorphicOn (explicitFormulaIntegrand χ x) U :=
+  (meromorphic_explicitFormulaIntegrand hχ x hx).meromorphicOn
 
 /-- At every nonzero point, the residue of the nonprincipal Dirichlet-L explicit-formula
 integrand is the analytic multiplicity times `-x^ρ/ρ`.  When `ρ` is not a zero the
