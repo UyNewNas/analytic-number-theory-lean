@@ -48,7 +48,7 @@ theorem explicitFormulaDyadicIntegrand_eq_neg_logDeriv_mul_originKernel
   unfold explicitFormulaDyadicIntegrand explicitFormulaIntegrand
     explicitFormulaDyadicOriginKernel
     AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient
-  rw [Complex.natCast_mul_natCast_cpow 2 P s]
+  rw [Nat.cast_mul, Complex.natCast_mul_natCast_cpow 2 P s]
   ring
 
 /-- For positive `P`, the origin-regular dyadic kernel is meromorphic on the
@@ -83,7 +83,9 @@ theorem meromorphicOrderAt_explicitFormulaDyadicOriginKernel_zero_nonneg
   have hQuotOrder :=
     AnalyticNumberTheory.ComplexAnalysis.meromorphicOrderAt_originCpowDifferenceQuotient_zero_nonneg
       2 (by norm_num)
-  unfold explicitFormulaDyadicOriginKernel
+  change 0 ≤ meromorphicOrderAt
+    ((fun z : ℂ => (P : ℂ) ^ z) *
+      AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient 2) 0
   rw [meromorphicOrderAt_mul hPowAn.meromorphicAt (hQuotMero 0)]
   exact add_nonneg hPowAn.meromorphicOrderAt_nonneg hQuotOrder
 
