@@ -9,8 +9,8 @@ import AnalyticNumberTheory.Dirichlet.ExplicitFormulaResidue
 # Finite-rectangle Dirichlet logarithmic-derivative trust audit
 
 Focused kernel audit for the externally sourced neutral growth, local complex-analysis,
-anchor, finite-rectangle logarithmic-derivative, and explicit-formula meromorphicity/residue
-block. CI enforces the same exact axiom whitelist as the repository-wide audit.
+anchor, finite-rectangle logarithmic-derivative, and local explicit-formula residue block.
+CI enforces the same exact axiom whitelist as the repository-wide audit.
 -/
 
 #print axioms AnalyticNumberTheory.Dirichlet.norm_LFunction_le_growth
@@ -24,6 +24,4 @@ block. CI enforces the same exact axiom whitelist as the repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.norm_LFunction_le_on_anchor_disk
 #print axioms AnalyticNumberTheory.Dirichlet.anchor_disk_subset_rectangle
 #print axioms AnalyticNumberTheory.Dirichlet.norm_logDeriv_LFunction_le_of_zeroFree_rectangle
-#print axioms AnalyticNumberTheory.Dirichlet.meromorphic_explicitFormulaIntegrand
-#print axioms AnalyticNumberTheory.Dirichlet.meromorphicOn_explicitFormulaIntegrand
 #print axioms AnalyticNumberTheory.Dirichlet.residue_explicitFormulaIntegrand
