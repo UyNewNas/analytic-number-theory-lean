@@ -1,0 +1,30 @@
+import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronRightTail
+import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronHorizontal
+import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronVertical
+import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerronContour
+import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPsiCloseUniform
+
+/-!
+# Public axiom audit extension for the smoothed Perron API
+
+`Audit.lean` predates the consumer-driven Dirichlet extraction and is intentionally large.
+This small companion keeps the new public Perron theorems under the same exact CI axiom
+whitelist without duplicating the repository-wide audit source.
+-/
+
+#print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPerron
+#print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPerronIntegrand_integrable_right
+#print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPerron_verticalIntegral_split_three
+#print axioms AnalyticNumberTheory.Dirichlet.tsum_nat_rpow_neg_le
+#print axioms AnalyticNumberTheory.Dirichlet.twistedVonMangoldtRightMajorant_le
+#print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPerron_right_tails_quantitative
+#print axioms AnalyticNumberTheory.Dirichlet.norm_twistedSmoothedPerron_horizontal_le_of_logDeriv_bound
+#print axioms AnalyticNumberTheory.Dirichlet.norm_twistedSmoothedPerron_vertical_le_of_logDeriv_bound
+#print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPerron_rectangleIntegral_eq_zero_of_holomorphicOn
+#print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPerron_finiteContourIdentity_of_holomorphicOn
+#print axioms AnalyticNumberTheory.Dirichlet.integral_lower_middle_upper
+#print axioms AnalyticNumberTheory.Dirichlet.norm_verticalIntegral'_le_of_finite_contour_bounds
+#print axioms AnalyticNumberTheory.Dirichlet.vonMangoldtCharacterPartialSum_eq_twistedCoeff_range
+#print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPsiClose_aux
+#print axioms AnalyticNumberTheory.Dirichlet.twistedSmoothedPsiClose
+#print axioms AnalyticNumberTheory.Dirichlet.exists_uniform_twistedSmoothedPsiClose
