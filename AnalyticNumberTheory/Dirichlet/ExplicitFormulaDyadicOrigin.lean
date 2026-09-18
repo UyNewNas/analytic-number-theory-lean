@@ -1,4 +1,5 @@
 import AnalyticNumberTheory.Dirichlet.ExplicitFormulaResidue
+import AnalyticNumberTheory.Dirichlet.LogDerivativeSimplePoles
 import AnalyticNumberTheory.ComplexAnalysis.OriginCpowDifference
 
 /-!
@@ -90,7 +91,7 @@ theorem meromorphicOrderAt_explicitFormulaDyadicOriginKernel_zero_nonneg
   exact add_nonneg hPowAn.meromorphicOrderAt_nonneg hQuotOrder
 
 /-- For positive `P`, the origin-regular dyadic kernel has nonnegative
-meromorphic order at every point.  At zero this is the removable-singularity
+meromorphic order at every point. At zero this is the removable-singularity
 result above; away from zero the quotient is analytic because its denominator
 does not vanish. -/
 theorem meromorphicOrderAt_explicitFormulaDyadicOriginKernel_nonneg
@@ -117,5 +118,25 @@ theorem meromorphicOrderAt_explicitFormulaDyadicOriginKernel_nonneg
       ((fun z : ℂ => (P : ℂ) ^ z) *
         AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient 2) s
     exact (hPowAn.mul hQuotAn).meromorphicOrderAt_nonneg
+
+/-- For a nonprincipal character and positive dyadic scale, the complete sharp
+dyadic explicit-formula integrand has at most simple poles on every set. -/
+theorem hasSimplePolesOn_explicitFormulaDyadicIntegrand
+    {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N}
+    (hχ : χ ≠ 1) (P : ℕ) (hP : 0 < P) (U : Set ℂ) :
+    HasSimplePolesOn (explicitFormulaDyadicIntegrand χ P) U := by
+  have hLog := hasSimplePolesOn_logDeriv_LFunction hχ U
+  have hLogMero := meromorphic_logDeriv_LFunction hχ
+  have hKernelMero := meromorphic_explicitFormulaDyadicOriginKernel P hP
+  intro s hs
+  rw [show explicitFormulaDyadicIntegrand χ P =
+      -(logDeriv χ.LFunction * explicitFormulaDyadicOriginKernel P) by
+        funext z
+        exact explicitFormulaDyadicIntegrand_eq_neg_logDeriv_mul_originKernel χ P z,
+    Eq.symm (meromorphicOrderAt_neg
+      (x := s) (f := logDeriv χ.LFunction * explicitFormulaDyadicOriginKernel P)),
+    meromorphicOrderAt_mul (hLogMero s) (hKernelMero s)]
+  simpa using add_le_add (hLog s hs)
+    (meromorphicOrderAt_explicitFormulaDyadicOriginKernel_nonneg P hP s)
 
 end AnalyticNumberTheory.Dirichlet
