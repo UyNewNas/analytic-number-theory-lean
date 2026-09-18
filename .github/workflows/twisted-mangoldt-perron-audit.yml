@@ -7,6 +7,7 @@ on:
 
 permissions:
   contents: read
+  pull-requests: write
 
 jobs:
   twisted-mangoldt-perron-audit:
@@ -40,6 +41,24 @@ jobs:
           name: twisted-mangoldt-perron-build-log
           path: /tmp/twisted-mangoldt-perron-build.log
           if-no-files-found: error
+
+      - name: Publish bounded compile diagnostic on this PR
+        if: steps.lean_build.outcome == 'failure' && github.event_name == 'pull_request'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          {
+            echo '### Twisted Mangoldt Perron compile diagnostic'
+            echo
+            echo 'Exact head: `${{ github.sha }}`'
+            echo
+            echo '```text'
+            tail -n 80 /tmp/twisted-mangoldt-perron-build.log
+            echo '```'
+          } > /tmp/twisted-mangoldt-perron-pr-comment.md
+          gh pr comment '${{ github.event.pull_request.number }}' \
+            --body-file /tmp/twisted-mangoldt-perron-pr-comment.md
 
       - name: Preserve build gate failure
         if: steps.lean_build.outcome == 'failure'
