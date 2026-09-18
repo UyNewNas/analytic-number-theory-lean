@@ -1,0 +1,77 @@
+name: Dirichlet log-derivative simple-pole audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  dirichlet-logderiv-simple-pole-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leanprover/lean-action@v1
+        with:
+          build: true
+          build-args: PrimeNumberTheoremAnd AnalyticNumberTheory
+
+      - name: Reject placeholders in simple-pole slice
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE --include='*.lean' '\b(sorry|admit)\b' \
+            AnalyticNumberTheory/Dirichlet/LogDerivativeSimplePoles.lean; then
+            echo 'Found forbidden placeholder in Dirichlet log-derivative simple-pole slice.' >&2
+            exit 1
+          fi
+
+      - name: Audit simple-pole public axioms
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean AuditLogDerivativeSimplePoles.lean 2>&1 | tee /tmp/logderiv-simple-poles-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/logderiv-simple-poles-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          axiom_free_reports = re.findall(r'does not depend on any axioms', output)
+          report_count = len(reports) + len(axiom_free_reports)
+          expected_reports = 4
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if report_count != expected_reports:
+              print(
+                  f'Expected {expected_reports} simple-pole axiom reports, found {report_count} '
+                  f'({len(reports)} with dependencies, {len(axiom_free_reports)} axiom-free).',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Dirichlet log-derivative simple-pole API uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print(
+              'Dirichlet log-derivative simple-pole axiom whitelist passed for '
+              f'{report_count} reports: ' + ', '.join(sorted(used))
+          )
+          PY
