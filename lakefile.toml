@@ -26,7 +26,7 @@ globs = ["PrimeNumberTheoremAnd"]
 # PrimeNumberTheoremAnd library roots.
 [[lean_lib]]
 name = "BombieriVinogradov"
-globs = ["BombieriVinogradov"]
+globs = ["BombieriVinogradov.+"]
 
 [[lean_lib]]
 name = "AnalyticNumberTheory"
