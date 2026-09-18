@@ -1,6 +1,8 @@
-name: Perron series focused audit
+name: Perron series focused and public audit
 
 on:
+  push:
+    branches: [main]
   pull_request:
 
 permissions:
@@ -20,10 +22,9 @@ jobs:
           build: true
           build-args: PrimeNumberTheoremAnd BombieriVinogradov LiuWang AnalyticNumberTheory
 
-      # The GitHub connector exposes job/step state but not raw Actions logs.
       # On a real Lean build failure, repeat only this bounded target build and
-      # preserve the compiler output as an artifact so the first concrete API
-      # error can be diagnosed without weakening or bypassing the gate.
+      # preserve compiler output as an artifact.  The explicit failure step
+      # below keeps this diagnostic path from weakening the build gate.
       - name: Capture failed bounded build
         if: steps.lean_build.outcome == 'failure'
         shell: bash
@@ -91,6 +92,61 @@ jobs:
 
           print(
               'Perron-series axiom whitelist passed for '
+              f'{report_count} reports ({len(reports)} with dependencies, '
+              f'{len(axiom_free_reports)} axiom-free): '
+              + ', '.join(sorted(used))
+          )
+          PY
+
+      - name: Audit Perron-series augmented public theorem axioms
+        if: steps.lean_build.outcome == 'success'
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean Audit.lean 2>&1 | tee /tmp/perron-series-public-axioms.txt
+          lake env lean AuditDirichletConditional.lean 2>&1 | tee -a /tmp/perron-series-public-axioms.txt
+          lake env lean AuditDirichletLogDerivative.lean 2>&1 | tee -a /tmp/perron-series-public-axioms.txt
+          lake env lean AuditDirichletMoments.lean 2>&1 | tee -a /tmp/perron-series-public-axioms.txt
+          lake env lean AuditDirichletGRH.lean 2>&1 | tee -a /tmp/perron-series-public-axioms.txt
+          lake env lean AuditComplexZeroBookkeeping.lean 2>&1 | tee -a /tmp/perron-series-public-axioms.txt
+          lake env lean AuditPerronSeries.lean 2>&1 | tee -a /tmp/perron-series-public-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/perron-series-public-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          axiom_free_reports = re.findall(r'does not depend on any axioms', output)
+          report_count = len(reports) + len(axiom_free_reports)
+          expected_reports = 554
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if report_count != expected_reports:
+              print(
+                  f'Expected {expected_reports} Perron-series augmented public axiom reports, found {report_count} '
+                  f'({len(reports)} with dependencies, {len(axiom_free_reports)} axiom-free).',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Perron-series augmented public API uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print(
+              'Perron-series augmented public axiom whitelist passed for '
               f'{report_count} reports ({len(reports)} with dependencies, '
               f'{len(axiom_free_reports)} axiom-free): '
               + ', '.join(sorted(used))
