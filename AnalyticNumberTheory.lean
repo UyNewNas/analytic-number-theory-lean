@@ -55,6 +55,7 @@ import AnalyticNumberTheory.Dirichlet.RightHalfPlaneBounds
 import AnalyticNumberTheory.Dirichlet.LocalLogDerivative
 import AnalyticNumberTheory.Dirichlet.LFunctionAnchor
 import AnalyticNumberTheory.Dirichlet.FiniteRectangleLogDerivative
+import AnalyticNumberTheory.Dirichlet.ExplicitFormulaResidue
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
 import AnalyticNumberTheory.Dirichlet.Moments
