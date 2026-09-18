@@ -1,0 +1,67 @@
+name: Perron series focused audit
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  perron-series-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leanprover/lean-action@v1
+        with:
+          build: true
+          build-args: PrimeNumberTheoremAnd BombieriVinogradov LiuWang AnalyticNumberTheory
+
+      - name: Audit generic Perron series slice
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean AuditPerronSeries.lean 2>&1 | tee /tmp/perron-series-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/perron-series-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          axiom_free_reports = re.findall(r'does not depend on any axioms', output)
+          report_count = len(reports) + len(axiom_free_reports)
+          expected_reports = 4
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if report_count != expected_reports:
+              print(
+                  f'Expected {expected_reports} Perron-series axiom reports, found {report_count} '
+                  f'({len(reports)} with dependencies, {len(axiom_free_reports)} axiom-free).',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Perron-series API uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print(
+              'Perron-series axiom whitelist passed for '
+              f'{report_count} reports ({len(reports)} with dependencies, '
+              f'{len(axiom_free_reports)} axiom-free): '
+              + ', '.join(sorted(used))
+          )
+          PY
