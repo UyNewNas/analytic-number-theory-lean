@@ -1,0 +1,77 @@
+name: Finite-height clearance audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  finite-height-clearance-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leanprover/lean-action@v1
+        with:
+          build: true
+          build-args: PrimeNumberTheoremAnd AnalyticNumberTheory
+
+      - name: Reject placeholders in finite-height clearance slice
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE --include='*.lean' '\b(sorry|admit)\b' \
+            AnalyticNumberTheory/Analysis/FiniteHeightClearance.lean; then
+            echo 'Found forbidden placeholder in finite-height clearance slice.' >&2
+            exit 1
+          fi
+
+      - name: Audit finite-height clearance public axioms
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean AuditFiniteHeightClearance.lean 2>&1 | tee /tmp/finite-height-clearance-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/finite-height-clearance-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          axiom_free_reports = re.findall(r'does not depend on any axioms', output)
+          report_count = len(reports) + len(axiom_free_reports)
+          expected_reports = 2
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if report_count != expected_reports:
+              print(
+                  f'Expected {expected_reports} finite-height clearance axiom reports, found {report_count} '
+                  f'({len(reports)} with dependencies, {len(axiom_free_reports)} axiom-free).',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Finite-height clearance API uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print(
+              'Finite-height clearance axiom whitelist passed for '
+              f'{report_count} reports: ' + ', '.join(sorted(used))
+          )
+          PY
