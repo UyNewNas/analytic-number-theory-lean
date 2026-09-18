@@ -64,6 +64,7 @@ import AnalyticNumberTheory.Dirichlet.Decomposition
 import AnalyticNumberTheory.Dirichlet.Moments
 import AnalyticNumberTheory.Dirichlet.GRH
 import AnalyticNumberTheory.Dirichlet.TwistedMangoldtPerron
+import AnalyticNumberTheory.Dirichlet.CharacterPerron
 
 /-!
 # Analytic Number Theory
