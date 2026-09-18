@@ -139,4 +139,79 @@ theorem hasSimplePolesOn_explicitFormulaDyadicIntegrand
   simpa using add_le_add (hLog s hs)
     (meromorphicOrderAt_explicitFormulaDyadicOriginKernel_nonneg P hP s)
 
+/-- Away from the removable origin, the residue of the sharp dyadic endpoint
+difference is the analytic multiplicity times the origin-cancelled dyadic
+kernel.  This is the direct local residue formula needed before reindexing a
+finite contour residue sum. -/
+theorem residue_explicitFormulaDyadicIntegrand
+    {N P : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N}
+    (hχ : χ ≠ 1) (hP : 0 < P) {ρ : ℂ} (hρ : ρ ≠ 0) :
+    residue (explicitFormulaDyadicIntegrand χ P) ρ =
+      -((analyticOrderNatAt χ.LFunction ρ : ℕ) : ℂ) *
+        explicitFormulaDyadicOriginKernel P ρ := by
+  have hAnalyticAll : ∀ z : ℂ, AnalyticAt ℂ χ.LFunction z :=
+    (DirichletCharacter.differentiable_LFunction hχ).analyticAt
+  have hLFunctionNeZero : χ.LFunction ≠ 0 := by
+    intro hzero
+    have hone : χ.LFunction 1 = 0 := by
+      simpa using congrFun hzero 1
+    exact DirichletCharacter.LFunction_apply_one_ne_zero hχ hone
+  have hOrderFinite : analyticOrderAt χ.LFunction ρ ≠ (⊤ : ENat) := by
+    intro hTop
+    exact hLFunctionNeZero
+      ((AnalyticOnNhd.analyticOrderAt_eq_top_iff_eq_zero ρ hAnalyticAll).mp hTop)
+  let n : ℤ := analyticOrderNatAt χ.LFunction ρ
+  have hOrder : meromorphicOrderAt χ.LFunction ρ = (n : WithTop ℤ) := by
+    rw [(hAnalyticAll ρ).meromorphicOrderAt_eq]
+    rw [← Nat.cast_analyticOrderNatAt hOrderFinite]
+    simp [n]
+  have hPrincipal :=
+    AnalyticNumberTheory.ComplexAnalysis.logDeriv_sub_principal_isBigO_one_of_meromorphicOrderAt
+      (hAnalyticAll ρ).meromorphicAt hOrder
+  have hPC : (P : ℂ) ≠ 0 := by
+    exact_mod_cast hP.ne'
+  have hPowAn : AnalyticAt ℂ (fun z : ℂ => (P : ℂ) ^ z) ρ := by
+    simp_rw [Complex.cpow_def_of_ne_zero hPC]
+    fun_prop
+  have hTwoC : (2 : ℂ) ≠ 0 := by norm_num
+  have hTwoPowAn : AnalyticAt ℂ (fun z : ℂ => (2 : ℂ) ^ z) ρ := by
+    simp_rw [Complex.cpow_def_of_ne_zero hTwoC]
+    fun_prop
+  have hQuotAn :
+      AnalyticAt ℂ
+        (AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient 2) ρ := by
+    unfold AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient
+    exact (hTwoPowAn.sub (by fun_prop)).div (by fun_prop) hρ
+  have hKernelContinuous :
+      ContinuousAt (fun z : ℂ => -explicitFormulaDyadicOriginKernel P z) ρ := by
+    unfold explicitFormulaDyadicOriginKernel
+    exact (hPowAn.mul hQuotAn).continuousAt.neg
+  have hResidue :=
+    AnalyticNumberTheory.ComplexAnalysis.residue_mul_eq_of_sub_principal_isBigO_one
+      hPrincipal hKernelContinuous
+  rw [show explicitFormulaDyadicIntegrand χ P =
+      fun z => logDeriv χ.LFunction z * (-explicitFormulaDyadicOriginKernel P z) by
+        funext z
+        rw [explicitFormulaDyadicIntegrand_eq_neg_logDeriv_mul_originKernel]
+        ring]
+  simpa [n] using hResidue
+
+/-- At every nonzero point, taking the residue of the direct dyadic integrand is
+exactly the same as subtracting the two already-verified endpoint residues.
+The statement is deliberately local: it does not assume or manufacture a
+linearity law for the repository's simple-pole `residue` stopgap. -/
+theorem residue_explicitFormulaDyadicIntegrand_eq_sub
+    {N P : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N}
+    (hχ : χ ≠ 1) (hP : 0 < P) {ρ : ℂ} (hρ : ρ ≠ 0) :
+    residue (explicitFormulaDyadicIntegrand χ P) ρ =
+      residue (explicitFormulaIntegrand χ (2 * P)) ρ -
+        residue (explicitFormulaIntegrand χ P) ρ := by
+  rw [residue_explicitFormulaDyadicIntegrand hχ hP hρ,
+    residue_explicitFormulaIntegrand hχ (Nat.mul_pos (by norm_num) hP) hρ,
+    residue_explicitFormulaIntegrand hχ hP hρ]
+  unfold explicitFormulaDyadicOriginKernel
+    AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient
+  rw [Nat.cast_mul, Complex.natCast_mul_natCast_cpow 2 P ρ]
+  ring
+
 end AnalyticNumberTheory.Dirichlet
