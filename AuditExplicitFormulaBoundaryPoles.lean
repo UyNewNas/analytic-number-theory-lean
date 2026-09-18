@@ -1,0 +1,8 @@
+import AnalyticNumberTheory.Dirichlet.ExplicitFormulaBoundaryPoles
+
+/-!
+# Explicit-formula boundary-pole trust audit
+-/
+
+#print axioms AnalyticNumberTheory.Dirichlet.LFunction_eq_zero_of_explicitFormulaIntegrand_pole
+#print axioms AnalyticNumberTheory.Dirichlet.disjoint_explicitFormulaIntegrand_poles_boundary_of_LFunction_ne_zero
