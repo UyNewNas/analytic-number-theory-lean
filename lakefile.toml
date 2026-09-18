@@ -28,6 +28,14 @@ globs = ["PrimeNumberTheoremAnd"]
 name = "BombieriVinogradov"
 globs = ["BombieriVinogradov.+"]
 
+# Bounded compile/integration surface for the project-neutral generic Perron
+# series layer.  The full source package has a root `LiuWang.lean`; this
+# compatibility slice deliberately does not, so collect only child modules.
+# The character-specialized PerronSeries subtree remains excluded.
+[[lean_lib]]
+name = "LiuWang"
+globs = ["LiuWang.+"]
+
 [[lean_lib]]
 name = "AnalyticNumberTheory"
 globs = ["AnalyticNumberTheory"]
