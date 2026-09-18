@@ -1,0 +1,77 @@
+name: Dyadic explicit-formula origin audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  explicit-formula-dyadic-origin-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leanprover/lean-action@v1
+        with:
+          build: true
+          build-args: PrimeNumberTheoremAnd BombieriVinogradov AnalyticNumberTheory
+
+      - name: Reject placeholders in dyadic explicit-formula origin slice
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE --include='*.lean' '\b(sorry|admit)\b' \
+            AnalyticNumberTheory/Dirichlet/ExplicitFormulaDyadicOrigin.lean; then
+            echo 'Found forbidden placeholder in dyadic explicit-formula origin slice.' >&2
+            exit 1
+          fi
+
+      - name: Audit dyadic explicit-formula origin public axioms
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean AuditExplicitFormulaDyadicOrigin.lean 2>&1 | tee /tmp/dyadic-explicit-formula-origin-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/dyadic-explicit-formula-origin-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          axiom_free_reports = re.findall(r'does not depend on any axioms', output)
+          report_count = len(reports) + len(axiom_free_reports)
+          expected_reports = 3
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if report_count != expected_reports:
+              print(
+                  f'Expected {expected_reports} dyadic-origin axiom reports, found {report_count} '
+                  f'({len(reports)} with dependencies, {len(axiom_free_reports)} axiom-free).',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Dyadic explicit-formula origin API uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print(
+              'Dyadic explicit-formula origin axiom whitelist passed for '
+              f'{report_count} reports: ' + ', '.join(sorted(used))
+          )
+          PY
