@@ -28,6 +28,12 @@ globs = ["PrimeNumberTheoremAnd"]
 name = "BombieriVinogradov"
 globs = ["BombieriVinogradov.+"]
 
+# Bounded compile/integration surface for the project-neutral generic Perron
+# series layer.  This intentionally excludes the source repository's
+# character-specialized PerronSeries subtree.
+[[lean_lib]]
+name = "LiuWang"
+
 [[lean_lib]]
 name = "AnalyticNumberTheory"
 globs = ["AnalyticNumberTheory"]
