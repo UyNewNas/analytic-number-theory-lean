@@ -1,5 +1,6 @@
 import AnalyticNumberTheory.ComplexAnalysis.JensenDivisorBound
 import AnalyticNumberTheory.ComplexAnalysis.AffineMultiplicity
+import AnalyticNumberTheory.ComplexAnalysis.LogDerivResidue
 
 #print axioms AnalyticNumberTheory.ComplexAnalysis.finite_zeros_closedBall
 #print axioms AnalyticNumberTheory.ComplexAnalysis.mem_SetOfZeros
@@ -9,3 +10,6 @@ import AnalyticNumberTheory.ComplexAnalysis.AffineMultiplicity
 #print axioms AnalyticNumberTheory.ComplexAnalysis.jensenDivisorBound_normalized
 #print axioms AnalyticNumberTheory.ComplexAnalysis.jensenZeroMultiplicityBound_normalized
 #print axioms AnalyticNumberTheory.ComplexAnalysis.analyticOrderNatAt_affine_mul_const
+#print axioms AnalyticNumberTheory.ComplexAnalysis.tendsto_mul_self_of_sub_principal_isBigO_one
+#print axioms AnalyticNumberTheory.ComplexAnalysis.residue_mul_eq_of_sub_principal_isBigO_one
+#print axioms AnalyticNumberTheory.ComplexAnalysis.logDeriv_sub_principal_isBigO_one_of_meromorphicOrderAt

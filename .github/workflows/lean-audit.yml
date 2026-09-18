@@ -208,7 +208,7 @@ jobs:
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
           axiom_free_reports = re.findall(r'does not depend on any axioms', output)
           report_count = len(reports) + len(axiom_free_reports)
-          expected_reports = 11
+          expected_reports = 12
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           if report_count != expected_reports:
@@ -355,7 +355,7 @@ jobs:
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
           axiom_free_reports = re.findall(r'does not depend on any axioms', output)
           report_count = len(reports) + len(axiom_free_reports)
-          expected_reports = 8
+          expected_reports = 11
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           if report_count != expected_reports:
@@ -408,7 +408,7 @@ jobs:
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
           axiom_free_reports = re.findall(r'does not depend on any axioms', output)
           report_count = len(reports) + len(axiom_free_reports)
-          expected_reports = 546
+          expected_reports = 550
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           if report_count != expected_reports:

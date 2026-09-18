@@ -3,6 +3,7 @@ import AnalyticNumberTheory.ComplexAnalysis.FiniteZeros
 import AnalyticNumberTheory.ComplexAnalysis.JensenZeros
 import AnalyticNumberTheory.ComplexAnalysis.JensenDivisorBound
 import AnalyticNumberTheory.ComplexAnalysis.AffineMultiplicity
+import AnalyticNumberTheory.ComplexAnalysis.LogDerivResidue
 import AnalyticNumberTheory.Sieve.PanTypeIIBoundAudit
 import AnalyticNumberTheory.LargeSieve.PanTypeIIAssembly
 import AnalyticNumberTheory.LargeSieve.NonCoprimeDensity
@@ -54,6 +55,7 @@ import AnalyticNumberTheory.Dirichlet.RightHalfPlaneBounds
 import AnalyticNumberTheory.Dirichlet.LocalLogDerivative
 import AnalyticNumberTheory.Dirichlet.LFunctionAnchor
 import AnalyticNumberTheory.Dirichlet.FiniteRectangleLogDerivative
+import AnalyticNumberTheory.Dirichlet.ExplicitFormulaResidue
 import AnalyticNumberTheory.Dirichlet.Orthogonality
 import AnalyticNumberTheory.Dirichlet.Decomposition
 import AnalyticNumberTheory.Dirichlet.Moments
