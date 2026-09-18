@@ -1,0 +1,6 @@
+import AnalyticNumberTheory.ComplexAnalysis.RectangleBoundary
+
+#print axioms BombieriVinogradov.SiegelWalfisz.explicitFormulaContourLowerLeft
+#print axioms BombieriVinogradov.SiegelWalfisz.explicitFormulaContourUpperRight
+#print axioms BombieriVinogradov.SiegelWalfisz.explicitFormulaBrokenBoundaryIntegral
+#print axioms BombieriVinogradov.SiegelWalfisz.VIntegral'_eq_rectangle_add_brokenBoundary
