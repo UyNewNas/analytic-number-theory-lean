@@ -89,4 +89,33 @@ theorem meromorphicOrderAt_explicitFormulaDyadicOriginKernel_zero_nonneg
   rw [meromorphicOrderAt_mul hPowAn.meromorphicAt (hQuotMero 0)]
   exact add_nonneg hPowAn.meromorphicOrderAt_nonneg hQuotOrder
 
+/-- For positive `P`, the origin-regular dyadic kernel has nonnegative
+meromorphic order at every point.  At zero this is the removable-singularity
+result above; away from zero the quotient is analytic because its denominator
+does not vanish. -/
+theorem meromorphicOrderAt_explicitFormulaDyadicOriginKernel_nonneg
+    (P : ℕ) (hP : 0 < P) (s : ℂ) :
+    0 ≤ meromorphicOrderAt (explicitFormulaDyadicOriginKernel P) s := by
+  by_cases hs : s = 0
+  · subst s
+    exact meromorphicOrderAt_explicitFormulaDyadicOriginKernel_zero_nonneg P hP
+  · have hPC : (P : ℂ) ≠ 0 := by
+      exact_mod_cast hP.ne'
+    have hPowAn : AnalyticAt ℂ (fun z : ℂ => (P : ℂ) ^ z) s := by
+      simp_rw [Complex.cpow_def_of_ne_zero hPC]
+      fun_prop
+    have hTwoC : (2 : ℂ) ≠ 0 := by norm_num
+    have hTwoPowAn : AnalyticAt ℂ (fun z : ℂ => (2 : ℂ) ^ z) s := by
+      simp_rw [Complex.cpow_def_of_ne_zero hTwoC]
+      fun_prop
+    have hQuotAn :
+        AnalyticAt ℂ
+          (AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient 2) s := by
+      unfold AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient
+      exact (hTwoPowAn.sub (by fun_prop)).div (by fun_prop) hs
+    change 0 ≤ meromorphicOrderAt
+      ((fun z : ℂ => (P : ℂ) ^ z) *
+        AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient 2) s
+    exact (hPowAn.mul hQuotAn).meromorphicOrderAt_nonneg
+
 end AnalyticNumberTheory.Dirichlet
