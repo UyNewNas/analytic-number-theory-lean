@@ -1,9 +1,11 @@
 import AnalyticNumberTheory.Dirichlet.ExplicitFormulaDyadicOrigin
 
 /-!
-# Dyadic explicit-formula origin-cancellation trust audit
+# Dyadic explicit-formula origin-cancellation and simple-pole trust audit
 -/
 
 #print axioms AnalyticNumberTheory.Dirichlet.explicitFormulaDyadicIntegrand_eq_neg_logDeriv_mul_originKernel
 #print axioms AnalyticNumberTheory.Dirichlet.meromorphic_explicitFormulaDyadicOriginKernel
 #print axioms AnalyticNumberTheory.Dirichlet.meromorphicOrderAt_explicitFormulaDyadicOriginKernel_zero_nonneg
+#print axioms AnalyticNumberTheory.Dirichlet.meromorphicOrderAt_explicitFormulaDyadicOriginKernel_nonneg
+#print axioms AnalyticNumberTheory.Dirichlet.hasSimplePolesOn_explicitFormulaDyadicIntegrand

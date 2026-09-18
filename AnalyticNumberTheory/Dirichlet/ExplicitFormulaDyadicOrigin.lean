@@ -1,4 +1,5 @@
 import AnalyticNumberTheory.Dirichlet.ExplicitFormulaResidue
+import AnalyticNumberTheory.Dirichlet.LogDerivativeSimplePoles
 import AnalyticNumberTheory.ComplexAnalysis.OriginCpowDifference
 
 /-!
@@ -88,5 +89,54 @@ theorem meromorphicOrderAt_explicitFormulaDyadicOriginKernel_zero_nonneg
       AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient 2) 0
   rw [meromorphicOrderAt_mul hPowAn.meromorphicAt (hQuotMero 0)]
   exact add_nonneg hPowAn.meromorphicOrderAt_nonneg hQuotOrder
+
+/-- For positive `P`, the origin-regular dyadic kernel has nonnegative
+meromorphic order at every point. At zero this is the removable-singularity
+result above; away from zero the quotient is analytic because its denominator
+does not vanish. -/
+theorem meromorphicOrderAt_explicitFormulaDyadicOriginKernel_nonneg
+    (P : ℕ) (hP : 0 < P) (s : ℂ) :
+    0 ≤ meromorphicOrderAt (explicitFormulaDyadicOriginKernel P) s := by
+  by_cases hs : s = 0
+  · subst s
+    exact meromorphicOrderAt_explicitFormulaDyadicOriginKernel_zero_nonneg P hP
+  · have hPC : (P : ℂ) ≠ 0 := by
+      exact_mod_cast hP.ne'
+    have hPowAn : AnalyticAt ℂ (fun z : ℂ => (P : ℂ) ^ z) s := by
+      simp_rw [Complex.cpow_def_of_ne_zero hPC]
+      fun_prop
+    have hTwoC : (2 : ℂ) ≠ 0 := by norm_num
+    have hTwoPowAn : AnalyticAt ℂ (fun z : ℂ => (2 : ℂ) ^ z) s := by
+      simp_rw [Complex.cpow_def_of_ne_zero hTwoC]
+      fun_prop
+    have hQuotAn :
+        AnalyticAt ℂ
+          (AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient 2) s := by
+      unfold AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient
+      exact (hTwoPowAn.sub (by fun_prop)).div (by fun_prop) hs
+    change 0 ≤ meromorphicOrderAt
+      ((fun z : ℂ => (P : ℂ) ^ z) *
+        AnalyticNumberTheory.ComplexAnalysis.originCpowDifferenceQuotient 2) s
+    exact (hPowAn.mul hQuotAn).meromorphicOrderAt_nonneg
+
+/-- For a nonprincipal character and positive dyadic scale, the complete sharp
+dyadic explicit-formula integrand has at most simple poles on every set. -/
+theorem hasSimplePolesOn_explicitFormulaDyadicIntegrand
+    {N : ℕ} [NeZero N] {χ : DirichletCharacter ℂ N}
+    (hχ : χ ≠ 1) (P : ℕ) (hP : 0 < P) (U : Set ℂ) :
+    HasSimplePolesOn (explicitFormulaDyadicIntegrand χ P) U := by
+  have hLog := hasSimplePolesOn_logDeriv_LFunction hχ U
+  have hLogMero := meromorphic_logDeriv_LFunction hχ
+  have hKernelMero := meromorphic_explicitFormulaDyadicOriginKernel P hP
+  intro s hs
+  rw [show explicitFormulaDyadicIntegrand χ P =
+      -(logDeriv χ.LFunction * explicitFormulaDyadicOriginKernel P) by
+        funext z
+        exact explicitFormulaDyadicIntegrand_eq_neg_logDeriv_mul_originKernel χ P z,
+    Eq.symm (meromorphicOrderAt_neg
+      (x := s) (f := logDeriv χ.LFunction * explicitFormulaDyadicOriginKernel P)),
+    meromorphicOrderAt_mul (hLogMero s) (hKernelMero s)]
+  simpa using add_le_add (hLog s hs)
+    (meromorphicOrderAt_explicitFormulaDyadicOriginKernel_nonneg P hP s)
 
 end AnalyticNumberTheory.Dirichlet
