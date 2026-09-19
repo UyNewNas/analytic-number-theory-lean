@@ -24,9 +24,11 @@ Dirichlet object, GRH premise, or application-specific parameter enters this mod
 import AnalyticNumberTheory.ComplexAnalysis.JensenZeros
 import Mathlib.Analysis.Analytic.Order
 import Mathlib.Analysis.Calculus.LogDeriv
+import Mathlib.Analysis.Normed.Module.Connected
 import Mathlib.Tactic
 
 open Complex Set Filter
+open scoped Topology
 
 namespace AnalyticNumberTheory.ComplexAnalysis
 
@@ -55,7 +57,7 @@ theorem exists_analyticFactor_at_zero
     rw [analyticOrderAt_eq_zero]
     exact Or.inr hf0
   have hfinite : analyticOrderAt f ρ ≠ ⊤ := by
-    apply hf.analyticOrderAt_ne_top_of_isPreconnected Metric.isPreconnected_closedBall
+    apply hf.analyticOrderAt_ne_top_of_isPreconnected isPreconnected_closedBall
       hzero hρball
     rw [horder0]
     exact ENat.zero_ne_top
