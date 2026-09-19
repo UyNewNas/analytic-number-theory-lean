@@ -23,5 +23,6 @@ CI enforces the same exact axiom whitelist as the repository-wide audit.
 #print axioms AnalyticNumberTheory.Dirichlet.anchor_disk_re_lower
 #print axioms AnalyticNumberTheory.Dirichlet.norm_LFunction_le_on_anchor_disk
 #print axioms AnalyticNumberTheory.Dirichlet.anchor_disk_subset_rectangle
+#print axioms AnalyticNumberTheory.Dirichlet.norm_logDeriv_LFunction_le_of_zeroFree_openLowerRectangle
 #print axioms AnalyticNumberTheory.Dirichlet.norm_logDeriv_LFunction_le_of_zeroFree_rectangle
 #print axioms AnalyticNumberTheory.Dirichlet.residue_explicitFormulaIntegrand

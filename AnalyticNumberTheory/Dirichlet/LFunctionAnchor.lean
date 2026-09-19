@@ -26,9 +26,9 @@ namespace AnalyticNumberTheory.Dirichlet
 noncomputable section
 
 /-- Absolute-convergence/product anchor: at real part `1 + δ/2`, every
-Dirichlet character has norm at least `δ/4` when `0 < δ ≤ 1/4`. -/
+Dirichlet character has norm at least `δ/4` when `0 < δ ≤ 1/2`. -/
 theorem delta_quarter_le_norm_LFunction_anchor {q : ℕ} [NeZero q]
-    (χ : DirichletCharacter ℂ q) {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1 / 4)
+    (χ : DirichletCharacter ℂ q) {δ : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1 / 2)
     (t : ℝ) : δ / 4 ≤ ‖χ.LFunction ((1 + δ / 2 : ℝ) + I * t)‖ := by
   let K : ℝ := 4 / δ
   have hK : 0 < K := by dsimp [K]; positivity
@@ -78,7 +78,7 @@ lemma anchor_disk_re_lower {δ : ℝ} (_hδ : 0 < δ) (t : ℝ) {w : ℂ}
 nonprincipal conditional-series growth theorem. -/
 theorem norm_LFunction_le_on_anchor_disk {q : ℕ} [NeZero q]
     (χ : DirichletCharacter ℂ q) (hχ : χ ≠ 1) {δ : ℝ}
-    (hδ : 0 < δ) (hδ1 : δ ≤ 1 / 4) (t : ℝ) {w : ℂ}
+    (hδ : 0 < δ) (hδ1 : δ ≤ 1 / 2) (t : ℝ) {w : ℂ}
     (hw : w ∈ ball ((1 + δ / 2 : ℝ) + I * t) (3 * δ / 2)) :
     ‖χ.LFunction w‖ ≤ 8 * q * (1 + |t|) := by
   have hre := anchor_disk_re_lower hδ t hw

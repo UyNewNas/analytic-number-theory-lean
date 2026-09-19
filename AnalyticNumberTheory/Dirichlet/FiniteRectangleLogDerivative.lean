@@ -16,6 +16,13 @@ The proof deliberately reuses ANT's extracted neutral layers:
 
 Only finite-rectangle nonvanishing is assumed.  No GRH, Goldbach, Mangerel, or
 downstream application statement is built into this theorem.
+
+The upstream source states the width restriction as `δ ≤ 1/4`.  The same proof
+geometry and anchor estimates remain valid through `δ ≤ 1/2`: the anchor disk
+still lies in `1-δ < Re s < 2`, stays in `Re s > 1/2`, and has imaginary-radius
+less than one.  The open lower edge is exposed explicitly because at the
+endpoint `δ = 1/2` a GRH consumer may have zeros on `Re s = 1/2` even though
+the actual anchor disk lies strictly to its right.
 -/
 
 open Complex Metric Set
@@ -27,7 +34,7 @@ noncomputable section
 /-- The standard anchor disk lies in the finite enlarged rectangle used by the
 quantitative logarithmic-derivative argument. -/
 theorem anchor_disk_subset_rectangle {δ T t : ℝ}
-    (hδ : 0 < δ) (hδ1 : δ ≤ 1 / 4) (ht : |t| ≤ T) {w : ℂ}
+    (hδ : 0 < δ) (hδ1 : δ ≤ 1 / 2) (ht : |t| ≤ T) {w : ℂ}
     (hw : w ∈ ball ((1 + δ / 2 : ℝ) + I * t) (3 * δ / 2)) :
     1 - δ ≤ w.re ∧ w.re ≤ 2 ∧ |w.im| ≤ T + 1 := by
   have hn : ‖w - ((1 + δ / 2 : ℝ) + I * t)‖ < 3 * δ / 2 := by
@@ -47,18 +54,18 @@ theorem anchor_disk_subset_rectangle {δ T t : ℝ}
       _ ≤ 3 * δ / 2 + T := add_le_add (him.trans hn.le) ht
       _ ≤ T + 1 := by linarith only [hδ1]
 
-/-- Effective logarithmic derivative from zero-freeness on one finite rectangle.
+/-- Effective logarithmic derivative from zero-freeness on a finite rectangle
+whose lower real-part edge is open.
 
-For `0 < δ ≤ 1/4`, if `L(s,χ)` is nonzero on
-`1-δ ≤ Re(s) ≤ 2`, `|Im(s)| ≤ T+1`, then throughout the slightly smaller
-strip and height range one has the explicit bound
-
-`‖L'/L(β+it,χ)‖ ≤ (40/δ) log(32 q (1+|t|)/δ)`.
+For `0 < δ ≤ 1/2`, it is enough that `L(s,χ)` be nonzero for
+`1-δ < Re(s) ≤ 2`, `|Im(s)| ≤ T+1`.  The strict lower edge matches the actual
+open anchor disk and is important at `δ = 1/2`, where applications may have
+zeros exactly on `Re s = 1/2`.
 -/
-theorem norm_logDeriv_LFunction_le_of_zeroFree_rectangle
+theorem norm_logDeriv_LFunction_le_of_zeroFree_openLowerRectangle
     {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) (hχ : χ ≠ 1)
-    {δ T : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1 / 4) (_hT : 0 ≤ T)
-    (hzero : ∀ z : ℂ, 1 - δ ≤ z.re → z.re ≤ 2 → |z.im| ≤ T + 1 →
+    {δ T : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1 / 2) (_hT : 0 ≤ T)
+    (hzero : ∀ z : ℂ, 1 - δ < z.re → z.re ≤ 2 → |z.im| ≤ T + 1 →
       χ.LFunction z ≠ 0)
     (t β : ℝ) (ht : |t| ≤ T) (hβlo : 1 - δ / 2 ≤ β) (hβhi : β ≤ 1 + δ) :
     ‖logDeriv χ.LFunction ((β : ℂ) + I * t)‖ ≤
@@ -74,7 +81,8 @@ theorem norm_logDeriv_LFunction_le_of_zeroFree_rectangle
   have hzero_disk : ∀ w ∈ ball ((1 + δ / 2 : ℝ) + I * t) (3 * δ / 2),
       χ.LFunction w ≠ 0 := by
     intro w hw
-    obtain ⟨hlo, hhi, him⟩ := anchor_disk_subset_rectangle hδ hδ1 ht hw
+    have hlo : 1 - δ < w.re := anchor_disk_re_lower hδ t hw
+    obtain ⟨_hlo, hhi, him⟩ := anchor_disk_subset_rectangle hδ hδ1 ht hw
     exact hzero w hlo hhi him
   have h := norm_logDeriv_le_small_disk χ.LFunction
     ((1 + δ / 2 : ℝ) + I * t) ((β : ℂ) + I * t) hδ
@@ -87,6 +95,22 @@ theorem norm_logDeriv_LFunction_le_of_zeroFree_rectangle
   rw [harg] at h
   convert h using 1
   ring
+
+/-- Effective logarithmic derivative from zero-freeness on one finite closed
+rectangle.  This compatibility wrapper preserves the previous API shape while
+using the wider `δ ≤ 1/2` range. -/
+theorem norm_logDeriv_LFunction_le_of_zeroFree_rectangle
+    {q : ℕ} [NeZero q] (χ : DirichletCharacter ℂ q) (hχ : χ ≠ 1)
+    {δ T : ℝ} (hδ : 0 < δ) (hδ1 : δ ≤ 1 / 2) (hT : 0 ≤ T)
+    (hzero : ∀ z : ℂ, 1 - δ ≤ z.re → z.re ≤ 2 → |z.im| ≤ T + 1 →
+      χ.LFunction z ≠ 0)
+    (t β : ℝ) (ht : |t| ≤ T) (hβlo : 1 - δ / 2 ≤ β) (hβhi : β ≤ 1 + δ) :
+    ‖logDeriv χ.LFunction ((β : ℂ) + I * t)‖ ≤
+      40 / δ * Real.log (32 * q * (1 + |t|) / δ) := by
+  exact norm_logDeriv_LFunction_le_of_zeroFree_openLowerRectangle
+    χ hχ hδ hδ1 hT
+    (fun z hzlo hzhi hzim ↦ hzero z hzlo.le hzhi hzim)
+    t β ht hβlo hβhi
 
 end
 
