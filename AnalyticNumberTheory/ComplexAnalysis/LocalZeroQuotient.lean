@@ -117,7 +117,7 @@ theorem analyticOnNhd_regularizedFiniteZeroQuotient
       · refine Finset.prod_ne_zero_iff.mpr ?_
         intro x hx
         rw [Finset.mem_sdiff, Finset.mem_singleton] at hx
-        exact pow_ne_zero _ (sub_ne_zero.mpr hx.2)
+        exact pow_ne_zero _ (sub_ne_zero.mpr (Ne.symm hx.2))
       · filter_upwards [heq] with z hz using hz.symm
     · apply AnalyticAt.congr _ _
       · exact fun z => f z / ∏ ρ ∈ hfinr.toFinset, (z - ρ) ^ analyticOrderNatAt f ρ
