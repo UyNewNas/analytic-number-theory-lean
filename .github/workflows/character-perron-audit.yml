@@ -90,7 +90,7 @@ jobs:
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
           axiom_free_reports = re.findall(r'does not depend on any axioms', output)
           report_count = len(reports) + len(axiom_free_reports)
-          expected_reports = 573
+          expected_reports = 574
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           if report_count != expected_reports:
