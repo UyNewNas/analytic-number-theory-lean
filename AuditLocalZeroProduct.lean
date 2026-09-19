@@ -1,4 +1,5 @@
 import AnalyticNumberTheory.ComplexAnalysis.LocalZeroProduct
 
+#print axioms AnalyticNumberTheory.ComplexAnalysis.exists_analyticFactor_at_zero
 #print axioms AnalyticNumberTheory.ComplexAnalysis.analyticAt_finsetProd_sub_pow
 #print axioms AnalyticNumberTheory.ComplexAnalysis.logDeriv_finsetProd_sub_pow
