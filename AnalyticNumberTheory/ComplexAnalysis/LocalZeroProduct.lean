@@ -22,6 +22,7 @@ Dirichlet object, GRH premise, or application-specific parameter enters this mod
 -/
 
 import AnalyticNumberTheory.ComplexAnalysis.JensenZeros
+import Mathlib.Analysis.Analytic.Order
 import Mathlib.Analysis.Calculus.LogDeriv
 import Mathlib.Tactic
 
