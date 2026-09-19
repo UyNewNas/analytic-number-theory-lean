@@ -32,8 +32,6 @@ namespace AnalyticNumberTheory.ComplexAnalysis
 
 noncomputable section
 
-/-- Canonical value of the nonvanishing analytic factor after dividing out the finite local order.
-It is used only to fill the removable singularity of `regularizedFiniteZeroQuotient`. -/
 noncomputable def zeroFactorValue (f : ℂ → ℂ) (z : ℂ) : ℂ :=
   if hA : AnalyticAt ℂ f z then
     if hO : analyticOrderAt f z ≠ ⊤ then
@@ -41,8 +39,6 @@ noncomputable def zeroFactorValue (f : ℂ → ℂ) (z : ℂ) : ℂ :=
     else 0
   else 0
 
-/-- At an actual zero in a connected analytic disc, `zeroFactorValue` is the value of the
-canonical nonvanishing analytic factor and the expected local factorization holds. -/
 theorem zeroFactorValue_spec
     {R : ℝ} {f : ℂ → ℂ} {ρ : ℂ}
     (hR : R < 1)
@@ -51,8 +47,7 @@ theorem zeroFactorValue_spec
     (hρ : ρ ∈ SetOfZeros R f) :
     ∃ g : ℂ → ℂ, AnalyticAt ℂ g ρ ∧ g ρ ≠ 0 ∧ zeroFactorValue f ρ = g ρ ∧
       f =ᶠ[𝓝 ρ] fun z => (z - ρ) ^ analyticOrderNatAt f ρ * g z := by
-  have hzero : 0 ∈ Metric.closedBall (0 : ℂ) 1 := by
-    simp
+  have hzero : 0 ∈ Metric.closedBall (0 : ℂ) 1 := by simp
   have hρball : ρ ∈ Metric.closedBall (0 : ℂ) 1 := by
     rw [Metric.mem_closedBall, Complex.dist_eq, sub_zero]
     exact hρ.1.trans hR.le
@@ -60,8 +55,7 @@ theorem zeroFactorValue_spec
     rw [analyticOrderAt_eq_zero]
     exact Or.inr hf0
   have hfinite : analyticOrderAt f ρ ≠ ⊤ := by
-    apply hf.analyticOrderAt_ne_top_of_isPreconnected Metric.isPreconnected_closedBall
-      hzero hρball
+    apply hf.analyticOrderAt_ne_top_of_isPreconnected Metric.isPreconnected_closedBall hzero hρball
     rw [horder0]
     exact ENat.zero_ne_top
   have hanalytic : AnalyticAt ℂ f ρ := hf ρ hρball
@@ -73,9 +67,6 @@ theorem zeroFactorValue_spec
       smul_eq_mul, g]
   · simpa [smul_eq_mul, g] using hfactor
 
-/-- Divide an analytic function by all zeros in the closed radius-`r` disc, filling each removed
-zero by its canonical nonvanishing local factor. When the selected zero set is not finite the
-definition falls back to `1`; all analytic uses below supply finiteness. -/
 noncomputable def regularizedFiniteZeroQuotient (r : ℝ) (f : ℂ → ℂ) (z : ℂ) : ℂ :=
   if hfin : (SetOfZeros r f).Finite then
     if _ : z ∈ SetOfZeros r f then
@@ -85,8 +76,6 @@ noncomputable def regularizedFiniteZeroQuotient (r : ℝ) (f : ℂ → ℂ) (z :
       f z / ∏ ρ ∈ hfin.toFinset, (z - ρ) ^ analyticOrderNatAt f ρ
   else 1
 
-/-- The regularized finite-zero quotient is analytic on any slightly larger closed disc still
-contained in the unit disc. -/
 theorem analyticOnNhd_regularizedFiniteZeroQuotient
     {r R : ℝ} {f : ℂ → ℂ}
     (hrR : r < R) (hR1 : R < 1)
@@ -100,15 +89,13 @@ theorem analyticOnNhd_regularizedFiniteZeroQuotient
     by_cases hmem : w ∈ SetOfZeros r f
     · obtain ⟨g, hgAnalytic, hgNe, hvalue, hlocal⟩ :=
         zeroFactorValue_spec (hrR.trans hR1) hf hf0 hmem
-      have heq :
-          ∀ᶠ z in 𝓝 w,
-            (if h : z ∈ SetOfZeros r f then
-                zeroFactorValue f z /
-                  ∏ ρ ∈ (hfinr.toFinset \ {z}), (z - ρ) ^ analyticOrderNatAt f ρ
-              else
-                f z / ∏ ρ ∈ hfinr.toFinset, (z - ρ) ^ analyticOrderNatAt f ρ) =
-              g z / ∏ ρ ∈ (hfinr.toFinset \ {w}),
-                (z - ρ) ^ analyticOrderNatAt f ρ := by
+      have heq : ∀ᶠ z in 𝓝 w,
+          (if h : z ∈ SetOfZeros r f then
+              zeroFactorValue f z /
+                ∏ ρ ∈ hfinr.toFinset \ {z}, (z - ρ) ^ analyticOrderNatAt f ρ
+            else
+              f z / ∏ ρ ∈ hfinr.toFinset, (z - ρ) ^ analyticOrderNatAt f ρ) =
+            g z / ∏ ρ ∈ hfinr.toFinset \ {w}, (z - ρ) ^ analyticOrderNatAt f ρ := by
         filter_upwards [hlocal, hgAnalytic.continuousAt.eventually_ne hgNe] with z hz hzNe
         by_cases hzw : z = w
         · subst hzw
@@ -125,6 +112,7 @@ theorem analyticOnNhd_regularizedFiniteZeroQuotient
           rw [mul_comm ((z - w) ^ analyticOrderNatAt f w) (g z)]
           rw [mul_div_mul_right _ _ (pow_ne_zero _ (sub_ne_zero_of_ne hzw))]
       apply hgAnalytic.div _ _ |> fun h => h.congr _
+      · use fun z => ∏ ρ ∈ hfinr.toFinset \ {w}, (z - ρ) ^ analyticOrderNatAt f ρ
       · exact analyticAt_finsetProd_sub_pow (hfinr.toFinset \ {w}) (analyticOrderNatAt f) w
       · simp only [Finset.prod_eq_zero_iff, ne_eq, pow_eq_zero_iff', Finset.mem_sdiff,
           hfinr.mem_toFinset, Finset.mem_singleton, not_exists, not_and,
@@ -133,19 +121,20 @@ theorem analyticOnNhd_regularizedFiniteZeroQuotient
         exact fun hEq => hxw (sub_eq_zero.mp hEq).symm
       · filter_upwards [heq] with z hz using hz.symm
     · apply AnalyticAt.congr _ _
-      · exact (hf w (Metric.mem_closedBall.mpr <| le_trans hw.out hR1.le)).div
-          (analyticAt_finsetProd_sub_pow hfinr.toFinset (analyticOrderNatAt f) w) (by
-            simp only [ne_eq, Finset.prod_eq_zero_iff, hfinr.mem_toFinset,
-              pow_eq_zero_iff', sub_eq_zero, ↓existsAndEq, true_and, not_and,
-              Decidable.not_not]
-            exact fun h => absurd h hmem)
-      · filter_upwards [IsOpen.mem_nhds hfinr.isOpen_compl hmem] with z hz
-        rw [dif_neg hz]
+      · exact fun z => f z / ∏ ρ ∈ hfinr.toFinset, (z - ρ) ^ analyticOrderNatAt f ρ
+      · refine AnalyticAt.div ?_ ?_ ?_
+        · exact hf w (Metric.mem_closedBall.mpr <| le_trans hw.out hR1.le)
+        · exact analyticAt_finsetProd_sub_pow hfinr.toFinset (analyticOrderNatAt f) w
+        · simp only [ne_eq, Finset.prod_eq_zero_iff, hfinr.mem_toFinset, pow_eq_zero_iff',
+            sub_eq_zero, ↓existsAndEq, true_and, not_and, Decidable.not_not]
+          exact fun h => absurd h hmem
+      · filter_upwards [IsOpen.mem_nhds (isOpen_compl_iff.mpr hfinr.isClosed) hmem] with z hz
+        split_ifs with h
+        · exact absurd h hz
+        · rfl
   · simp only [hfinr, ↓reduceDIte]
     exact analyticAt_const
 
-/-- The regularized finite-zero quotient is nonzero on the closed disc where all selected zeros
-were divided out. -/
 theorem regularizedFiniteZeroQuotient_ne_zero
     {f : ℂ → ℂ}
     (hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) 1))
@@ -178,8 +167,6 @@ theorem regularizedFiniteZeroQuotient_ne_zero
       exact hmem hρmem
     exact pow_ne_zero _ (sub_ne_zero.mpr hne)
 
-/-- Away from the selected zero set, the original function is the finite zero polynomial times
-the regularized quotient. -/
 theorem eq_zeroProduct_mul_regularizedFiniteZeroQuotient
     {f : ℂ → ℂ} {r : ℝ} (hr1 : r < 1)
     (hfin : (SetOfZeros 1 f).Finite)
@@ -198,8 +185,6 @@ theorem eq_zeroProduct_mul_regularizedFiniteZeroQuotient
     exact hz hρmem
   exact pow_ne_zero _ (sub_ne_zero.mpr hne)
 
-/-- At a nonzero point inside the selected disc, the logarithmic derivative splits exactly into
-the finite zero sum plus the logarithmic derivative of the regularized analytic factor. -/
 theorem logDeriv_eq_zeroSum_add_regularized
     {f : ℂ → ℂ}
     (hf : AnalyticOnNhd ℂ f (Metric.closedBall (0 : ℂ) 1))
