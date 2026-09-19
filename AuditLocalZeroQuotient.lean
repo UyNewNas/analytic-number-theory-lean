@@ -1,0 +1,7 @@
+import AnalyticNumberTheory.ComplexAnalysis.LocalZeroQuotient
+
+#print axioms AnalyticNumberTheory.ComplexAnalysis.zeroFactorValue_spec
+#print axioms AnalyticNumberTheory.ComplexAnalysis.analyticOnNhd_regularizedFiniteZeroQuotient
+#print axioms AnalyticNumberTheory.ComplexAnalysis.regularizedFiniteZeroQuotient_ne_zero
+#print axioms AnalyticNumberTheory.ComplexAnalysis.eq_zeroProduct_mul_regularizedFiniteZeroQuotient
+#print axioms AnalyticNumberTheory.ComplexAnalysis.logDeriv_eq_zeroSum_add_regularized
