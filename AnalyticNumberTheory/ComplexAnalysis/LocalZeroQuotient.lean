@@ -17,7 +17,7 @@ Source/API audit:
   and exact-same-pin `subfish-zhou/liu-wang-ternary-goldbach-lean@b57b7307810c37267e47110d8b5f920e3e681c81`
   found no competing packaged regularized finite-zero quotient / `logDeriv` split layer.
 
-Only the bounded quotient algebra is extracted.  Quantitative growth transfer, Dirichlet objects,
+Only the bounded quotient algebra is extracted. Quantitative growth transfer, Dirichlet objects,
 GRH, contour arguments and application parameters are deliberately excluded.
 -/
 
@@ -25,6 +25,7 @@ import AnalyticNumberTheory.ComplexAnalysis.LocalZeroProduct
 import Mathlib.Tactic
 
 open Complex Set Filter
+open Classical
 open scoped Topology
 
 namespace AnalyticNumberTheory.ComplexAnalysis
@@ -68,11 +69,12 @@ theorem zeroFactorValue_spec
     (hanalytic.analyticOrderAt_ne_top.mp hfinite).choose_spec
   let g : ℂ → ℂ := (hanalytic.analyticOrderAt_ne_top.mp hfinite).choose
   refine ⟨g, hgAnalytic, hgNe, ?_, ?_⟩
-  · simp [zeroFactorValue, hanalytic, hfinite, g]
+  · simp only [zeroFactorValue, hanalytic, ↓reduceDIte, ne_eq, hfinite, not_false_eq_true,
+      smul_eq_mul, g]
   · simpa [smul_eq_mul, g] using hfactor
 
 /-- Divide an analytic function by all zeros in the closed radius-`r` disc, filling each removed
-zero by its canonical nonvanishing local factor.  When the selected zero set is not finite the
+zero by its canonical nonvanishing local factor. When the selected zero set is not finite the
 definition falls back to `1`; all analytic uses below supply finiteness. -/
 noncomputable def regularizedFiniteZeroQuotient (r : ℝ) (f : ℂ → ℂ) (z : ℂ) : ℂ :=
   if hfin : (SetOfZeros r f).Finite then
@@ -93,57 +95,54 @@ theorem analyticOnNhd_regularizedFiniteZeroQuotient
     AnalyticOnNhd ℂ (regularizedFiniteZeroQuotient r f) (Metric.closedBall (0 : ℂ) R) := by
   intro w hw
   unfold regularizedFiniteZeroQuotient
-  have hr1 : r < 1 := hrR.trans hR1
-  have hfin1 : (SetOfZeros 1 f).Finite := by
-    exact finite_SetOfZeros_of_analytic (R := 2) (r := 1) (by norm_num)
-      (hf.mono (Metric.closedBall_subset_ball (by norm_num))).analyticOnNhd
-      (by simp) hf0
-  have hfinr : (SetOfZeros r f).Finite := finiteSetOfZeros_mono hr1.le hfin1
-  rw [dif_pos hfinr]
-  by_cases hmem : w ∈ SetOfZeros r f
-  · obtain ⟨g, hgAnalytic, hgNe, hvalue, hlocal⟩ := zeroFactorValue_spec hr1 hf hf0 hmem
-    have heq :
-        ∀ᶠ z in 𝓝 w,
-          (if h : z ∈ SetOfZeros r f then
-              zeroFactorValue f z /
-                ∏ ρ ∈ (hfinr.toFinset \ {z}), (z - ρ) ^ analyticOrderNatAt f ρ
-            else
-              f z / ∏ ρ ∈ hfinr.toFinset, (z - ρ) ^ analyticOrderNatAt f ρ) =
-            g z / ∏ ρ ∈ (hfinr.toFinset \ {w}),
-              (z - ρ) ^ analyticOrderNatAt f ρ := by
-      filter_upwards [hlocal, hgAnalytic.continuousAt.eventually_ne hgNe] with z hz hzNe
-      by_cases hzw : z = w
-      · subst hzw
-        rw [dif_pos hmem, hvalue]
-      · have hznot : z ∉ SetOfZeros r f := by
-          intro hzmem
-          have hfz : f z = 0 := hzmem.2
-          rw [hz] at hfz
-          exact absurd hfz (mul_ne_zero (pow_ne_zero _ (sub_ne_zero_of_ne hzw)) hzNe)
-        rw [dif_neg hznot, hz]
-        have hwfin : w ∈ hfinr.toFinset := hfinr.mem_toFinset.mpr hmem
-        rw [Finset.prod_eq_prod_sdiff_singleton_mul hwfin
-          (fun ρ => (z - ρ) ^ analyticOrderNatAt f ρ)]
-        rw [mul_comm ((z - w) ^ analyticOrderNatAt f w) (g z)]
-        rw [mul_div_mul_right _ _ (pow_ne_zero _ (sub_ne_zero_of_ne hzw))]
-    apply (hgAnalytic.div
-      (analyticAt_finsetProd_sub_pow (hfinr.toFinset \ {w}) (analyticOrderNatAt f) w)
-      ?_).congr_of_eventuallyEq heq.symm
-    simp only [Finset.prod_eq_zero_iff, ne_eq, pow_eq_zero_iff', Finset.mem_sdiff,
-      hfinr.mem_toFinset, Finset.mem_singleton, not_exists, not_and, Decidable.not_not, and_imp]
-    intro x _ hxw
-    exact fun hEq => hxw (sub_eq_zero.mp hEq).symm
-  · apply AnalyticAt.congr
-      (hf w (Metric.mem_closedBall.mpr <| le_trans hw.out hR1.le))
-        .div
-        (analyticAt_finsetProd_sub_pow hfinr.toFinset (analyticOrderNatAt f) w)
-        ?_
-      ?_
-    · simp only [ne_eq, Finset.prod_eq_zero_iff, hfinr.mem_toFinset, pow_eq_zero_iff',
-        sub_eq_zero, ↓existsAndEq, true_and, not_and, Decidable.not_not]
-      exact fun h => absurd h hmem
-    · filter_upwards [IsOpen.mem_nhds hfinr.isOpen_compl hmem] with z hz
-      rw [dif_neg hz]
+  by_cases hfinr : (SetOfZeros r f).Finite
+  · simp only [hfinr, ↓reduceDIte]
+    by_cases hmem : w ∈ SetOfZeros r f
+    · obtain ⟨g, hgAnalytic, hgNe, hvalue, hlocal⟩ :=
+        zeroFactorValue_spec (hrR.trans hR1) hf hf0 hmem
+      have heq :
+          ∀ᶠ z in 𝓝 w,
+            (if h : z ∈ SetOfZeros r f then
+                zeroFactorValue f z /
+                  ∏ ρ ∈ (hfinr.toFinset \ {z}), (z - ρ) ^ analyticOrderNatAt f ρ
+              else
+                f z / ∏ ρ ∈ hfinr.toFinset, (z - ρ) ^ analyticOrderNatAt f ρ) =
+              g z / ∏ ρ ∈ (hfinr.toFinset \ {w}),
+                (z - ρ) ^ analyticOrderNatAt f ρ := by
+        filter_upwards [hlocal, hgAnalytic.continuousAt.eventually_ne hgNe] with z hz hzNe
+        by_cases hzw : z = w
+        · subst hzw
+          rw [dif_pos hmem, hvalue]
+        · have hznot : z ∉ SetOfZeros r f := by
+            intro hzmem
+            have hfz : f z = 0 := hzmem.2
+            rw [hz] at hfz
+            exact absurd hfz (mul_ne_zero (pow_ne_zero _ (sub_ne_zero_of_ne hzw)) hzNe)
+          rw [dif_neg hznot, hz]
+          have hwfin : w ∈ hfinr.toFinset := hfinr.mem_toFinset.mpr hmem
+          rw [Finset.prod_eq_prod_sdiff_singleton_mul hwfin
+            (fun ρ => (z - ρ) ^ analyticOrderNatAt f ρ)]
+          rw [mul_comm ((z - w) ^ analyticOrderNatAt f w) (g z)]
+          rw [mul_div_mul_right _ _ (pow_ne_zero _ (sub_ne_zero_of_ne hzw))]
+      apply hgAnalytic.div _ _ |> fun h => h.congr _
+      · exact analyticAt_finsetProd_sub_pow (hfinr.toFinset \ {w}) (analyticOrderNatAt f) w
+      · simp only [Finset.prod_eq_zero_iff, ne_eq, pow_eq_zero_iff', Finset.mem_sdiff,
+          hfinr.mem_toFinset, Finset.mem_singleton, not_exists, not_and,
+          Decidable.not_not, and_imp]
+        intro x _ hxw
+        exact fun hEq => hxw (sub_eq_zero.mp hEq).symm
+      · filter_upwards [heq] with z hz using hz.symm
+    · apply AnalyticAt.congr _ _
+      · exact (hf w (Metric.mem_closedBall.mpr <| le_trans hw.out hR1.le)).div
+          (analyticAt_finsetProd_sub_pow hfinr.toFinset (analyticOrderNatAt f) w) (by
+            simp only [ne_eq, Finset.prod_eq_zero_iff, hfinr.mem_toFinset,
+              pow_eq_zero_iff', sub_eq_zero, ↓existsAndEq, true_and, not_and,
+              Decidable.not_not]
+            exact fun h => absurd h hmem)
+      · filter_upwards [IsOpen.mem_nhds hfinr.isOpen_compl hmem] with z hz
+        rw [dif_neg hz]
+  · simp only [hfinr, ↓reduceDIte]
+    exact analyticAt_const
 
 /-- The regularized finite-zero quotient is nonzero on the closed disc where all selected zeros
 were divided out. -/
