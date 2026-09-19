@@ -1,0 +1,77 @@
+name: Local zero-product audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  local-zero-product-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: leanprover/lean-action@v1
+        with:
+          build: true
+          build-args: PrimeNumberTheoremAnd AnalyticNumberTheory
+
+      - name: Reject placeholders in local zero-product slice
+        shell: bash
+        run: |
+          set -euo pipefail
+          if grep -RInE --include='*.lean' '\b(sorry|admit)\b' \
+            AnalyticNumberTheory/ComplexAnalysis/LocalZeroProduct.lean; then
+            echo 'Found forbidden placeholder in local zero-product slice.' >&2
+            exit 1
+          fi
+
+      - name: Audit local zero-product public axioms
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean AuditLocalZeroProduct.lean 2>&1 | tee /tmp/local-zero-product-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/local-zero-product-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          axiom_free_reports = re.findall(r'does not depend on any axioms', output)
+          report_count = len(reports) + len(axiom_free_reports)
+          expected_reports = 3
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if report_count != expected_reports:
+              print(
+                  f'Expected {expected_reports} local zero-product axiom reports, found {report_count} '
+                  f'({len(reports)} with dependencies, {len(axiom_free_reports)} axiom-free).',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'Local zero-product API uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print(
+              'Local zero-product axiom whitelist passed for '
+              f'{report_count} reports: ' + ', '.join(sorted(used))
+          )
+          PY
