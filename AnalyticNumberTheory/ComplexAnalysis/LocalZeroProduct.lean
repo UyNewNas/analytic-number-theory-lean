@@ -57,7 +57,7 @@ theorem exists_analyticFactor_at_zero
     rw [analyticOrderAt_eq_zero]
     exact Or.inr hf0
   have hfinite : analyticOrderAt f ρ ≠ ⊤ := by
-    apply hf.analyticOrderAt_ne_top_of_isPreconnected isPreconnected_closedBall
+    apply hf.analyticOrderAt_ne_top_of_isPreconnected Metric.isPreconnected_closedBall
       hzero hρball
     rw [horder0]
     exact ENat.zero_ne_top
