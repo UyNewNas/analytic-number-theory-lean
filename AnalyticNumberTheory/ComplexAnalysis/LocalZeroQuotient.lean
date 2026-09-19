@@ -114,20 +114,23 @@ theorem analyticOnNhd_regularizedFiniteZeroQuotient
       apply hgAnalytic.div _ _ |> fun h => h.congr _
       · use fun z => ∏ ρ ∈ hfinr.toFinset \ {w}, (z - ρ) ^ analyticOrderNatAt f ρ
       · exact analyticAt_finsetProd_sub_pow (hfinr.toFinset \ {w}) (analyticOrderNatAt f) w
-      · simp only [Finset.prod_eq_zero_iff, ne_eq, pow_eq_zero_iff', Finset.mem_sdiff,
-          hfinr.mem_toFinset, Finset.mem_singleton, not_exists, not_and,
-          Decidable.not_not, and_imp]
-        intro x _ hxw
-        exact fun hEq => hxw (sub_eq_zero.mp hEq).symm
+      · refine Finset.prod_ne_zero_iff.mpr ?_
+        intro x hx
+        rw [Finset.mem_sdiff, Finset.mem_singleton] at hx
+        exact pow_ne_zero _ (sub_ne_zero.mpr hx.2)
       · filter_upwards [heq] with z hz using hz.symm
     · apply AnalyticAt.congr _ _
       · exact fun z => f z / ∏ ρ ∈ hfinr.toFinset, (z - ρ) ^ analyticOrderNatAt f ρ
       · refine AnalyticAt.div ?_ ?_ ?_
         · exact hf w (Metric.mem_closedBall.mpr <| le_trans hw.out hR1.le)
         · exact analyticAt_finsetProd_sub_pow hfinr.toFinset (analyticOrderNatAt f) w
-        · simp only [ne_eq, Finset.prod_eq_zero_iff, hfinr.mem_toFinset, pow_eq_zero_iff',
-            sub_eq_zero, ↓existsAndEq, true_and, not_and, Decidable.not_not]
-          exact fun h => absurd h hmem
+        · refine Finset.prod_ne_zero_iff.mpr ?_
+          intro x hx
+          have hxmem := hfinr.mem_toFinset.mp hx
+          have hne : w ≠ x := by
+            rintro rfl
+            exact hmem hxmem
+          exact pow_ne_zero _ (sub_ne_zero.mpr hne)
       · filter_upwards [IsOpen.mem_nhds (isOpen_compl_iff.mpr hfinr.isClosed) hmem] with z hz
         split_ifs with h
         · exact absurd h hz
