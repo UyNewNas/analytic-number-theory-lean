@@ -34,8 +34,17 @@ theorem analyticOrderNatAt_symmetricCompletedLFunction_eq_LFunction
           (N : Complex) ^ (z / 2) *
             (χ.LFunction z * χ.gammaFactor z) := by
     filter_upwards [hHalfPlane] with z hz
-    rw [symmetricCompletedLFunction,
-      DirichletCharacter.completedLFunction_eq_LFunction_mul_gammaFactor_of_re_pos χ hz]
+    have hzNeZero : z ≠ 0 := by
+      intro hzZero
+      subst z
+      norm_num at hz
+    have hGammaNe : χ.gammaFactor z ≠ 0 :=
+      gammaFactor_ne_zero_of_re_pos χ hz
+    have hCompleted :
+        χ.completedLFunction z = χ.LFunction z * χ.gammaFactor z := by
+      exact ((eq_div_iff hGammaNe).mp
+        (χ.LFunction_eq_completed_div_gammaFactor z (.inl hzNeZero))).symm
+    rw [symmetricCompletedLFunction, hCompleted]
   have hN : (N : Complex) ≠ 0 := by
     exact_mod_cast NeZero.ne N
   have hNormalizationAnalytic :
