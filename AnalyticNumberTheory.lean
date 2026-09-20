@@ -62,6 +62,7 @@ import AnalyticNumberTheory.Dirichlet.ConditionalValueSeries
 import AnalyticNumberTheory.Dirichlet.LFunctionGrowth
 import AnalyticNumberTheory.Dirichlet.RightHalfPlaneBounds
 import AnalyticNumberTheory.Dirichlet.LocalLogDerivative
+import AnalyticNumberTheory.Dirichlet.LocalLogDerivativeFixedRadii
 import AnalyticNumberTheory.Dirichlet.LFunctionAnchor
 import AnalyticNumberTheory.Dirichlet.FiniteRectangleLogDerivative
 import AnalyticNumberTheory.Dirichlet.GammaFactorRegularity
