@@ -52,7 +52,8 @@ theorem norm_logDeriv_regularizedFiniteZeroQuotient_le
   have hAnalytic24 : AnalyticOnNhd ℂ f (closedBall (0 : ℂ) ((24 : ℝ) / 25)) := by
     intro w hw
     apply hf w
-    exact closedBall_mono (by norm_num : (24 : ℝ) / 25 ≤ 1) hw
+    rw [mem_closedBall, dist_zero_right] at hw ⊢
+    linarith
   have hcountRaw :=
     jensenZeroMultiplicityBound_normalized
       (f := f) (B := B) (r := (22 : ℝ) / 25) (R := (24 : ℝ) / 25)
@@ -114,10 +115,17 @@ theorem norm_logDeriv_regularizedFiniteZeroQuotient_le
       ‖regularizedFiniteZeroQuotient ((22 : ℝ) / 25) f w‖ ≤
         B * ((25 : ℝ) / 2) ^ K := by
     intro w hw
-    refine AnalyticOn.norm_le_of_norm_le_on_sphere le_rfl hQAnalytic24 (fun v hv => ?_)
-      (by simpa [mem_closedBall, dist_zero_right] using hw)
-    refine hsphere v ?_
-    simpa [mem_sphere, dist_zero_right] using hv
+    apply Complex.norm_le_of_forall_mem_frontier_norm_le
+      (U := closedBall (0 : ℂ) ((24 : ℝ) / 25)) Metric.isBounded_closedBall
+    · apply DifferentiableOn.diffContOnCl
+      rw [Metric.closure_closedBall]
+      exact hQAnalytic24.differentiableOn
+    · rw [frontier_closedBall']
+      intro v hv
+      refine hsphere v ?_
+      simpa [mem_sphere, dist_zero_right] using hv
+    · rw [Metric.closure_closedBall]
+      simpa [mem_closedBall, dist_zero_right] using hw
   have hQ0 : (1 : ℝ) ≤
       ‖regularizedFiniteZeroQuotient ((22 : ℝ) / 25) f 0‖ := by
     have h0mem : (0 : ℂ) ∉ SetOfZeros ((22 : ℝ) / 25) f := fun h => hf0' h.2
