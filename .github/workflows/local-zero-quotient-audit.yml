@@ -25,7 +25,8 @@ jobs:
         run: |
           set -euo pipefail
           if grep -RInE --include='*.lean' '\b(sorry|admit)\b' \
-            AnalyticNumberTheory/ComplexAnalysis/LocalZeroQuotient.lean; then
+            AnalyticNumberTheory/ComplexAnalysis/LocalZeroQuotient.lean \
+            AnalyticNumberTheory/ComplexAnalysis/LocalZeroQuotientBound.lean; then
             echo 'Found forbidden placeholder in local zero-quotient slice.' >&2
             exit 1
           fi
@@ -44,7 +45,7 @@ jobs:
           reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
           axiom_free_reports = re.findall(r'does not depend on any axioms', output)
           report_count = len(reports) + len(axiom_free_reports)
-          expected_reports = 5
+          expected_reports = 6
           allowed = {'propext', 'Classical.choice', 'Quot.sound'}
 
           if report_count != expected_reports:
