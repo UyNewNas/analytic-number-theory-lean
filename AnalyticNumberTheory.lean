@@ -70,6 +70,7 @@ import AnalyticNumberTheory.Dirichlet.LFunctionAnchor
 import AnalyticNumberTheory.Dirichlet.FiniteRectangleLogDerivative
 import AnalyticNumberTheory.Dirichlet.GammaFactorRegularity
 import AnalyticNumberTheory.Dirichlet.CompletedReflection
+import AnalyticNumberTheory.Dirichlet.LFunctionConjugation
 import AnalyticNumberTheory.Dirichlet.CompletedOrder
 import AnalyticNumberTheory.Dirichlet.ExplicitFormulaResidue
 import AnalyticNumberTheory.Dirichlet.ExplicitFormulaBoundaryPoles
