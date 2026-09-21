@@ -1,0 +1,95 @@
+name: Dirichlet L-function conjugation audit
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  lfunction-conjugation-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Reject executable sorry/admit in L-function conjugation sources
+        shell: bash
+        run: |
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          paths = [
+              pathlib.Path('AnalyticNumberTheory/Dirichlet/LFunctionConjugation.lean'),
+              pathlib.Path('AuditDirichletLFunctionConjugation.lean'),
+          ]
+          token = re.compile(r'\b(?:sorry|admit)\b')
+          failures = []
+          for path in paths:
+              source = path.read_text(encoding='utf-8')
+              for i, line in enumerate(source.splitlines(), 1):
+                  code = line.split('--', 1)[0]
+                  if token.search(code):
+                      failures.append(f'{path}:{i}: executable sorry/admit token')
+          if failures:
+              print('\n'.join(failures), file=sys.stderr)
+              sys.exit(1)
+          print('L-function conjugation sources contain no executable sorry/admit tokens.')
+          PY
+
+      - uses: leanprover/lean-action@v1
+        with:
+          build: true
+          build-args: AnalyticNumberTheory.Dirichlet.LFunctionConjugation AnalyticNumberTheory
+
+      - name: Audit L-function conjugation theorem axioms
+        shell: bash
+        run: |
+          set -o pipefail
+          lake env lean AuditDirichletLFunctionConjugation.lean 2>&1 | tee /tmp/dirichlet-lfunction-conjugation-axioms.txt
+          python3 - <<'PY'
+          import pathlib
+          import re
+          import sys
+
+          output = pathlib.Path('/tmp/dirichlet-lfunction-conjugation-axioms.txt').read_text(encoding='utf-8')
+          reports = re.findall(r'depends on axioms:\s*\[(.*?)\]', output, re.S)
+          axiom_free_reports = re.findall(r'does not depend on any axioms', output)
+          report_count = len(reports) + len(axiom_free_reports)
+          expected_reports = 4
+          allowed = {'propext', 'Classical.choice', 'Quot.sound'}
+
+          if report_count != expected_reports:
+              print(
+                  f'Expected {expected_reports} L-function conjugation axiom reports, found {report_count} '
+                  f'({len(reports)} with dependencies, {len(axiom_free_reports)} axiom-free).',
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          used = {
+              axiom.strip()
+              for report in reports
+              for axiom in report.split(',')
+              if axiom.strip()
+          }
+          unexpected = used - allowed
+          if unexpected:
+              print(
+                  'L-function conjugation API uses non-whitelisted axioms: '
+                  + ', '.join(sorted(unexpected)),
+                  file=sys.stderr,
+              )
+              sys.exit(1)
+
+          print(
+              'L-function conjugation axiom whitelist passed for '
+              f'{report_count} reports ({len(reports)} with dependencies, '
+              f'{len(axiom_free_reports)} axiom-free): '
+              + ', '.join(sorted(used))
+          )
+          PY
