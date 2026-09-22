@@ -108,8 +108,7 @@ theorem norm_characterPerron_sub_partialSum_le_closed_halfInteger
     (fun n => LiuWang.Proof.ExplicitPerron.halfInteger_ne_nat m n) hb hT
   apply hbase.trans
   unfold characterPerronClosedHalfError
-  apply div_le_div_of_nonneg_right _ (mul_nonneg Real.pi_pos.le hT.le)
-  exact add_le_add_left
-    (centralCost_twisted_halfInteger_le_closed χ hm hb.le) _
+  gcongr
+  exact centralCost_twisted_halfInteger_le_closed χ hm hb.le
 
 end AnalyticNumberTheory.Dirichlet
