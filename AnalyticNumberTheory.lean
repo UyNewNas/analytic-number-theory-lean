@@ -87,6 +87,7 @@ import AnalyticNumberTheory.Dirichlet.VonMangoldtWindow
 import AnalyticNumberTheory.Dirichlet.VonMangoldtPartialSums
 import AnalyticNumberTheory.Dirichlet.TwistedMangoldtPerron
 import AnalyticNumberTheory.Dirichlet.CharacterPerron
+import AnalyticNumberTheory.Dirichlet.CharacterPerronClosedError
 import AnalyticNumberTheory.Dirichlet.CharacterPerronResidue
 import AnalyticNumberTheory.Dirichlet.VonMangoldtLSeries
 import AnalyticNumberTheory.Dirichlet.TwistedSmoothedPerron
