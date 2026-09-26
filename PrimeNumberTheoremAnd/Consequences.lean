@@ -2093,8 +2093,10 @@ lemma lambda_eq_sum_sq_dvd_mu (n : ℕ) (hn : n ≠ 0) :
       rw [ ← Multiset.coe_card, ← Multiset.toFinset_sum_count_eq ];
       have hcounts :
           (∑ p ∈ Nat.primeFactors n, n.primeFactorsList.count p) =
-            ∑ p ∈ Nat.primeFactors n, n.factorization p := by
-        exact Finset.sum_congr rfl (fun p _ => Nat.primeFactorsList_count_eq)
+            ∑ p ∈ Nat.primeFactors n, a p := by
+        refine Finset.sum_congr rfl ?_
+        intro p hp
+        simpa [ha] using (Nat.primeFactorsList_count_eq (n := n) (p := p))
       exact congrArg (fun e : ℕ => (-1 : ℝ) ^ e) hcounts
 
 lemma sum_lambda_eq_sum_mu_div_sq (N : ℕ) :
