@@ -2091,7 +2091,11 @@ lemma lambda_eq_sum_sq_dvd_mu (n : ℕ) (hn : n ≠ 0) :
       rw [ Finset.prod_pow_eq_pow_sum ];
       rw [ ArithmeticFunction.cardFactors_apply ];
       rw [ ← Multiset.coe_card, ← Multiset.toFinset_sum_count_eq ];
-      norm_num +zetaDelta
+      have hcounts :
+          (∑ p ∈ Nat.primeFactors n, n.primeFactorsList.count p) =
+            ∑ p ∈ Nat.primeFactors n, n.factorization p := by
+        exact Finset.sum_congr rfl (fun p _ => Nat.primeFactorsList_count_eq)
+      exact congrArg (fun e : ℕ => (-1 : ℝ) ^ e) hcounts
 
 lemma sum_lambda_eq_sum_mu_div_sq (N : ℕ) :
     ∑ n ∈ Finset.Icc 1 N, ((-1 : ℝ) ^ (Ω n)) =
